@@ -30,17 +30,19 @@ unix:LIBS += -ldl -pthread -lm
 
 
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp \
-    imagestreamproc.cpp
+    src/photoandvideodialog.cpp \
+    src/imagestreamproc.cpp \
+    src/main.cpp \
+    src/mainwindow.cpp \
 
 HEADERS += \
-        mainwindow.h \
-    imagestreamproc.h
+    src/photoandvideodialog.h \
+    src/imagestreamproc.h \
+    src/mainwindow.h \
 
 FORMS += \
-        mainwindow.ui \
-    photoandvideo.ui
+    ui/mainwindow.ui \
+    ui/photoandvideo.ui
 
 RESOURCES += \
-    image.qrc
+    resource/image.qrc

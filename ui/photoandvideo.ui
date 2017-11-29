@@ -6,38 +6,434 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>747</width>
-    <height>518</height>
+    <width>429</width>
+    <height>452</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <widget class="QTabWidget" name="tabWidget_photoAndVedio">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>70</y>
+     <width>341</width>
+     <height>351</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="tab_photo">
+    <attribute name="title">
+     <string>拍照</string>
+    </attribute>
+    <widget class="QWidget" name="formLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>251</width>
+       <height>151</height>
+      </rect>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="Label">
+        <property name="text">
+         <string>单张拍摄</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="LineEdit_photo_singel">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="Label_2">
+        <property name="text">
+         <string>多张连拍</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="LineEdit_photo_multi">
+        <property name="text">
+         <string>3</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="Label_3">
+        <property name="text">
+         <string>延时拍摄</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="LineEdit_photo_delayed">
+        <property name="text">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="Label_4">
+        <property name="text">
+         <string>连续拍摄(fps)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="LineEdit_photo_continus">
+        <property name="text">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="Label_5">
+        <property name="text">
+         <string>全景拍摄</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="LineEdit_photo_panorama">
+        <property name="text">
+         <string>180</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>170</y>
+       <width>251</width>
+       <height>131</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>LAPSE拍照</string>
+     </property>
+     <widget class="QWidget" name="formLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>50</y>
+        <width>211</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <layout class="QFormLayout" name="formLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="Label_6">
+         <property name="text">
+          <string>间隔</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="LineEdit_photo_lapse_intervalTime">
+         <property name="text">
+          <string>0.5</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="Label_7">
+         <property name="text">
+          <string>持续</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="LineEdit_photo_lapse_continueTime">
+         <property name="text">
+          <string>1</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_photo_singel">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>10</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_photo_multi">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>40</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_photo_delayed">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>80</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_photo_continus">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>110</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_photo_panorama">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>140</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_photo_lapse">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>230</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_video">
+    <attribute name="title">
+     <string>录影</string>
+    </attribute>
+    <widget class="QWidget" name="formLayoutWidget_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>231</width>
+       <height>171</height>
+      </rect>
+     </property>
+     <layout class="QFormLayout" name="formLayout_3">
+      <item row="0" column="0">
+       <widget class="QLabel" name="Label_8">
+        <property name="text">
+         <string>普通录影</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="LineEdit_video_normal">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="Label_9">
+        <property name="text">
+         <string>循环录影(min)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="LineEdit_video_circle">
+        <property name="text">
+         <string>5</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="Label_10">
+        <property name="text">
+         <string>录影拍照</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="LineEdit_video_photo">
+        <property name="text">
+         <string>1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="Label_11">
+        <property name="text">
+         <string>延时录影</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="LineEdit_video_delay">
+        <property name="text">
+         <string>0.5</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="Label_12">
+        <property name="text">
+         <string>慢动作录影</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="LineEdit_video_slowMotion">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_video_normal">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>20</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_video_circle">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>60</y>
+       <width>31</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_video_photo">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>90</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_video_delay">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>120</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_video_slowMotion">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>150</y>
+       <width>41</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </widget>
+  </widget>
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>120</x>
-     <y>140</y>
-     <width>451</width>
-     <height>251</height>
+     <x>80</x>
+     <y>20</y>
+     <width>291</width>
+     <height>41</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QTabWidget" name="tabWidget_photoAndVedio">
-      <property name="currentIndex">
-       <number>0</number>
+     <widget class="QRadioButton" name="radioButton_videoMode">
+      <property name="text">
+       <string>录影</string>
       </property>
-      <widget class="QWidget" name="tab">
-       <attribute name="title">
-        <string>Tab 1</string>
-       </attribute>
-      </widget>
-      <widget class="QWidget" name="tab_2">
-       <attribute name="title">
-        <string>Tab 2</string>
-       </attribute>
-      </widget>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QRadioButton" name="radioButton_photoMode">
+      <property name="text">
+       <string>拍照</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_updateSetting">
+      <property name="text">
+       <string>更新配置</string>
+      </property>
      </widget>
     </item>
    </layout>

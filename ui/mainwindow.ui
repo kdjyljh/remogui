@@ -30,7 +30,7 @@
     <property name="title">
      <string>相机</string>
     </property>
-    <widget class="QMenu" name="image_resolution">
+    <widget class="QMenu" name="menu_resolution">
      <property name="title">
       <string>视频分辨率</string>
      </property>
@@ -157,7 +157,7 @@
      <addaction name="action_lens_hanging"/>
     </widget>
     <addaction name="action_photoAndVideo"/>
-    <addaction name="image_resolution"/>
+    <addaction name="menu_resolution"/>
     <addaction name="menu_videoStandard"/>
     <addaction name="menu_whiteBalance"/>
     <addaction name="menu_exposure"/>
@@ -301,6 +301,9 @@
    </property>
   </action>
   <action name="action_exposureCompensation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>曝光补偿</string>
    </property>
@@ -330,86 +333,146 @@
    </property>
   </action>
   <action name="action_resolution_4Kp30_4Kp25">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>4Kp30 / 4Kp25</string>
    </property>
   </action>
   <action name="action_resolution_4Kp24_4Kp24">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>4Kp24 / 4Kp24</string>
    </property>
   </action>
   <action name="action_resolution_2_7Kp30_2_7Kp25">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>2.7Kp30 / 2.7Kp25</string>
    </property>
   </action>
   <action name="action_resolution_2_7Kp24_2_7Kp24">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>2.7Kp24 / 2.7Kp24</string>
    </property>
   </action>
   <action name="action_resolution_1080p60_1080p50">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>1080p60 / 1080p50</string>
    </property>
   </action>
   <action name="action_resolution_1080p48_1080p48">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>1080p48 / 1080p48</string>
    </property>
   </action>
   <action name="action_resolution_1080p30_1080p25">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>1080p30 / 1080p25</string>
    </property>
   </action>
   <action name="action_resolution_1080p24_1080p24">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>1080p24 / 1080p24</string>
    </property>
   </action>
   <action name="action_resolution_1080p120_1080p100">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>1080p120 / 1080p100</string>
    </property>
   </action>
   <action name="action_resolution_720p240_720p200">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>720p240 / 720p200</string>
    </property>
   </action>
   <action name="action_resolution_720p120_720p100">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>720p120 / 720p100</string>
    </property>
   </action>
   <action name="action_resolution_720p60_720p50">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>720p60 / 720p50</string>
    </property>
   </action>
   <action name="action_resolution_720p48_720p48">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>720p48 / 720p48</string>
    </property>
   </action>
   <action name="action_resolution_720p30_720p25">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>720p30 / 720p25</string>
    </property>
   </action>
   <action name="action_resolution_720p24_720p24">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>720p24 / 720p24</string>
    </property>
   </action>
   <action name="action_videoStandard_NTSC">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>NTSC</string>
    </property>
   </action>
   <action name="action_videoStandard_PAL">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>PAL</string>
    </property>
@@ -440,251 +503,401 @@
    </property>
   </action>
   <action name="action_recoveryFactSetting">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>恢复出厂设置</string>
    </property>
   </action>
   <action name="action_whiteBalance_auto">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>自动</string>
    </property>
   </action>
   <action name="action_whiteBalance_IncandesctLamp">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>白炽灯</string>
    </property>
   </action>
   <action name="action_whiteBalance_fluoresctLamp">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>荧光灯</string>
    </property>
   </action>
   <action name="action_whiteBalance_daylight">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>日光</string>
    </property>
   </action>
   <action name="action_whiteBalance_overcast">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>阴天</string>
    </property>
   </action>
   <action name="action_whiteBalance_shadow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>阴影</string>
    </property>
   </action>
   <action name="action_whiteBalance_dusk">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>黄昏</string>
    </property>
   </action>
   <action name="action_exposure_globalMetering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>全局测光</string>
    </property>
   </action>
   <action name="action_exposure_spotMetering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>点测光</string>
    </property>
   </action>
   <action name="action_ISO_auto">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>自动（照片）/ 自动（视频）</string>
    </property>
   </action>
   <action name="action_ISO_100_400">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>100（照片）/ 400（视频）</string>
    </property>
   </action>
   <action name="action_ISO_200_800">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>200（照片）/ 800（视频）</string>
    </property>
   </action>
   <action name="action_ISO_400_1200">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>400（照片）/ 1200（视频）</string>
    </property>
   </action>
   <action name="action_ISO_800_1600">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>800（照片）/ 1600（视频）</string>
    </property>
   </action>
   <action name="action_ISO_1600_3200">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>1600（照片）/ 3200（视频）</string>
    </property>
   </action>
   <action name="action_exposureGear_P">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>自动P</string>
    </property>
   </action>
   <action name="action_exposureGear_M">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>手动M</string>
    </property>
   </action>
   <action name="action_grid_NONE">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>NONE</string>
    </property>
   </action>
   <action name="action_grid_grid">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>网格线</string>
    </property>
   </action>
   <action name="action_grid_gridAndFocus">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>网格线与对焦线</string>
    </property>
   </action>
   <action name="action_grid_centerPoint">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>中心点</string>
    </property>
   </action>
   <action name="action_pictureSize_standard">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>标准</string>
    </property>
   </action>
   <action name="action_pictureSize_fullScreen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>全屏</string>
    </property>
   </action>
   <action name="action_quality_high">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>高</string>
    </property>
   </action>
   <action name="action_quality_standard">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>标准</string>
    </property>
   </action>
   <action name="action_quality_low">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>低</string>
    </property>
   </action>
   <action name="action_corscatAvoidance_off">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>关闭</string>
    </property>
   </action>
   <action name="action_corscatAvoidance_50Hz">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>50Hz</string>
    </property>
   </action>
   <action name="action_corscatAvoidance_60Hz">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>60Hz</string>
    </property>
   </action>
   <action name="action_corscatAvoidance_auto">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>自动</string>
    </property>
   </action>
   <action name="action_Sharpening_lowest">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>最低</string>
    </property>
   </action>
   <action name="action_Sharpening_lower">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>更低</string>
    </property>
   </action>
   <action name="action_Sharpening_low">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>低</string>
    </property>
   </action>
   <action name="action_Sharpening_standard">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>标准</string>
    </property>
   </action>
   <action name="action_Sharpening_high">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>高</string>
    </property>
   </action>
   <action name="action_Sharpening_higher">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>更高</string>
    </property>
   </action>
   <action name="action_Sharpening_highest">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>最高</string>
    </property>
   </action>
   <action name="action_HDR_off">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>关闭</string>
    </property>
   </action>
   <action name="action_HDR_on">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>打开</string>
    </property>
   </action>
   <action name="action_HDR_auto">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>自动</string>
    </property>
   </action>
   <action name="action_lens_horizontal">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>横拍模式</string>
    </property>
   </action>
   <action name="action_lens_vertical">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>竖拍模式</string>
    </property>
   </action>
   <action name="action_lens_standerd">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>标准模式</string>
    </property>
   </action>
   <action name="action_lens_hanging">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>悬挂模式</string>
    </property>
   </action>
   <action name="action_PTZSpeed_slow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>慢</string>
    </property>
   </action>
   <action name="action_PZTSpeed_intermediary">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>中</string>
    </property>
   </action>
   <action name="action_PZTSpeed_fast">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>快</string>
    </property>
   </action>
   <action name="action_calibration_manual">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>手动校准</string>
    </property>
   </action>
   <action name="action_calibration_auto">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>自动校准</string>
    </property>
@@ -705,86 +918,137 @@
    </property>
   </action>
   <action name="action_intelliMode_universal">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>通用模式</string>
    </property>
   </action>
   <action name="action_intelliMode_doublePerson">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>双人模式</string>
    </property>
   </action>
   <action name="action_intelliMode_MultiPerson">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>多人模式</string>
    </property>
   </action>
   <action name="action_closeup_WholeBody">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>全身特写</string>
    </property>
   </action>
   <action name="action_closeup_7">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>七分特写</string>
    </property>
   </action>
   <action name="action_closeup_5">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>五分特写</string>
    </property>
   </action>
   <action name="action_closeup_3">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>三分特写</string>
    </property>
   </action>
   <action name="action_intelliSnap">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>智能抓拍</string>
    </property>
   </action>
   <action name="action_activeShoot">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>主动拍摄</string>
    </property>
   </action>
   <action name="action_scanningLens">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>扫描镜头</string>
    </property>
   </action>
   <action name="action_otherLens">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>其它镜头</string>
    </property>
   </action>
   <action name="action_humanDetection">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>人体检测</string>
    </property>
   </action>
   <action name="action_humanTrack">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>人体跟踪</string>
    </property>
   </action>
   <action name="action_faceDetection">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>人脸检测</string>
    </property>
   </action>
   <action name="action_faceRecognition">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>人脸识别</string>
    </property>
   </action>
   <action name="action_poseDetection">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>姿态识别</string>
    </property>
   </action>
   <action name="action_gestureDetection">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>手势识别</string>
    </property>

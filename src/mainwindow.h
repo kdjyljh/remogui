@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "imagestreamproc.h"
+#include "photoandvideodialog.h"
 
 #include <QMainWindow>
 #include <QLabel>
@@ -27,12 +28,15 @@ private:
 
     ImageStreamProc *imagProc;
 
+    QSize resolution;
+
 private slots:
     void setLabelPix(const QImage & image);
+    void updateCameraSetting(const CameraSetting &cs);
 
 private slots:
     void on_action_photoAndVideo_triggered();
-
+    void on_all_action_resolution_triggered(bool isChecked);
 };
 
 #endif // MAINWINDOW_H

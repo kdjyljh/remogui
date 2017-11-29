@@ -1,0 +1,891 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1124</width>
+    <height>718</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1124</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_camera">
+    <property name="title">
+     <string>相机</string>
+    </property>
+    <widget class="QMenu" name="image_resolution">
+     <property name="title">
+      <string>视频分辨率</string>
+     </property>
+     <addaction name="action_resolution_4Kp30_4Kp25"/>
+     <addaction name="action_resolution_4Kp24_4Kp24"/>
+     <addaction name="action_resolution_2_7Kp30_2_7Kp25"/>
+     <addaction name="action_resolution_2_7Kp24_2_7Kp24"/>
+     <addaction name="action_resolution_1080p60_1080p50"/>
+     <addaction name="action_resolution_1080p48_1080p48"/>
+     <addaction name="action_resolution_1080p30_1080p25"/>
+     <addaction name="action_resolution_1080p24_1080p24"/>
+     <addaction name="action_resolution_1080p120_1080p100"/>
+     <addaction name="action_resolution_720p240_720p200"/>
+     <addaction name="action_resolution_720p120_720p100"/>
+     <addaction name="action_resolution_720p60_720p50"/>
+     <addaction name="action_resolution_720p48_720p48"/>
+     <addaction name="action_resolution_720p30_720p25"/>
+     <addaction name="action_resolution_720p24_720p24"/>
+    </widget>
+    <widget class="QMenu" name="menu_videoStandard">
+     <property name="title">
+      <string>视频制式</string>
+     </property>
+     <addaction name="action_videoStandard_NTSC"/>
+     <addaction name="action_videoStandard_PAL"/>
+    </widget>
+    <widget class="QMenu" name="menu_whiteBalance">
+     <property name="title">
+      <string>白平衡</string>
+     </property>
+     <addaction name="action_whiteBalance_auto"/>
+     <addaction name="action_whiteBalance_IncandesctLamp"/>
+     <addaction name="action_whiteBalance_fluoresctLamp"/>
+     <addaction name="action_whiteBalance_daylight"/>
+     <addaction name="action_whiteBalance_overcast"/>
+     <addaction name="action_whiteBalance_shadow"/>
+     <addaction name="action_whiteBalance_dusk"/>
+    </widget>
+    <widget class="QMenu" name="menu_exposure">
+     <property name="title">
+      <string>曝光方式</string>
+     </property>
+     <addaction name="action_exposure_globalMetering"/>
+     <addaction name="action_exposure_spotMetering"/>
+    </widget>
+    <widget class="QMenu" name="menu_ISO">
+     <property name="title">
+      <string>ISO</string>
+     </property>
+     <addaction name="action_ISO_auto"/>
+     <addaction name="action_ISO_100_400"/>
+     <addaction name="action_ISO_200_800"/>
+     <addaction name="action_ISO_400_1200"/>
+     <addaction name="action_ISO_800_1600"/>
+     <addaction name="action_ISO_1600_3200"/>
+    </widget>
+    <widget class="QMenu" name="menu_exposureGear">
+     <property name="title">
+      <string>曝光档位</string>
+     </property>
+     <addaction name="action_exposureGear_P"/>
+     <addaction name="action_exposureGear_M"/>
+    </widget>
+    <widget class="QMenu" name="menu_grid">
+     <property name="title">
+      <string>网格</string>
+     </property>
+     <addaction name="action_grid_NONE"/>
+     <addaction name="action_grid_grid"/>
+     <addaction name="action_grid_gridAndFocus"/>
+     <addaction name="action_grid_centerPoint"/>
+    </widget>
+    <widget class="QMenu" name="menu_pictureSize">
+     <property name="title">
+      <string>拍摄画幅</string>
+     </property>
+     <addaction name="action_pictureSize_standard"/>
+     <addaction name="action_pictureSize_fullScreen"/>
+    </widget>
+    <widget class="QMenu" name="menu_quality">
+     <property name="title">
+      <string>照片质量</string>
+     </property>
+     <addaction name="action_quality_high"/>
+     <addaction name="action_quality_standard"/>
+     <addaction name="action_quality_low"/>
+    </widget>
+    <widget class="QMenu" name="menu_corscatAvoidance">
+     <property name="title">
+      <string>防止闪烁</string>
+     </property>
+     <addaction name="action_corscatAvoidance_off"/>
+     <addaction name="action_corscatAvoidance_50Hz"/>
+     <addaction name="action_corscatAvoidance_60Hz"/>
+     <addaction name="action_corscatAvoidance_auto"/>
+    </widget>
+    <widget class="QMenu" name="menu_Sharpening">
+     <property name="title">
+      <string>锐度</string>
+     </property>
+     <addaction name="action_Sharpening_lowest"/>
+     <addaction name="action_Sharpening_lower"/>
+     <addaction name="action_Sharpening_low"/>
+     <addaction name="action_Sharpening_standard"/>
+     <addaction name="action_Sharpening_high"/>
+     <addaction name="action_Sharpening_higher"/>
+     <addaction name="action_Sharpening_highest"/>
+    </widget>
+    <widget class="QMenu" name="menu_HDR">
+     <property name="title">
+      <string>HDR</string>
+     </property>
+     <addaction name="action_HDR_off"/>
+     <addaction name="action_HDR_on"/>
+     <addaction name="action_HDR_auto"/>
+    </widget>
+    <widget class="QMenu" name="menu_lens">
+     <property name="title">
+      <string>镜头设置</string>
+     </property>
+     <addaction name="action_lens_horizontal"/>
+     <addaction name="action_lens_vertical"/>
+     <addaction name="action_lens_standerd"/>
+     <addaction name="action_lens_hanging"/>
+    </widget>
+    <addaction name="action_photoAndVideo"/>
+    <addaction name="image_resolution"/>
+    <addaction name="menu_videoStandard"/>
+    <addaction name="menu_whiteBalance"/>
+    <addaction name="menu_exposure"/>
+    <addaction name="action__continuousAutoFocus_"/>
+    <addaction name="menu_ISO"/>
+    <addaction name="menu_exposureGear"/>
+    <addaction name="action_exposureCompensation"/>
+    <addaction name="menu_grid"/>
+    <addaction name="menu_pictureSize"/>
+    <addaction name="menu_quality"/>
+    <addaction name="menu_corscatAvoidance"/>
+    <addaction name="menu_Sharpening"/>
+    <addaction name="menu_HDR"/>
+    <addaction name="action_autoRotate"/>
+    <addaction name="action_voices"/>
+    <addaction name="menu_lens"/>
+    <addaction name="action_recoveryFactSetting"/>
+   </widget>
+   <widget class="QMenu" name="menu_normal">
+    <property name="title">
+     <string>通用</string>
+    </property>
+    <widget class="QMenu" name="menu_PTZ">
+     <property name="title">
+      <string>云台设置</string>
+     </property>
+     <widget class="QMenu" name="menu_PTZSpeed">
+      <property name="title">
+       <string>速度</string>
+      </property>
+      <addaction name="action_PTZSpeed_slow"/>
+      <addaction name="action_PZTSpeed_intermediary"/>
+      <addaction name="action_PZTSpeed_fast"/>
+     </widget>
+     <widget class="QMenu" name="menu_calibration">
+      <property name="title">
+       <string>校准</string>
+      </property>
+      <addaction name="action_calibration_manual"/>
+      <addaction name="action_calibration_auto"/>
+     </widget>
+     <addaction name="menu_PTZSpeed"/>
+     <addaction name="menu_calibration"/>
+     <addaction name="action_PTZ_reset"/>
+    </widget>
+    <widget class="QMenu" name="menu_storageInfo">
+     <property name="title">
+      <string>存储信息</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menu_deviceInfo">
+     <property name="title">
+      <string>设备信息</string>
+     </property>
+    </widget>
+    <addaction name="menu_PTZ"/>
+    <addaction name="menu_deviceInfo"/>
+    <addaction name="menu_storageInfo"/>
+    <addaction name="action_userManage"/>
+   </widget>
+   <widget class="QMenu" name="menu_intelligence">
+    <property name="title">
+     <string>智能</string>
+    </property>
+    <widget class="QMenu" name="menu_intelliMode">
+     <property name="title">
+      <string>智能模式</string>
+     </property>
+     <widget class="QMenu" name="menu_closeup">
+      <property name="title">
+       <string>特写模式</string>
+      </property>
+      <addaction name="action_closeup_WholeBody"/>
+      <addaction name="action_closeup_7"/>
+      <addaction name="action_closeup_5"/>
+      <addaction name="action_closeup_3"/>
+     </widget>
+     <addaction name="action_intelliMode_universal"/>
+     <addaction name="action_intelliMode_doublePerson"/>
+     <addaction name="action_intelliMode_MultiPerson"/>
+     <addaction name="menu_closeup"/>
+    </widget>
+    <widget class="QMenu" name="menu_scene">
+     <property name="title">
+      <string>智能场景</string>
+     </property>
+     <addaction name="action_intelliSnap"/>
+     <addaction name="action_activeShoot"/>
+    </widget>
+    <widget class="QMenu" name="menu_intelligLens">
+     <property name="title">
+      <string>智能镜头</string>
+     </property>
+     <addaction name="action_scanningLens"/>
+     <addaction name="action_otherLens"/>
+    </widget>
+    <widget class="QMenu" name="menu_intellisense">
+     <property name="title">
+      <string>智能感知</string>
+     </property>
+     <addaction name="action_humanDetection"/>
+     <addaction name="action_humanTrack"/>
+     <addaction name="action_faceDetection"/>
+     <addaction name="action_faceRecognition"/>
+     <addaction name="action_poseDetection"/>
+     <addaction name="action_gestureDetection"/>
+    </widget>
+    <addaction name="action_intelligence_sportMode"/>
+    <addaction name="action_intelligence_zoomedLens"/>
+    <addaction name="menu_intelliMode"/>
+    <addaction name="menu_scene"/>
+    <addaction name="menu_intelligLens"/>
+    <addaction name="menu_intellisense"/>
+   </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="action"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_camera"/>
+   <addaction name="menu_normal"/>
+   <addaction name="menu_intelligence"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action">
+   <property name="text">
+    <string>打开图片</string>
+   </property>
+  </action>
+  <action name="action__continuousAutoFocus_">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>连续自动对焦</string>
+   </property>
+  </action>
+  <action name="action_exposureCompensation">
+   <property name="text">
+    <string>曝光补偿</string>
+   </property>
+  </action>
+  <action name="action_intelligence_sportMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>运动模式</string>
+   </property>
+  </action>
+  <action name="action_intelligence_zoomedLens">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>变焦功能</string>
+   </property>
+  </action>
+  <action name="action_13">
+   <property name="text">
+    <string>用户管理</string>
+   </property>
+  </action>
+  <action name="action_resolution_4Kp30_4Kp25">
+   <property name="text">
+    <string>4Kp30 / 4Kp25</string>
+   </property>
+  </action>
+  <action name="action_resolution_4Kp24_4Kp24">
+   <property name="text">
+    <string>4Kp24 / 4Kp24</string>
+   </property>
+  </action>
+  <action name="action_resolution_2_7Kp30_2_7Kp25">
+   <property name="text">
+    <string>2.7Kp30 / 2.7Kp25</string>
+   </property>
+  </action>
+  <action name="action_resolution_2_7Kp24_2_7Kp24">
+   <property name="text">
+    <string>2.7Kp24 / 2.7Kp24</string>
+   </property>
+  </action>
+  <action name="action_resolution_1080p60_1080p50">
+   <property name="text">
+    <string>1080p60 / 1080p50</string>
+   </property>
+  </action>
+  <action name="action_resolution_1080p48_1080p48">
+   <property name="text">
+    <string>1080p48 / 1080p48</string>
+   </property>
+  </action>
+  <action name="action_resolution_1080p30_1080p25">
+   <property name="text">
+    <string>1080p30 / 1080p25</string>
+   </property>
+  </action>
+  <action name="action_resolution_1080p24_1080p24">
+   <property name="text">
+    <string>1080p24 / 1080p24</string>
+   </property>
+  </action>
+  <action name="action_resolution_1080p120_1080p100">
+   <property name="text">
+    <string>1080p120 / 1080p100</string>
+   </property>
+  </action>
+  <action name="action_resolution_720p240_720p200">
+   <property name="text">
+    <string>720p240 / 720p200</string>
+   </property>
+  </action>
+  <action name="action_resolution_720p120_720p100">
+   <property name="text">
+    <string>720p120 / 720p100</string>
+   </property>
+  </action>
+  <action name="action_resolution_720p60_720p50">
+   <property name="text">
+    <string>720p60 / 720p50</string>
+   </property>
+  </action>
+  <action name="action_resolution_720p48_720p48">
+   <property name="text">
+    <string>720p48 / 720p48</string>
+   </property>
+  </action>
+  <action name="action_resolution_720p30_720p25">
+   <property name="text">
+    <string>720p30 / 720p25</string>
+   </property>
+  </action>
+  <action name="action_resolution_720p24_720p24">
+   <property name="text">
+    <string>720p24 / 720p24</string>
+   </property>
+  </action>
+  <action name="action_videoStandard_NTSC">
+   <property name="text">
+    <string>NTSC</string>
+   </property>
+  </action>
+  <action name="action_videoStandard_PAL">
+   <property name="text">
+    <string>PAL</string>
+   </property>
+  </action>
+  <action name="action_autoRotate">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>自动旋转</string>
+   </property>
+  </action>
+  <action name="action_voices">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>声音设置</string>
+   </property>
+  </action>
+  <action name="action_recoveryFactSetting">
+   <property name="text">
+    <string>恢复出厂设置</string>
+   </property>
+  </action>
+  <action name="action_whiteBalance_auto">
+   <property name="text">
+    <string>自动</string>
+   </property>
+  </action>
+  <action name="action_whiteBalance_IncandesctLamp">
+   <property name="text">
+    <string>白炽灯</string>
+   </property>
+  </action>
+  <action name="action_whiteBalance_fluoresctLamp">
+   <property name="text">
+    <string>荧光灯</string>
+   </property>
+  </action>
+  <action name="action_whiteBalance_daylight">
+   <property name="text">
+    <string>日光</string>
+   </property>
+  </action>
+  <action name="action_whiteBalance_overcast">
+   <property name="text">
+    <string>阴天</string>
+   </property>
+  </action>
+  <action name="action_whiteBalance_shadow">
+   <property name="text">
+    <string>阴影</string>
+   </property>
+  </action>
+  <action name="action_whiteBalance_dusk">
+   <property name="text">
+    <string>黄昏</string>
+   </property>
+  </action>
+  <action name="action_exposure_globalMetering">
+   <property name="text">
+    <string>全局测光</string>
+   </property>
+  </action>
+  <action name="action_exposure_spotMetering">
+   <property name="text">
+    <string>点测光</string>
+   </property>
+  </action>
+  <action name="action_ISO_auto">
+   <property name="text">
+    <string>自动（照片）/ 自动（视频）</string>
+   </property>
+  </action>
+  <action name="action_ISO_100_400">
+   <property name="text">
+    <string>100（照片）/ 400（视频）</string>
+   </property>
+  </action>
+  <action name="action_ISO_200_800">
+   <property name="text">
+    <string>200（照片）/ 800（视频）</string>
+   </property>
+  </action>
+  <action name="action_ISO_400_1200">
+   <property name="text">
+    <string>400（照片）/ 1200（视频）</string>
+   </property>
+  </action>
+  <action name="action_ISO_800_1600">
+   <property name="text">
+    <string>800（照片）/ 1600（视频）</string>
+   </property>
+  </action>
+  <action name="action_ISO_1600_3200">
+   <property name="text">
+    <string>1600（照片）/ 3200（视频）</string>
+   </property>
+  </action>
+  <action name="action_exposureGear_P">
+   <property name="text">
+    <string>自动P</string>
+   </property>
+  </action>
+  <action name="action_exposureGear_M">
+   <property name="text">
+    <string>手动M</string>
+   </property>
+  </action>
+  <action name="action_grid_NONE">
+   <property name="text">
+    <string>NONE</string>
+   </property>
+  </action>
+  <action name="action_grid_grid">
+   <property name="text">
+    <string>网格线</string>
+   </property>
+  </action>
+  <action name="action_grid_gridAndFocus">
+   <property name="text">
+    <string>网格线与对焦线</string>
+   </property>
+  </action>
+  <action name="action_grid_centerPoint">
+   <property name="text">
+    <string>中心点</string>
+   </property>
+  </action>
+  <action name="action_pictureSize_standard">
+   <property name="text">
+    <string>标准</string>
+   </property>
+  </action>
+  <action name="action_pictureSize_fullScreen">
+   <property name="text">
+    <string>全屏</string>
+   </property>
+  </action>
+  <action name="action_quality_high">
+   <property name="text">
+    <string>高</string>
+   </property>
+  </action>
+  <action name="action_quality_standard">
+   <property name="text">
+    <string>标准</string>
+   </property>
+  </action>
+  <action name="action_quality_low">
+   <property name="text">
+    <string>低</string>
+   </property>
+  </action>
+  <action name="action_corscatAvoidance_off">
+   <property name="text">
+    <string>关闭</string>
+   </property>
+  </action>
+  <action name="action_corscatAvoidance_50Hz">
+   <property name="text">
+    <string>50Hz</string>
+   </property>
+  </action>
+  <action name="action_corscatAvoidance_60Hz">
+   <property name="text">
+    <string>60Hz</string>
+   </property>
+  </action>
+  <action name="action_corscatAvoidance_auto">
+   <property name="text">
+    <string>自动</string>
+   </property>
+  </action>
+  <action name="action_Sharpening_lowest">
+   <property name="text">
+    <string>最低</string>
+   </property>
+  </action>
+  <action name="action_Sharpening_lower">
+   <property name="text">
+    <string>更低</string>
+   </property>
+  </action>
+  <action name="action_Sharpening_low">
+   <property name="text">
+    <string>低</string>
+   </property>
+  </action>
+  <action name="action_Sharpening_standard">
+   <property name="text">
+    <string>标准</string>
+   </property>
+  </action>
+  <action name="action_Sharpening_high">
+   <property name="text">
+    <string>高</string>
+   </property>
+  </action>
+  <action name="action_Sharpening_higher">
+   <property name="text">
+    <string>更高</string>
+   </property>
+  </action>
+  <action name="action_Sharpening_highest">
+   <property name="text">
+    <string>最高</string>
+   </property>
+  </action>
+  <action name="action_HDR_off">
+   <property name="text">
+    <string>关闭</string>
+   </property>
+  </action>
+  <action name="action_HDR_on">
+   <property name="text">
+    <string>打开</string>
+   </property>
+  </action>
+  <action name="action_HDR_auto">
+   <property name="text">
+    <string>自动</string>
+   </property>
+  </action>
+  <action name="action_lens_horizontal">
+   <property name="text">
+    <string>横拍模式</string>
+   </property>
+  </action>
+  <action name="action_lens_vertical">
+   <property name="text">
+    <string>竖拍模式</string>
+   </property>
+  </action>
+  <action name="action_lens_standerd">
+   <property name="text">
+    <string>标准模式</string>
+   </property>
+  </action>
+  <action name="action_lens_hanging">
+   <property name="text">
+    <string>悬挂模式</string>
+   </property>
+  </action>
+  <action name="action_PTZSpeed_slow">
+   <property name="text">
+    <string>慢</string>
+   </property>
+  </action>
+  <action name="action_PZTSpeed_intermediary">
+   <property name="text">
+    <string>中</string>
+   </property>
+  </action>
+  <action name="action_PZTSpeed_fast">
+   <property name="text">
+    <string>快</string>
+   </property>
+  </action>
+  <action name="action_calibration_manual">
+   <property name="text">
+    <string>手动校准</string>
+   </property>
+  </action>
+  <action name="action_calibration_auto">
+   <property name="text">
+    <string>自动校准</string>
+   </property>
+  </action>
+  <action name="action_65">
+   <property name="text">
+    <string>视频数</string>
+   </property>
+  </action>
+  <action name="action_66">
+   <property name="text">
+    <string>照片数</string>
+   </property>
+  </action>
+  <action name="action_67">
+   <property name="text">
+    <string>剩余视频时间</string>
+   </property>
+  </action>
+  <action name="action_intelliMode_universal">
+   <property name="text">
+    <string>通用模式</string>
+   </property>
+  </action>
+  <action name="action_intelliMode_doublePerson">
+   <property name="text">
+    <string>双人模式</string>
+   </property>
+  </action>
+  <action name="action_intelliMode_MultiPerson">
+   <property name="text">
+    <string>多人模式</string>
+   </property>
+  </action>
+  <action name="action_closeup_WholeBody">
+   <property name="text">
+    <string>全身特写</string>
+   </property>
+  </action>
+  <action name="action_closeup_7">
+   <property name="text">
+    <string>七分特写</string>
+   </property>
+  </action>
+  <action name="action_closeup_5">
+   <property name="text">
+    <string>五分特写</string>
+   </property>
+  </action>
+  <action name="action_closeup_3">
+   <property name="text">
+    <string>三分特写</string>
+   </property>
+  </action>
+  <action name="action_intelliSnap">
+   <property name="text">
+    <string>智能抓拍</string>
+   </property>
+  </action>
+  <action name="action_activeShoot">
+   <property name="text">
+    <string>主动拍摄</string>
+   </property>
+  </action>
+  <action name="action_scanningLens">
+   <property name="text">
+    <string>扫描镜头</string>
+   </property>
+  </action>
+  <action name="action_otherLens">
+   <property name="text">
+    <string>其它镜头</string>
+   </property>
+  </action>
+  <action name="action_humanDetection">
+   <property name="text">
+    <string>人体检测</string>
+   </property>
+  </action>
+  <action name="action_humanTrack">
+   <property name="text">
+    <string>人体跟踪</string>
+   </property>
+  </action>
+  <action name="action_faceDetection">
+   <property name="text">
+    <string>人脸检测</string>
+   </property>
+  </action>
+  <action name="action_faceRecognition">
+   <property name="text">
+    <string>人脸识别</string>
+   </property>
+  </action>
+  <action name="action_poseDetection">
+   <property name="text">
+    <string>姿态识别</string>
+   </property>
+  </action>
+  <action name="action_gestureDetection">
+   <property name="text">
+    <string>手势识别</string>
+   </property>
+  </action>
+  <action name="action_87">
+   <property name="text">
+    <string>单张拍摄</string>
+   </property>
+  </action>
+  <action name="action_88">
+   <property name="text">
+    <string>多张连拍</string>
+   </property>
+  </action>
+  <action name="action_89">
+   <property name="text">
+    <string>延时拍摄</string>
+   </property>
+  </action>
+  <action name="action_90">
+   <property name="text">
+    <string>连续拍摄</string>
+   </property>
+  </action>
+  <action name="actionLAPSE">
+   <property name="text">
+    <string>LAPSE拍照</string>
+   </property>
+  </action>
+  <action name="action_91">
+   <property name="text">
+    <string>普通录影</string>
+   </property>
+  </action>
+  <action name="action_92">
+   <property name="text">
+    <string>相册目录设置</string>
+   </property>
+  </action>
+  <action name="action_93">
+   <property name="text">
+    <string>循环录影</string>
+   </property>
+  </action>
+  <action name="action_94">
+   <property name="text">
+    <string>录影拍照</string>
+   </property>
+  </action>
+  <action name="action_95">
+   <property name="text">
+    <string>延时录影</string>
+   </property>
+  </action>
+  <action name="action_96">
+   <property name="text">
+    <string>慢动作录影</string>
+   </property>
+  </action>
+  <action name="action_PTZ_reset">
+   <property name="text">
+    <string>复位</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>相机</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>电池</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>便携式蓝牙麦克风</string>
+   </property>
+  </action>
+  <action name="actionWIFI">
+   <property name="text">
+    <string>WIFI</string>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="text">
+    <string>充电器</string>
+   </property>
+  </action>
+  <action name="action_userManage">
+   <property name="text">
+    <string>用户管理</string>
+   </property>
+  </action>
+  <action name="action_photoAndVideo">
+   <property name="text">
+    <string>拍照/录影</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

@@ -27,8 +27,8 @@ class ImageStreamProc : public QObject
 {
     Q_OBJECT
 public:
-    explicit ImageStreamProc(QObject *parent = nullptr);
-    virtual ~ImageStreamProc();
+    explicit ImageStreamProc(QObject *parent = nullptr); // 完成一些注册和内存资源分配的工作
+    virtual ~ImageStreamProc(); // 回收资源
 
     void play();
     bool init();

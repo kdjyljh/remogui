@@ -3,7 +3,7 @@
 #include "ui_photoandvideo.h"
 #include <QDialog>
 
-enum CameraWorkMode
+enum CameraWorkMode // 拍照/录像的工作模式
 {
     photoSingel,
     photoMulti,
@@ -11,6 +11,7 @@ enum CameraWorkMode
     photoContinus,
     photoPanorama,
     photoLapse,
+
     videoNormal,
     videoCircle,
     videoPhoto,
@@ -18,7 +19,7 @@ enum CameraWorkMode
     videoSlowMotion
 };
 
-class CameraSetting
+class CameraSetting // 拍照/录像的工作模式对应的参数
 {
 public:
     bool photoOrvideo;//true: video
@@ -29,12 +30,13 @@ public:
     int photoPanoramaFps;
     double photoLapseIntervalTime;
     int photoLapsecontinueTime;
+
     int videoCircleTime;
     int videoPhoto_photoTime;
     int videoDelayTime;
 };
 
-class PhotoAndVideoDialog : public QDialog
+class PhotoAndVideoDialog : public QDialog // 和Ui::PhotoAndVideoDialog不同类
 {
 Q_OBJECT
 public:
@@ -47,8 +49,8 @@ signals:
     void cameraSettingChanged(const CameraSetting &cs);
 
 private:
-    Ui::PhotoAndVideoDialog *ui;
-    CameraSetting cameraSetting;
+    Ui::PhotoAndVideoDialog *ui; // 来自uic生成的header中的类（photoandvideodialog.ui）
+    CameraSetting cameraSetting; // 对话框中的所有设置
 
 private slots:
     void getSettingFromUi();

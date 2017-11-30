@@ -2,15 +2,15 @@
 
 #include <QDebug>
 
-unsigned DEFAULT_WITH = 500;
-unsigned DEFAULT_HEIGHT = 500;
+static const unsigned DEFAULT_DIALOG_WITH = 500;
+static const unsigned DEFAULT_DIALOG_HEIGHT = 500;
 
 PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PhotoAndVideoDialog)
 {
     ui->setupUi(this);
-    setFixedSize(DEFAULT_WITH, DEFAULT_HEIGHT);
+    setFixedSize(DEFAULT_DIALOG_WITH, DEFAULT_DIALOG_HEIGHT);
 
     initConnect();
     getSettingFromUi();
@@ -25,7 +25,7 @@ PhotoAndVideoDialog::~PhotoAndVideoDialog()
 void PhotoAndVideoDialog::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event);
-    emit cameraSettingChanged(photoAndVideoSetting);
+    emit cameraSettingChanged(photoAndVideoSetting); // 关闭对话框前需要更新设置 ## emit到哪里？
 }
 
 void PhotoAndVideoDialog::setPhotoAndvideoUiBySetting(const PhotoAndVideoSetting &pvSetting)

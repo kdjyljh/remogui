@@ -23,7 +23,7 @@ signals:
     void cameraSettingChanged(const PhotoAndVideoSetting &pvSetting);
 
 private:
-    Ui::PhotoAndVideoDialog *ui;
+    Ui::PhotoAndVideoDialog *ui; // 来自uic生成的header中的类（photoandvideodialog.ui）
     PhotoAndVideoSetting photoAndVideoSetting;
 
 private slots:

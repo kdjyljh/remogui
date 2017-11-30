@@ -9,14 +9,14 @@ ImageStreamProc::ImageStreamProc(QObject *parent) :
     av_register_all();//注册库中所有可用的文件格式和解码器
     avformat_network_init();//初始化网络流格式,使用RTSP网络流时必须先执行
     pAVFormatContext = avformat_alloc_context();//申请一个AVFormatContext结构的内存,并进行简单初始化
-    pAVFrame = av_frame_alloc();
+    pAVFrame = av_frame_alloc();//仅分配AVFrame，而不分配buffer
 }
 
 ImageStreamProc::~ImageStreamProc()
 {
-//    avformat_free_context(pAVFormatContext);
-//    av_frame_free(&pAVFrame);
-//    sws_freeContext(pSwsContext);
+    avformat_free_context(pAVFormatContext);
+    av_frame_free(&pAVFrame);
+    sws_freeContext(pSwsContext);
 }
 
 bool ImageStreamProc::init()

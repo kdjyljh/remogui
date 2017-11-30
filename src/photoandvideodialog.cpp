@@ -25,59 +25,74 @@ PhotoAndVideoDialog::~PhotoAndVideoDialog()
 void PhotoAndVideoDialog::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event);
-    emit cameraSettingChanged(cameraSetting); // 关闭对话框前需要更新设置 ## emit到哪里？
+    emit cameraSettingChanged(photoAndVideoSetting); // 关闭对话框前需要更新设置 ## emit到哪里？
 }
 
-void PhotoAndVideoDialog::getSettingFromUi()
+void PhotoAndVideoDialog::setPhotoAndvideoUiBySetting(const PhotoAndVideoSetting &pvSetting)
 {
-    cameraSetting.photoContinusTime = ui->LineEdit_photo_continus->text().toInt();
-    cameraSetting.photoDelayedTime = ui->LineEdit_photo_delayed->text().toInt();
-    cameraSetting.photoLapsecontinueTime = ui->LineEdit_photo_lapse_continueTime->text().toInt();
-    cameraSetting.photoLapseIntervalTime = ui->LineEdit_photo_lapse_intervalTime->text().toDouble();
-    cameraSetting.photoMultiTime = ui->LineEdit_photo_multi->text().toInt();
-    cameraSetting.photoPanoramaFps = ui->LineEdit_photo_panorama->text().toInt();
 
-    cameraSetting.videoCircleTime = ui->LineEdit_video_circle->text().toInt();
-    cameraSetting.videoDelayTime = ui->LineEdit_video_delay->text().toInt();
-    cameraSetting.videoPhoto_photoTime = ui->LineEdit_video_photo->text().toInt();
+}
 
-    cameraSetting.photoOrvideo = ui->radioButton_videoMode->isChecked();
+PhotoAndVideoSetting PhotoAndVideoDialog::getSettingFromUi()
+{
+    photoAndVideoSetting.photoContinusTime = ui->LineEdit_photo_continus->text().toInt();
+    photoAndVideoSetting.photoDelayedTime = ui->LineEdit_photo_delayed->text().toInt();
+    photoAndVideoSetting.photoLapsecontinueTime = ui->LineEdit_photo_lapse_continueTime->text().toInt();
+    photoAndVideoSetting.photoLapseIntervalTime = ui->LineEdit_photo_lapse_intervalTime->text().toDouble();
+    photoAndVideoSetting.photoMultiTime = ui->LineEdit_photo_multi->text().toInt();
+    photoAndVideoSetting.photoPanoramaFps = ui->LineEdit_photo_panorama->text().toInt();
 
-    if (ui->radioButton_photo_continus->isChecked()) {
-        cameraSetting.workMode = photoContinus;
-    }
-    else if (ui->radioButton_photo_delayed->isChecked()) {
-        cameraSetting.workMode = photoDelayed;
-    }
-    else if (ui->radioButton_photo_lapse->isChecked()) {
-        cameraSetting.workMode = photoLapse;
-    }
-    else if (ui->radioButton_photo_multi->isChecked()) {
-        cameraSetting.workMode = photoMulti;
-    }
-    else if (ui->radioButton_photo_panorama->isChecked()){
-        cameraSetting.workMode = photoPanorama;
-    }
-    else if (ui->radioButton_photo_singel->isChecked()){
-        cameraSetting.workMode = photoSingel;
-    }
-    else if (ui->radioButton_video_circle->isChecked()) {
-        cameraSetting.workMode = videoCircle;
-    }
-    else if (ui->radioButton_video_delay->isChecked()) {
-        cameraSetting.workMode = videoDelay;
-    }
-    else if (ui->radioButton_video_normal->isChecked()) {
-        cameraSetting.workMode = videoNormal;
-    }
-    else if (ui->radioButton_video_photo->isChecked()) {
-        cameraSetting.workMode = videoPhoto;
-    }
-    else if (ui->radioButton_video_slowMotion->isChecked()) {
-        cameraSetting.workMode = videoSlowMotion;
-    }
+    photoAndVideoSetting.videoCircleTime = ui->LineEdit_video_circle->text().toInt();
+    photoAndVideoSetting.videoDelayTime = ui->LineEdit_video_delay->text().toDouble();
+    photoAndVideoSetting.videoPhoto_photoTime = ui->LineEdit_video_photo->text().toInt();
 
-    emit cameraSettingChanged(cameraSetting);
+    photoAndVideoSetting.photoOrvideo = ui->radioButton_videoMode->isChecked();
+    if (photoAndVideoSetting.photoOrvideo) {
+        if (ui->radioButton_video_circle->isChecked()) {
+            photoAndVideoSetting.workMode = videoCircle;
+        }
+        else if (ui->radioButton_video_delay->isChecked()) {
+            photoAndVideoSetting.workMode = videoDelay;
+        }
+        else if (ui->radioButton_video_normal->isChecked()) {
+            photoAndVideoSetting.workMode = videoNormal;
+        }
+        else if (ui->radioButton_video_photo->isChecked()) {
+            photoAndVideoSetting.workMode = videoPhoto;
+        }
+        else if (ui->radioButton_video_slowMotion->isChecked()) {
+            photoAndVideoSetting.workMode = videoSlowMotion;
+        }
+        else {
+            photoAndVideoSetting.workMode = videoNormal;
+        }
+    }
+    else {
+        if (ui->radioButton_photo_continus->isChecked()) {
+            photoAndVideoSetting.workMode = photoContinus;
+        }
+        else if (ui->radioButton_photo_delayed->isChecked()) {
+            photoAndVideoSetting.workMode = photoDelayed;
+        }
+        else if (ui->radioButton_photo_lapse->isChecked()) {
+            photoAndVideoSetting.workMode = photoLapse;
+        }
+        else if (ui->radioButton_photo_multi->isChecked()) {
+            photoAndVideoSetting.workMode = photoMulti;
+        }
+        else if (ui->radioButton_photo_panorama->isChecked()){
+            photoAndVideoSetting.workMode = photoPanorama;
+        }
+        else if (ui->radioButton_photo_singel->isChecked()){
+            photoAndVideoSetting.workMode = photoSingel;
+        }
+        else {
+            photoAndVideoSetting.workMode = photoSingel;
+        }
+    }
+    emit cameraSettingChanged(photoAndVideoSetting);
+
+    return photoAndVideoSetting;
 }
 
 void PhotoAndVideoDialog::initConnect()

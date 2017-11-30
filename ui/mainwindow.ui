@@ -62,7 +62,7 @@
       <string>白平衡</string>
      </property>
      <addaction name="action_whiteBalance_auto"/>
-     <addaction name="action_whiteBalance_IncandesctLamp"/>
+     <addaction name="action_whiteBalance_incandesctLamp"/>
      <addaction name="action_whiteBalance_fluoresctLamp"/>
      <addaction name="action_whiteBalance_daylight"/>
      <addaction name="action_whiteBalance_overcast"/>
@@ -518,7 +518,7 @@
     <string>自动</string>
    </property>
   </action>
-  <action name="action_whiteBalance_IncandesctLamp">
+  <action name="action_whiteBalance_incandesctLamp">
    <property name="checkable">
     <bool>true</bool>
    </property>

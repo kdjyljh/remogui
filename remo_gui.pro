@@ -36,11 +36,13 @@ SOURCES += \
     src/imagestreamproc.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
+    src/camerasetting.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
     src/imagestreamproc.h \
     src/mainwindow.h \
+    src/camerasetting.h
 
 FORMS += \
     ui/mainwindow.ui \

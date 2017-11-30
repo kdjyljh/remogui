@@ -16,7 +16,7 @@ ImageStreamProc::~ImageStreamProc()
 {
     avformat_free_context(pAVFormatContext);
     av_frame_free(&pAVFrame);
-    sws_freeContext(pSwsContext); // ##　有待考证
+    sws_freeContext(pSwsContext);
 }
 
 bool ImageStreamProc::init()

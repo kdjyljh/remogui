@@ -14,9 +14,9 @@ ImageStreamProc::ImageStreamProc(QObject *parent) :
 
 ImageStreamProc::~ImageStreamProc()
 {
-    avformat_free_context(pAVFormatContext);
-    av_frame_free(&pAVFrame);
-    sws_freeContext(pSwsContext);
+//    avformat_free_context(pAVFormatContext);
+//    av_frame_free(&pAVFrame);
+//    sws_freeContext(pSwsContext);
 }
 
 bool ImageStreamProc::init()

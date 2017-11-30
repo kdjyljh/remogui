@@ -56,10 +56,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(photoAndVideoDialog, SIGNAL(cameraSettingChanged(const PhotoAndVideoSetting&)), this, SLOT(updatePhotoAndVideoSetting(const PhotoAndVideoSetting &)));
 
     setupAction();
-
-    setupUiByCameraSetting();
-
-    getSettingFromUi();
 }
 
 MainWindow::~MainWindow()
@@ -102,95 +98,6 @@ void MainWindow::setupAction()
     connect(this->actionGroupWhiteBalance, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_WhiteBalance_triggered(QAction*)));
 }
 
-void MainWindow::getSettingFromUi()
-{
-    cameraSetting->photoAndVideoSetting = photoAndVideoDialog->getSettingFromUi();
-    actionGroup_resolution_triggered(actionGroupResolution->checkedAction());
-    actionGroup_videoStandard_triggered(actionGroupVideoStandard->checkedAction());
-
-}
-
-void MainWindow::updateResolutionWidthAndHeight()
-{
-    if (NTSC == cameraSetting->videoStanderd) {
-       cameraSetting->resolutionWidth = cameraSetting->resolution.NTSCSize.width();
-       cameraSetting->resolutionHeight = cameraSetting->resolution.NTSCSize.height();
-    }
-    else if (PAL == cameraSetting->videoStanderd) {
-        cameraSetting->resolutionWidth = cameraSetting->resolution.PALSize.width();
-        cameraSetting->resolutionHeight = cameraSetting->resolution.PALSize.height();
-    }
-}
-
-void MainWindow::setupUiByCameraSetting(CameraSetting *cs)
-{
-    if (nullptr == cameraSetting) {
-        cs = cameraSetting;
-        if (nullptr == cs) return;
-    }
-
-    photoAndVideoDialog->setPhotoAndvideoUiBySetting(cs->photoAndVideoSetting);
-    setResolutionActionByResolution(cs->resolution);
-}
-
-void MainWindow::setResolutionActionByResolution(const Resolution &resolution)
-{
-
-}
-
-QAction * MainWindow::getActionByVideoStanderd(VideoStanderd vs)
-{
-    if (NTSC == vs)
-        return ui->action_videoStandard_NTSC;
-    else if (PAL == vs)
-        return ui->action_videoStandard_PAL;
-    else return ui->action_videoStandard_NTSC;
-}
-
-VideoStanderd MainWindow::getVideoStanderdByAction(QAction *action)
-{
-    if (nullptr == action) {
-        return NTSC;
-    }
-    else if (ui->action_videoStandard_NTSC == action) {
-        return NTSC;
-    }
-    else if (ui->action_videoStandard_PAL == action) {
-        return PAL;
-    }
-    else {
-        return NTSC;
-    }
-}
-
-WhiteBalance MainWindow::getWhiteBalanceByAction(QAction *action)
-{
-    if (nullptr == action) {
-        return whiteBalance_auto;
-    }
-    else if (ui->action_whiteBalance_daylight == action) {
-        return whiteBalance_daylight;
-    }
-    else if (ui->action_whiteBalance_dusk == action) {
-        return whiteBalance_dusk;
-    }
-    else if (ui->action_whiteBalance_fluoresctLamp == action) {
-        return whiteBalance_fluoresctLamp;
-    }
-    else if (ui->action_whiteBalance_incandesctLamp == action) {
-        return whiteBalance_incandesctLamp;
-    }
-    else if (ui->action_whiteBalance_overcast == action) {
-        return whiteBalance_overcast;
-    }
-    else if (ui->action_whiteBalance_shadow == action) {
-        return whiteBalance_shadow;
-    }
-    else {
-        return whiteBalance_auto;
-    }
-}
-
 void MainWindow::setLabelPix(const QImage &image)
 {
     QPixmap pix = QPixmap::fromImage(image);
@@ -211,37 +118,88 @@ void MainWindow::on_action_photoAndVideo_triggered()
 void MainWindow::actionGroup_resolution_triggered(QAction *action)
 {
     if (nullptr == action) {
-        cameraSetting->resolution.NTSCSize.setWidth(1280);
-        cameraSetting->resolution.NTSCSize.setHeight(720);
-        cameraSetting->resolution.NTSCFps = 30;
-        cameraSetting->resolution.PALSize.setWidth(1080);
-        cameraSetting->resolution.PALSize.setHeight(720);
-        cameraSetting->resolution.PALFps = 25;
-        cameraSetting->resolutionWidth = 1280;
-        cameraSetting->resolutionHeight = 720;
         return;
     }
 
-    QString str = action->data().value<QString>();
-    QStringList strList = str.split(",");
-    if (strList.size() == 6) {
-        cameraSetting->resolution.NTSCSize.setWidth(strList.at(0).toInt());
-        cameraSetting->resolution.NTSCSize.setHeight(strList.at(1).toInt());
-        cameraSetting->resolution.NTSCFps = strList.at(2).toInt();
-        cameraSetting->resolution.PALSize.setWidth(strList.at(3).toInt());
-        cameraSetting->resolution.PALSize.setHeight(strList.at(4).toInt());
-        cameraSetting->resolution.PALFps = strList.at(5).toInt();
-        updateResolutionWidthAndHeight();
+    Resolution resolution;
+    if (ui->action_videoStandard_PAL->isChecked()) {
+        if (action == ui->action_resolution_2_7Kp24_2_7Kp24) {
+            resolution.NTSCSize.setWidth(2704);
+            resolution.NTSCSize.setHeight(1520);
+            resolution.NTSCFps = 24;
+            resolution.PALSize.setWidth(2704);
+            resolution.PALSize.setHeight(1520);
+            resolution.PALFps = 24;
+        }
+        else if (action == ui->action_resolution_2_7Kp30_2_7Kp25) {
+            resolution.NTSCSize.setWidth(2704);
+            resolution.NTSCSize.setHeight(1520);
+            resolution.NTSCFps = 30;
+            resolution.PALSize.setWidth(2704);
+            resolution.PALSize.setHeight(1520);
+            resolution.PALFps = 25;
+        }
+        else if (action == ui->action_resolution_4Kp24_4Kp24) {
+            resolution.NTSCSize.setWidth(4096);
+            resolution.NTSCSize.setHeight(2160);
+            resolution.NTSCFps = 24;
+            resolution.PALSize.setWidth(4096);
+            resolution.PALSize.setHeight(2160);
+            resolution.PALFps = 24;
+        }
+    }
+    else if (ui->action_videoStandard_NTSC->isChecked()) {
+
     }
 }
 
 void MainWindow::actionGroup_videoStandard_triggered(QAction *action)
 {
-    cameraSetting->videoStanderd = getVideoStanderdByAction(action);
+    if (nullptr == action) {
+//        return NTSC;
+    }
+    else if (ui->action_videoStandard_NTSC == action) {
+//        return NTSC;
+    }
+    else if (ui->action_videoStandard_PAL == action) {
+//        return PAL;
+    }
+    else {
+//        return NTSC;
+    }
 }
 
 void MainWindow::actionGroup_WhiteBalance_triggered(QAction *action)
 {
+    if (nullptr == action) {
+//        return whiteBalance_auto;
+    }
+    else if (ui->action_whiteBalance_daylight == action) {
+//        return whiteBalance_daylight;
+    }
+    else if (ui->action_whiteBalance_dusk == action) {
+//        return whiteBalance_dusk;
+    }
+    else if (ui->action_whiteBalance_fluoresctLamp == action) {
+//        return whiteBalance_fluoresctLamp;
+    }
+    else if (ui->action_whiteBalance_incandesctLamp == action) {
+//        return whiteBalance_incandesctLamp;
+    }
+    else if (ui->action_whiteBalance_overcast == action) {
+//        return whiteBalance_overcast;
+    }
+    else if (ui->action_whiteBalance_shadow == action) {
+//        return whiteBalance_shadow;
+    }
+    else {
+//        return whiteBalance_auto;
+    }
+}
+
+void MainWindow::actionGroup_exposure_triggered(QAction *action)
+{
+
 }
 
 

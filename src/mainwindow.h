@@ -31,6 +31,7 @@ private:
     QActionGroup *actionGroupResolution;
     QActionGroup *actionGroupVideoStandard;
     QActionGroup *actionGroupWhiteBalance;
+    QActionGroup *actionGroupExposure;
 
 private:
     ImageStreamProc *imagProc;
@@ -38,16 +39,6 @@ private:
 
 private:
     void setupAction();
-    void getSettingFromUi();
-    void updateResolutionWidthAndHeight();
-
-    void setupUiByCameraSetting(CameraSetting *cs = nullptr);
-    void setResolutionActionByResolution(const Resolution & resolution);
-
-    QAction * getActionByVideoStanderd(VideoStanderd vs);
-    VideoStanderd getVideoStanderdByAction(QAction * action);
-
-    WhiteBalance getWhiteBalanceByAction(QAction *action);
 
 private slots:
     void setLabelPix(const QImage & image);
@@ -61,6 +52,7 @@ private slots:
     void actionGroup_resolution_triggered(QAction *action);
     void actionGroup_videoStandard_triggered(QAction *action);
     void actionGroup_WhiteBalance_triggered(QAction *action);
+    void actionGroup_exposure_triggered(QAction *action);
 };
 
 #endif // MAINWINDOW_H

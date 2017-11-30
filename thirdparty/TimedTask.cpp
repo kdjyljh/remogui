@@ -56,6 +56,7 @@ void TimedTask::signalhandler_revocable(const boost::system::error_code &err,
   if (cntRem >= 1) {
     register_work(timedTaskID, func, cntRem, intervalUS, false); // 递归注册,但不允许新建定时器,因为signalhandler可能会推迟到cancel_work之后执行
   } else { // 该任务已经结束
+    LOG(FATAL) << "通信失败多次，直接退出: " << timedTaskID << " with prefix = " << (timedTaskID >> 56);
     cancel_work(timedTaskID);
   }
 }

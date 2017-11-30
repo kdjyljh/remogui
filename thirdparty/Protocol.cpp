@@ -266,8 +266,8 @@ void CommProtoVariables::respond_##TYPE(CommDeviceEnum target, uint16_t packseq)
 }
 
 REQUESTRESPOND_SOMETHING(ping, 0, 50000) // 50ms
-REQUESTRESPOND_SOMETHING(status, 2, 50000) // 50ms
-REQUESTRESPOND_SOMETHING(version, 2, 50000) // 50ms
+REQUESTRESPOND_SOMETHING(status, 8, 50000) // 50ms
+REQUESTRESPOND_SOMETHING(version, 8, 50000) // 50ms
 
 #undef REQUESTRESPOND_SOMETHING
 

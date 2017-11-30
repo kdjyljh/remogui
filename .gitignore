@@ -1,0 +1,132 @@
+## General
+*~
+logerr
+*.log
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.cuo
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Compiled protocol buffers
+*.pb.h
+*.pb.cc
+*_pb2.py
+
+# Compiled python
+*.pyc
+
+# Compiled MATLAB
+*.mex*
+
+# IPython notebook checkpoints
+.ipynb_checkpoints
+
+# Editor temporaries
+*.swp
+*~
+
+# Sublime Text settings
+*.sublime-workspace
+*.sublime-project
+
+# Eclipse Project settings
+*.*project
+.settings
+
+# QtCreator files
+*.user
+
+# PyCharm files
+.idea
+
+# Visual Studio Code files
+.vscode
+
+# OSX dir files
+.DS_Store
+
+# kdevelop
+.kdev4
+
+# Atom files
+.tags
+.tags1
+.tags_swap
+
+# Data and models are either
+# 1. reference, and not casually committed
+# 2. custom, and live on their own unless they're deliberated contributed
+data/*
+models/*
+*.caffemodel
+*.caffemodel.h5
+*.solverstate
+*.solverstate.h5
+*.binaryproto
+*leveldb
+*lmdb
+
+# build, distribute, and bins (+ python proto bindings)
+[Bb]uild*
+.[Bb]uild*
+[Cc][Mm]ake*[Bb]uild*
+.[Cc][Mm]ake*[Bb]uild*
+
+distribute/*
+*.testbin
+*.bin
+python/caffe/proto/
+CMakeFiles/
+
+# git merge files
+*.orig
+
+# video files
+*.mpg*
+*.mpeg
+*.avi
+*.rmvb
+*.rm
+*.asf
+*.divx
+*.mpe
+*.wmv
+*.mp4
+*.mkv
+*.vob
+
+# Generated documentation
+docs/_site
+docs/_includes
+docs/gathered
+_site
+doxygen
+docs/dev
+
+# LevelDB files
+*.sst
+*.ldb
+LOCK
+LOG*
+CURRENT
+MANIFEST-*
+
+# user defined
+/0?*/
+/Makefile
+/ui_*.h
+/moc_*.cpp
+/qrc_*.cpp
+remo*gui
+*.pro.user*

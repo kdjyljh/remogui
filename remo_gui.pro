@@ -30,13 +30,27 @@ unix:LIBS += -lvdpau -lva -lX11 -lva-drm -lva-x11
 
 unix:LIBS += -ldl -pthread -lm
 
+unix:LIBS += -lboost_system -lboost_thread -lboost_filesystem -lboost_regex -lboost_chrono -lboost_date_time -lboost_atomic
+
+unix:LIBS += -lglog
 
 SOURCES += \
     src/photoandvideodialog.cpp \
     src/imagestreamproc.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
-    src/camerasetting.cpp
+    src/camerasetting.cpp \
+    thirdparty/CommAsyncUDP.cpp \
+    thirdparty/CommGlobal.cpp \
+    thirdparty/Protocol.cpp \
+    thirdparty/TimedTask.cpp \
+    thirdparty/EndpointEnum.cpp \
+    thirdparty/Mix.cpp \
+    thirdparty/MutexWrap.cpp \
+    thirdparty/CommDeviceEnum.cpp \
+    thirdparty/CfgVar.cpp \
+    thirdparty/CommCmdSetEnum.cpp \
+    thirdparty/CommCmdIDEnum.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \

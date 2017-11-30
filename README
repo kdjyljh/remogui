@@ -1,2 +1,7 @@
 apt-get install libavdevice-dev libavfilter-dev libavformat-dev libavcodec-dev libswresample-dev libswscale-dev libavutil-dev --install-recommends
 apt-get install libvdpau-dev libva-dev libx11-dev --install-recommends
+
+apt-get install libboost-all-dev libgoogle-glog-dev
+
+
+

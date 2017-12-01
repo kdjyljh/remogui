@@ -127,17 +127,17 @@
      <addaction name="action_corscatAvoidance_60Hz"/>
      <addaction name="action_corscatAvoidance_auto"/>
     </widget>
-    <widget class="QMenu" name="menu_Sharpening">
+    <widget class="QMenu" name="menu_sharpening">
      <property name="title">
       <string>锐度</string>
      </property>
-     <addaction name="action_Sharpening_lowest"/>
-     <addaction name="action_Sharpening_lower"/>
-     <addaction name="action_Sharpening_low"/>
-     <addaction name="action_Sharpening_standard"/>
-     <addaction name="action_Sharpening_high"/>
-     <addaction name="action_Sharpening_higher"/>
-     <addaction name="action_Sharpening_highest"/>
+     <addaction name="action_sharpening_lowest"/>
+     <addaction name="action_sharpening_lower"/>
+     <addaction name="action_sharpening_low"/>
+     <addaction name="action_sharpening_standard"/>
+     <addaction name="action_sharpening_high"/>
+     <addaction name="action_sharpening_higher"/>
+     <addaction name="action_sharpening_highest"/>
     </widget>
     <widget class="QMenu" name="menu_HDR">
      <property name="title">
@@ -161,7 +161,7 @@
     <addaction name="menu_videoStandard"/>
     <addaction name="menu_whiteBalance"/>
     <addaction name="menu_exposure"/>
-    <addaction name="action__continuousAutoFocus_"/>
+    <addaction name="action_continuousAutoFocus"/>
     <addaction name="menu_ISO"/>
     <addaction name="menu_exposureGear"/>
     <addaction name="action_exposureCompensation"/>
@@ -169,7 +169,7 @@
     <addaction name="menu_pictureSize"/>
     <addaction name="menu_quality"/>
     <addaction name="menu_corscatAvoidance"/>
-    <addaction name="menu_Sharpening"/>
+    <addaction name="menu_sharpening"/>
     <addaction name="menu_HDR"/>
     <addaction name="action_autoRotate"/>
     <addaction name="action_voices"/>
@@ -189,34 +189,24 @@
        <string>速度</string>
       </property>
       <addaction name="action_PTZSpeed_slow"/>
-      <addaction name="action_PZTSpeed_intermediary"/>
-      <addaction name="action_PZTSpeed_fast"/>
+      <addaction name="action_PTZSpeed_intermediary"/>
+      <addaction name="action_PTZSpeed_fast"/>
      </widget>
-     <widget class="QMenu" name="menu_calibration">
+     <widget class="QMenu" name="menu_PTZCalibration">
       <property name="title">
        <string>校准</string>
       </property>
-      <addaction name="action_calibration_manual"/>
-      <addaction name="action_calibration_auto"/>
+      <addaction name="action_PTZCalibration_manual"/>
+      <addaction name="action_PTZCalibration_auto"/>
      </widget>
      <addaction name="menu_PTZSpeed"/>
-     <addaction name="menu_calibration"/>
+     <addaction name="menu_PTZCalibration"/>
      <addaction name="action_PTZ_reset"/>
     </widget>
-    <widget class="QMenu" name="menu_storageInfo">
-     <property name="title">
-      <string>存储信息</string>
-     </property>
-    </widget>
-    <widget class="QMenu" name="menu_deviceInfo">
-     <property name="title">
-      <string>设备信息</string>
-     </property>
-    </widget>
     <addaction name="menu_PTZ"/>
-    <addaction name="menu_deviceInfo"/>
-    <addaction name="menu_storageInfo"/>
     <addaction name="action_userManage"/>
+    <addaction name="action_deviceInfo"/>
+    <addaction name="action_storageInfo"/>
    </widget>
    <widget class="QMenu" name="menu_intelligence">
     <property name="title">
@@ -230,7 +220,7 @@
       <property name="title">
        <string>特写模式</string>
       </property>
-      <addaction name="action_closeup_WholeBody"/>
+      <addaction name="action_closeup_wholeBody"/>
       <addaction name="action_closeup_7"/>
       <addaction name="action_closeup_5"/>
       <addaction name="action_closeup_3"/>
@@ -244,26 +234,26 @@
      <property name="title">
       <string>智能场景</string>
      </property>
-     <addaction name="action_intelliSnap"/>
-     <addaction name="action_activeShoot"/>
+     <addaction name="action_scene_intelliSnap"/>
+     <addaction name="action_scene_activeShoot"/>
     </widget>
     <widget class="QMenu" name="menu_intelligLens">
      <property name="title">
       <string>智能镜头</string>
      </property>
-     <addaction name="action_scanningLens"/>
-     <addaction name="action_otherLens"/>
+     <addaction name="action_intelligLens_scanningLens"/>
+     <addaction name="action_intelligLens_otherLens"/>
     </widget>
     <widget class="QMenu" name="menu_intellisense">
      <property name="title">
       <string>智能感知</string>
      </property>
-     <addaction name="action_humanDetection"/>
-     <addaction name="action_humanTrack"/>
-     <addaction name="action_faceDetection"/>
-     <addaction name="action_faceRecognition"/>
-     <addaction name="action_poseDetection"/>
-     <addaction name="action_gestureDetection"/>
+     <addaction name="action_intellisense_humanDetection"/>
+     <addaction name="action_intellisense_humanTrack"/>
+     <addaction name="action_intellisense_faceDetection"/>
+     <addaction name="action_intellisense_faceRecognition"/>
+     <addaction name="action_intellisense_poseDetection"/>
+     <addaction name="action_intellisense_gestureDetection"/>
     </widget>
     <addaction name="action_intelligence_sportMode"/>
     <addaction name="action_intelligence_zoomedLens"/>
@@ -289,7 +279,7 @@
     <string>打开图片</string>
    </property>
   </action>
-  <action name="action__continuousAutoFocus_">
+  <action name="action_continuousAutoFocus">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -750,7 +740,7 @@
     <string>自动</string>
    </property>
   </action>
-  <action name="action_Sharpening_lowest">
+  <action name="action_sharpening_lowest">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -758,7 +748,7 @@
     <string>最低</string>
    </property>
   </action>
-  <action name="action_Sharpening_lower">
+  <action name="action_sharpening_lower">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -766,7 +756,7 @@
     <string>更低</string>
    </property>
   </action>
-  <action name="action_Sharpening_low">
+  <action name="action_sharpening_low">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -774,7 +764,7 @@
     <string>低</string>
    </property>
   </action>
-  <action name="action_Sharpening_standard">
+  <action name="action_sharpening_standard">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -782,7 +772,7 @@
     <string>标准</string>
    </property>
   </action>
-  <action name="action_Sharpening_high">
+  <action name="action_sharpening_high">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -790,7 +780,7 @@
     <string>高</string>
    </property>
   </action>
-  <action name="action_Sharpening_higher">
+  <action name="action_sharpening_higher">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -798,7 +788,7 @@
     <string>更高</string>
    </property>
   </action>
-  <action name="action_Sharpening_highest">
+  <action name="action_sharpening_highest">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -870,7 +860,7 @@
     <string>慢</string>
    </property>
   </action>
-  <action name="action_PZTSpeed_intermediary">
+  <action name="action_PTZSpeed_intermediary">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -878,7 +868,7 @@
     <string>中</string>
    </property>
   </action>
-  <action name="action_PZTSpeed_fast">
+  <action name="action_PTZSpeed_fast">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -886,7 +876,7 @@
     <string>快</string>
    </property>
   </action>
-  <action name="action_calibration_manual">
+  <action name="action_PTZCalibration_manual">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -894,7 +884,7 @@
     <string>手动校准</string>
    </property>
   </action>
-  <action name="action_calibration_auto">
+  <action name="action_PTZCalibration_auto">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -941,7 +931,7 @@
     <string>多人模式</string>
    </property>
   </action>
-  <action name="action_closeup_WholeBody">
+  <action name="action_closeup_wholeBody">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -973,7 +963,7 @@
     <string>三分特写</string>
    </property>
   </action>
-  <action name="action_intelliSnap">
+  <action name="action_scene_intelliSnap">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -981,7 +971,7 @@
     <string>智能抓拍</string>
    </property>
   </action>
-  <action name="action_activeShoot">
+  <action name="action_scene_activeShoot">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -989,7 +979,7 @@
     <string>主动拍摄</string>
    </property>
   </action>
-  <action name="action_scanningLens">
+  <action name="action_intelligLens_scanningLens">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -997,7 +987,7 @@
     <string>扫描镜头</string>
    </property>
   </action>
-  <action name="action_otherLens">
+  <action name="action_intelligLens_otherLens">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1005,7 +995,7 @@
     <string>其它镜头</string>
    </property>
   </action>
-  <action name="action_humanDetection">
+  <action name="action_intellisense_humanDetection">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1013,7 +1003,7 @@
     <string>人体检测</string>
    </property>
   </action>
-  <action name="action_humanTrack">
+  <action name="action_intellisense_humanTrack">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1021,7 +1011,7 @@
     <string>人体跟踪</string>
    </property>
   </action>
-  <action name="action_faceDetection">
+  <action name="action_intellisense_faceDetection">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1029,7 +1019,7 @@
     <string>人脸检测</string>
    </property>
   </action>
-  <action name="action_faceRecognition">
+  <action name="action_intellisense_faceRecognition">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1037,7 +1027,7 @@
     <string>人脸识别</string>
    </property>
   </action>
-  <action name="action_poseDetection">
+  <action name="action_intellisense_poseDetection">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1045,7 +1035,7 @@
     <string>姿态识别</string>
    </property>
   </action>
-  <action name="action_gestureDetection">
+  <action name="action_intellisense_gestureDetection">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1146,6 +1136,16 @@
   <action name="action_photoAndVideo">
    <property name="text">
     <string>拍照/录影</string>
+   </property>
+  </action>
+  <action name="action_deviceInfo">
+   <property name="text">
+    <string>设备信息</string>
+   </property>
+  </action>
+  <action name="action_storageInfo">
+   <property name="text">
+    <string>存储信息</string>
    </property>
   </action>
  </widget>

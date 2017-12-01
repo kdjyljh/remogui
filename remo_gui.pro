@@ -50,13 +50,15 @@ SOURCES += \
     thirdparty/CommDeviceEnum.cpp \
     thirdparty/CfgVar.cpp \
     thirdparty/CommCmdSetEnum.cpp \
-    thirdparty/CommCmdIDEnum.cpp
+    thirdparty/CommCmdIDEnum.cpp \
+    thirdparty/shareddata.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
     src/imagestreamproc.h \
     src/mainwindow.h \
-    src/camerasetting.h
+    src/camerasetting.h \
+    thirdparty/shareddata.h
 
 FORMS += \
     ui/mainwindow.ui \

@@ -10,10 +10,7 @@
 static void threadfunc();
 int main(int argc, char *argv[])
 {
-    CommProtoVariables::Get()->request_version(COMMDEVICE_CAMERA);
-    CommProtoVariables::Get()->request_status(COMMDEVICE_TRIOPHEAD);
-
-    boost::thread threadlocal(threadfunc);
+//    boost::thread threadlocal(threadfunc);
 
     QApplication a(argc, argv);
     MainWindow w;

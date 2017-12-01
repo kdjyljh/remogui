@@ -1,4 +1,5 @@
 #include "Protocol.hpp"
+#include "shareddata.h"
 
 const int protocolHeaderLength       = 12; // 完整版协议的通信帧的帧头长度
 
@@ -266,8 +267,8 @@ void CommProtoVariables::respond_##TYPE(CommDeviceEnum target, uint16_t packseq)
 }
 
 REQUESTRESPOND_SOMETHING(ping, 0, 50000) // 50ms
-REQUESTRESPOND_SOMETHING(status, 8, 50000) // 50ms
-REQUESTRESPOND_SOMETHING(version, 8, 50000) // 50ms
+REQUESTRESPOND_SOMETHING(status, 50, 50000) // 50ms
+REQUESTRESPOND_SOMETHING(version, 50, 50000) // 50ms
 
 #undef REQUESTRESPOND_SOMETHING
 
@@ -304,6 +305,9 @@ void CommProtoVariables::check_recved(ProtocolStruct &proto) {
     }
   } else { // 不需要回应,则说明是对方的回复信息
     LOG(INFO) << proto.print();
+
+    //add by ljh
+    SharedData::Get()->pushData(proto);
   }
 }
 

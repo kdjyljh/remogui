@@ -1,11 +1,14 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "../thirdparty/shareddata.h"
+#include "../thirdparty/Protocol.hpp"
 
 #include <QPixmap>
 #include <QHBoxLayout>
 #include <QDesktopWidget>
 #include <QtConcurrent/QtConcurrent>
 #include <QDebug>
+#include <boost/thread.hpp>
 
 
 const unsigned DEFAULT_WINDOW_WIDTH = 1000;
@@ -50,6 +53,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
 //    imagProc->init();
 //    QtConcurrent::run(imagProc, &ImageStreamProc::play);
+
+    CommAsyncUDP::Get()->register_recvhandler(do_recved_protocol); //
+
+    CommProtoVariables::Get()->request_version(COMMDEVICE_CAMERA);
+    CommProtoVariables::Get()->request_status(COMMDEVICE_TRIOPHEAD);
+
+    ProtocolStruct protolData;
+    boost::thread threadProto([&protolData](){SharedData::Get()->popData(protolData);});
+//    protolData
 
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
 

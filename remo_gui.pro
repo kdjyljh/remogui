@@ -51,14 +51,16 @@ SOURCES += \
     thirdparty/CfgVar.cpp \
     thirdparty/CommCmdSetEnum.cpp \
     thirdparty/CommCmdIDEnum.cpp \
-    thirdparty/shareddata.cpp
+    thirdparty/shareddata.cpp \
+    src/receivedataproc.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
     src/imagestreamproc.h \
     src/mainwindow.h \
     src/camerasetting.h \
-    thirdparty/shareddata.h
+    thirdparty/shareddata.h \
+    src/receivedataproc.h
 
 FORMS += \
     ui/mainwindow.ui \

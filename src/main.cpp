@@ -13,8 +13,8 @@ int main(int argc, char *argv[])
 //    boost::thread threadlocal(threadfunc);
 
     QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+
+    MainWindow::getWindInstace()->show();
 
     return a.exec();
 }

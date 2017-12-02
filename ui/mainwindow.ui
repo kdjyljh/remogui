@@ -105,7 +105,7 @@
     </widget>
     <widget class="QMenu" name="menu_pictureSize">
      <property name="title">
-      <string>拍摄画幅</string>
+      <string>拍照画幅</string>
      </property>
      <addaction name="action_pictureSize_standard"/>
      <addaction name="action_pictureSize_fullScreen"/>
@@ -292,7 +292,7 @@
   </action>
   <action name="action_exposureCompensation">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>曝光补偿</string>

@@ -11,8 +11,10 @@
 #include <boost/thread.hpp>
 
 
+
 const unsigned DEFAULT_WINDOW_WIDTH = 1000;
 const unsigned DEFAULT_WINDOW_HEIGHT = 500;
+QPoint centerPoint;
 
 static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
 {
@@ -28,6 +30,13 @@ static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
     return true;
 }
 
+static void receiveDataHandler(const std::vector<uint8_t> & data)
+{
+    qDebug() << "Got data respand";
+    MainWindow * winInstace = MainWindow::getWindInstace();
+    winInstace->receiveDataDistribute(data);
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -35,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     viewLable(new QLabel(this)),
     imagProc(new ImageStreamProc),
     cameraSetting(new CameraSetting),
+    receiveDataProc(new ReceiveDataProc),
     photoAndVideoDialog(new PhotoAndVideoDialog(this)),
     actionGroupResolution(new QActionGroup(this)),
     actionGroupVideoStandard(new QActionGroup(this)),
@@ -54,7 +64,8 @@ MainWindow::MainWindow(QWidget *parent) :
     actionGroupIntelliMode(new QActionGroup(this)),
     actionGroupCloseup(new QActionGroup(this)),
     actionGroupScene(new QActionGroup(this)),
-    actionGroupIntelligLens(new QActionGroup(this))
+    actionGroupIntelligLens(new QActionGroup(this)),
+    exposureCompensationSpinBox(new QSpinBox)
 {
     ui->setupUi(this);
 
@@ -65,7 +76,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 //    setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     QRect screenRect = QApplication::desktop()->screenGeometry();
-    move(screenRect.width() / 2 - width() / 2, screenRect.height() / 2 - height() / 2);
+    centerPoint.setX(screenRect.width() / 2 - width() / 2);
+    centerPoint.setY(screenRect.height() / 2 - height() / 2);
+    move(centerPoint);
 
 //    imagProc->init();
 //    QtConcurrent::run(imagProc, &ImageStreamProc::play);
@@ -75,16 +88,14 @@ MainWindow::MainWindow(QWidget *parent) :
     CommProtoVariables::Get()->request_version(COMMDEVICE_CAMERA);
     CommProtoVariables::Get()->request_status(COMMDEVICE_TRIOPHEAD);
 
-    ProtocolStruct protolData;
-    boost::thread threadProto([&protolData](){SharedData::Get()->popData(protolData);});
-
-//    protolData
-
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
 
     connect(photoAndVideoDialog, SIGNAL(cameraSettingChanged(const PhotoAndVideoSetting&)), this, SLOT(updatePhotoAndVideoSetting(const PhotoAndVideoSetting &)));
 
     setupAction();
+
+    receiveDataProc->registerDataHandler(receiveDataHandler);
+    receiveDataProc->start();
 }
 
 MainWindow::~MainWindow()
@@ -98,6 +109,12 @@ MainWindow::~MainWindow()
     delete cameraSetting;
 
     delete ui;
+}
+
+MainWindow *MainWindow::getWindInstace()
+{
+    static MainWindow *instance = new MainWindow;
+    return instance;
 }
 
 void MainWindow::setupAction()
@@ -175,6 +192,12 @@ void MainWindow::setupAction()
     connect(actionGroupIntelligLens, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_intelligLens_triggered(QAction*)));
 }
 
+void MainWindow::receiveDataDistribute(const std::vector<uint8_t> &data)
+{
+    unsigned char d = data.at(0);
+    qDebug() << "Got data respand and data is:" << d;
+}
+
 void MainWindow::setLabelPix(const QImage &image)
 {
     QPixmap pix = QPixmap::fromImage(image);
@@ -240,6 +263,15 @@ void MainWindow::on_action_intelligence_sportMode_triggered()
 void MainWindow::on_action_intelligence_zoomedLens_triggered()
 {
 
+}
+
+void MainWindow::on_action_exposureCompensation_triggered()
+{
+    exposureCompensationSpinBox->setRange(-3,3);
+    QRect screenRect = QApplication::desktop()->screenGeometry();
+    exposureCompensationSpinBox->move(screenRect.width() / 2, screenRect.height() / 2);
+    exposureCompensationSpinBox->setFixedSize(100, 20);
+    exposureCompensationSpinBox->show();
 }
 
 void MainWindow::actionGroup_resolution_triggered(QAction *action)

@@ -4,29 +4,37 @@
 #include "imagestreamproc.h"
 #include "photoandvideodialog.h"
 #include "camerasetting.h"
+#include "receivedataproc.h"
 
 #include <QMainWindow>
 #include <QLabel>
 #include <QImage>
 #include <QActionGroup>
+#include <QSpinBox>
 
 namespace Ui {
 class MainWindow;
 }
+
+class ReceiveDataProc;
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    static MainWindow * getWindInstace();
+
+    void receiveDataDistribute(const std::vector<uint8_t> & data);
 
 private:
     Ui::MainWindow *ui;
     QLabel *viewLable;
     QLayout *mainLayout;
     PhotoAndVideoDialog *photoAndVideoDialog;
+    QSpinBox *exposureCompensationSpinBox;
 
     QActionGroup *actionGroupResolution;
     QActionGroup *actionGroupVideoStandard;
@@ -51,9 +59,13 @@ private:
 private:
     ImageStreamProc *imagProc;
     CameraSetting *cameraSetting;
+    ReceiveDataProc *receiveDataProc;
 
 private:
     void setupAction();
+
+    explicit MainWindow(QWidget *parent = 0);
+    MainWindow(MainWindow &wind);
 
 private slots:
     void setLabelPix(const QImage & image);
@@ -72,6 +84,7 @@ private slots:
     void on_action_storageInfo_triggered();
     void on_action_intelligence_sportMode_triggered();
     void on_action_intelligence_zoomedLens_triggered();
+    void on_action_exposureCompensation_triggered();
 
     //slots need connect by code
     void actionGroup_resolution_triggered(QAction *action);

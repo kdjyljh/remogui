@@ -22,7 +22,7 @@ ImageStreamProc::~ImageStreamProc()
 bool ImageStreamProc::init()
 {
     //打开视频流
-    url = "rtsp://192.168.61.211/livestream/12";
+    url = "rtsp://192.168.1.10/livestream/12";
     int result = avformat_open_input(&pAVFormatContext, url.toStdString().c_str(),NULL,NULL);
     if (result < 0){
         qDebug() << "open video stream failed!!!!!!";

@@ -6,7 +6,6 @@
 #include <QPixmap>
 #include <QHBoxLayout>
 #include <QDesktopWidget>
-#include <QtConcurrent/QtConcurrent>
 #include <QDebug>
 #include <boost/thread.hpp>
 
@@ -80,13 +79,14 @@ MainWindow::MainWindow(QWidget *parent) :
     centerPoint.setY(screenRect.height() / 2 - height() / 2);
     move(centerPoint);
 
-//    imagProc->init();
-//    QtConcurrent::run(imagProc, &ImageStreamProc::play);
+    if (imagProc->init()) {
+        boost::thread(&ImageStreamProc::play, imagProc);
+    }
 
     CommAsyncUDP::Get()->register_recvhandler(do_recved_protocol); //
 
     CommProtoVariables::Get()->request_version(COMMDEVICE_CAMERA);
-    CommProtoVariables::Get()->request_status(COMMDEVICE_TRIOPHEAD);
+    CommProtoVariables::Get()->request_status(COMMDEVICE_CAMERA);
 
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
 
@@ -100,7 +100,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    imagProc->thread()->terminate();
     delete imagProc;
     delete viewLable;
     delete mainLayout;

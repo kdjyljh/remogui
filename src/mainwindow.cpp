@@ -15,6 +15,8 @@ const unsigned DEFAULT_WINDOW_WIDTH = 1000;
 const unsigned DEFAULT_WINDOW_HEIGHT = 500;
 QPoint centerPoint;
 
+int asdfasd;
+
 static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
 {
     if (!menu || !group) {
@@ -29,11 +31,11 @@ static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
     return true;
 }
 
-static void receiveDataHandler(const std::vector<uint8_t> & data)
+static void receiveDataDispatcher(const std::vector<uint8_t> & data)
 {
     qDebug() << "Got data respand";
     MainWindow * winInstace = MainWindow::getWindInstace();
-    winInstace->receiveDataDistribute(data);
+    winInstace->receiveDataDispatch(data);
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -79,22 +81,18 @@ MainWindow::MainWindow(QWidget *parent) :
     centerPoint.setY(screenRect.height() / 2 - height() / 2);
     move(centerPoint);
 
-    if (imagProc->init()) {
-        boost::thread(&ImageStreamProc::play, imagProc);
-    }
-
-    CommAsyncUDP::Get()->register_recvhandler(do_recved_protocol); //
-
-    CommProtoVariables::Get()->request_version(COMMDEVICE_CAMERA);
-    CommProtoVariables::Get()->request_status(COMMDEVICE_CAMERA);
-
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
 
     connect(photoAndVideoDialog, SIGNAL(cameraSettingChanged(const PhotoAndVideoSetting&)), this, SLOT(updatePhotoAndVideoSetting(const PhotoAndVideoSetting &)));
 
     setupAction();
 
-    receiveDataProc->registerDataHandler(receiveDataHandler);
+    boost::thread(&ImageStreamProc::play, imagProc);
+    CommProtoVariables::Get()->request_version(COMMDEVICE_CAMERA);
+    CommProtoVariables::Get()->request_status(COMMDEVICE_CAMERA);
+
+    CommAsyncUDP::Get()->register_recvhandler(do_recved_protocol);
+    receiveDataProc->registerDataHandler(::receiveDataDispatcher);
     receiveDataProc->start();
 }
 
@@ -191,10 +189,15 @@ void MainWindow::setupAction()
     connect(actionGroupIntelligLens, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_intelligLens_triggered(QAction*)));
 }
 
-void MainWindow::receiveDataDistribute(const std::vector<uint8_t> &data)
+void MainWindow::receiveDataDispatch(const std::vector<uint8_t> &data)
 {
     unsigned char d = data.at(0);
     qDebug() << "Got data respand and data is:" << d;
+
+}
+
+void MainWindow::initAfterConstruct()
+{
 }
 
 void MainWindow::setLabelPix(const QImage &image)

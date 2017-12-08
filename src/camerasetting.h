@@ -1,6 +1,8 @@
 #ifndef CAMERASETTING_H
 #define CAMERASETTING_H
 #include <QSize>
+#include <map>
+#include <vector>
 
 enum CameraWorkMode
 {
@@ -67,5 +69,28 @@ public:
     VideoStanderd videoStanderd;
     WhiteBalance whiteBalance;
 };
+
+enum CameraSetDataType
+{
+    CameraSetDataType_setWorkMode,
+    CameraSetDataType_getWorkMode,
+    CameraSetDataType_setValue,
+    CameraSetDataType_setGetValue,
+    CameraSetDataType_custom,
+};
+
+typedef void*(*CustomDataHandler)(void*);
+struct CameraSetData
+{
+    void * activeItem;
+    void * textItem;
+
+    std::vector<uint8_t> data;
+    CameraSetDataType dataType;
+
+    CustomDataHandler customDataHandler;
+};
+
+extern std::map<uint64_t, CameraSetData> cameraSetMap;
 
 #endif // CAMERASETTING_H

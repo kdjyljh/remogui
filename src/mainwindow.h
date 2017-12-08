@@ -27,7 +27,9 @@ public:
 
     static MainWindow * getWindInstace();
 
-    void receiveDataDistribute(const std::vector<uint8_t> & data);
+    void receiveDataDispatch(const std::vector<uint8_t> & data);
+
+    void initAfterConstruct();
 
 private:
     Ui::MainWindow *ui;

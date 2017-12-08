@@ -11,17 +11,15 @@
 
 class IPPortCfg {
  public:
-  inline string COMM_QTGUI_IP() {return COMM_QTGUI_IP_;}
   inline string COMM_CAMERA_IP() {return COMM_CAMERA_IP_;}
-  inline string COMM_QTGUI_PORT() {return COMM_QTGUI_PORT_;}
   inline string COMM_CAMERA_PORT() {return COMM_CAMERA_PORT_;}
   inline uint16_t COMM_SELF_PORT() {return COMM_SELF_PORT_;}
   inline CommDeviceEnum SelfCommDevice() {return SelfCommDevice_;}
 
   static shared_ptr<IPPortCfg> Get();
  private:
-  string COMM_QTGUI_IP_, COMM_CAMERA_IP_;
-  string COMM_QTGUI_PORT_, COMM_CAMERA_PORT_;
+  string COMM_CAMERA_IP_;
+  string COMM_CAMERA_PORT_;
   uint16_t COMM_SELF_PORT_;
   CommDeviceEnum SelfCommDevice_;
   IPPortCfg();

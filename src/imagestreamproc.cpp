@@ -76,6 +76,10 @@ bool ImageStreamProc::init()
 
 void ImageStreamProc::play()
 {
+
+    if (!init()) {
+        return;
+    }
     //一帧一帧读取视频
     int frameFinished = 0;
     while (true){

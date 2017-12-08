@@ -60,7 +60,8 @@ HEADERS += \
     src/mainwindow.h \
     src/camerasetting.h \
     thirdparty/shareddata.h \
-    src/receivedataproc.h
+    src/receivedataproc.h \
+    src/protofielddef.h
 
 FORMS += \
     ui/mainwindow.ui \

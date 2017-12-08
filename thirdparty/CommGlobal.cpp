@@ -4,15 +4,12 @@
 
 IPPortCfg::IPPortCfg() {
   CfgVar cfgVar("remo_gui.json");
-  COMM_QTGUI_IP_ = cfgVar.get_check_convert<string>({"COMM_QTGUI_IP"});
   COMM_CAMERA_IP_ = cfgVar.get_check_convert<string>({"COMM_CAMERA_IP"});
-  COMM_QTGUI_PORT_ = cfgVar.get_check_convert<string>({"COMM_QTGUI_PORT"});
   COMM_CAMERA_PORT_ = cfgVar.get_check_convert<string>({"COMM_CAMERA_PORT"});
   COMM_SELF_PORT_ = cfgVar.get_check_convert<uint16_t>({"COMM_SELF_PORT"});
   SelfCommDevice_ = CommDeviceEnum_getstr(cfgVar.get_check_convert<string>({"SelfCommDevice"}));
 
   LOG(INFO) << "IPPortCfg ctor:\n"
-            << "COMM_QTGUI = " << COMM_QTGUI_IP_ << ":" << COMM_QTGUI_PORT_ << "\n"
             << "COMM_CAMERA = " << COMM_CAMERA_IP_ << ":" << COMM_CAMERA_PORT_ << "\n"
             << "COMM_SELF_PORT = " << COMM_SELF_PORT_ << "\n"
             << "SelfCommDevice = " << CommDeviceEnum_getstr(SelfCommDevice_);
@@ -36,7 +33,6 @@ UDPEndpoints::UDPEndpoints() {
 query = boost::make_shared<udp::resolver::query>(udp::v4(), IPPortCfg::Get()->COMM_##DEVICENAME##_IP(), IPPortCfg::Get()->COMM_##DEVICENAME##_PORT());\
 mapEndpEnum2Ptr_[ENDPOINT_##DEVICENAME] = boost::make_shared<udp::endpoint>(*resolver.resolve(*query))
 
-  ADD_DEVICE_ENDPOINT(QTGUI);
   ADD_DEVICE_ENDPOINT(CAMERA);
 
 #undef ADD_DEVICE_ENDPOINT
@@ -66,7 +62,6 @@ TCPEndpoints::TCPEndpoints() {
 query = boost::make_shared<tcp::resolver::query>(tcp::v4(), IPPortCfg::Get()->COMM_##DEVICENAME##_IP(), IPPortCfg::Get()->COMM_##DEVICENAME##_PORT());\
 mapEndpEnum2Ptr_[ENDPOINT_##DEVICENAME] = boost::make_shared<tcp::endpoint>(*resolver.resolve(*query))
 
-    ADD_DEVICE_ENDPOINT(QTGUI);
     ADD_DEVICE_ENDPOINT(CAMERA);
 
 #undef ADD_DEVICE_ENDPOINT

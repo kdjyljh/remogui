@@ -5,6 +5,7 @@
 #include <QObject>
 #include <vector>
 #include <boost/thread.hpp>
+#include "../thirdparty/Protocol.hpp"
 
 
 class ReceiveDataProc : public QObject
@@ -32,6 +33,7 @@ private:
     DataHandler dataHandler;
 
     void run();
+    void protocolStructProc(const ProtocolStruct & ps);
 };
 
 #endif // RECEIVEDATAPROC_H

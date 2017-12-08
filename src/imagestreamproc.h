@@ -31,7 +31,6 @@ public:
     virtual ~ImageStreamProc(); // 回收资源
 
     void play();
-    bool init();
 
 signals:
     void imageGot(const QImage &image);
@@ -51,6 +50,8 @@ private:
     int videoWidth;
     int videoHeight;
     int videoStreamIndex;
+
+    bool init();
 };
 
 #endif // IMAGESTREAMPROC_H

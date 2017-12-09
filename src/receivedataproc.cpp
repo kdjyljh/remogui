@@ -1,5 +1,7 @@
 #include "receivedataproc.h"
 #include "../thirdparty/shareddata.h"
+#include "camerafielddef.h"
+#include "cmddef.h"
 
 #include <boost/make_shared.hpp>
 #include <stdlib.h>
@@ -145,17 +147,24 @@ error:
 }
 
 
-ReceiveDataProc::ReceiveDataProc(QObject *parent) :
-    QObject(parent),
-    dataHandler(nullptr)
+ReceiveDataProc::ReceiveDataProc()
 {
+}
+
+boost::shared_ptr<ReceiveDataProc> ReceiveDataProc::getInstance()
+{
+    static boost::shared_ptr<ReceiveDataProc> instance(new ReceiveDataProc);
+    return instance;
 }
 
 void ReceiveDataProc::start()
 {
-    if (nullptr == dataHandler) {
-        qDebug() << "No data handler registered!!!!";
-        return;
+    if (nullptr == handler_) {
+        registerHandler(ReceiveDataHandler::getInstance());
+        if (nullptr == handler_) {
+            qDebug() << "No data handler registered!!!!";
+            return;
+        }
     }
 
     thread_ = boost::make_shared<boost::thread>(&ReceiveDataProc::run, this);
@@ -164,9 +173,6 @@ void ReceiveDataProc::start()
 void ReceiveDataProc::run()
 {
     while (true) {
-//        ReceivedDataType d;
-//        d.push_back(100);
-//        dataHandler(d);
         ProtocolStruct protoData;
         //popData maybe blocked
         SharedData::Get()->popData(protoData);
@@ -176,18 +182,8 @@ void ReceiveDataProc::run()
 
 void ReceiveDataProc::protocolStructProc(const ProtocolStruct &ps)
 {
-//    if (protoData.data.size() == 0) {
-//        continue;
-//    }
-
-    //get lower 8 bit and 4 bit cmdSet
-    uint32_t cmdSet = static_cast<uint32_t>(ps.cmdSet & 0xffu);
-    //get lower 16 bit and 12 bit cmdId
-    uint32_t cmdId = static_cast<uint32_t>(ps.cmdID & 0xffffu);
-    //get high 8 bit cmdSet and low 24 bit cmdId
-    uint32_t key = (cmdSet << 24) | cmdId;
-
-    if (dataHandler) {
-        dataHandler(ps.data);
+    if (nullptr != handler_) {
+        handler_->setData(ps);
+        handler_->handle();
     }
 }

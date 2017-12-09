@@ -2,24 +2,21 @@
 #define RECEIVEDATAPROC_H
 
 #include "mainwindow.h"
-#include <QObject>
+#include "receivedatahandler.h"
+#include "../thirdparty/Protocol.hpp"
 #include <vector>
 #include <boost/thread.hpp>
-#include "../thirdparty/Protocol.hpp"
+#include <boost/noncopyable.hpp>
 
 
-class ReceiveDataProc : public QObject
+class ReceiveDataProc : public boost::noncopyable
 {
-    Q_OBJECT
+
 public:
-    explicit ReceiveDataProc(QObject *parent = nullptr);
-
-    typedef std::vector<uint8_t> ReceivedDataType;
-    typedef void (*DataHandler)(const ReceivedDataType & data);
-
-    void registerDataHandler(DataHandler handler) {
-        if (nullptr != handler)
-            dataHandler = handler;
+    static boost::shared_ptr<ReceiveDataProc> getInstance();
+    
+    void registerHandler(boost::shared_ptr<ReceiveDataHandler> handler) {
+        handler_ = handler;
     }
 
     void start();
@@ -30,7 +27,8 @@ public slots:
 
 private:
     boost::shared_ptr<boost::thread> thread_;
-    DataHandler dataHandler;
+    boost::shared_ptr<ReceiveDataHandler> handler_;
+    ReceiveDataProc();
 
     void run();
     void protocolStructProc(const ProtocolStruct & ps);

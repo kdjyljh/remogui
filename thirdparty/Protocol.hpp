@@ -78,6 +78,16 @@ struct ProtocolStruct {
 #include "CommCmdIDEnum.hpp"
 class CommProtoVariables : public boost::noncopyable {
  public:
+    enum RequestRespond {
+        REQUEST = 0,
+        RESPOND = 1,
+    };
+    // 生成用于发送的request和respond数据包
+    struct MSGinfo {
+      CommMessagePtr msgptr;
+      TimedTaskID    taskidForward; // 发送的消息使用taskidForward注册定时任务,接收的消息使用taskidBackward取消定时任务
+    };
+
   void request_ping(CommDeviceEnum target);
   void request_status(CommDeviceEnum target);
   void request_version(CommDeviceEnum target);
@@ -89,6 +99,14 @@ class CommProtoVariables : public boost::noncopyable {
   void check_recved(ProtocolStruct &proto);
 
   static boost::shared_ptr<CommProtoVariables> Get();
+
+  MSGinfo gen_request_respond(CommDeviceEnum target, CommCmdSetEnum cmdSet, CommCmdIDEnum cmdID,
+                              bool needAckApp, bool needAckProto, uint16_t packSeq, RequestRespond reqres,
+                              char *data = nullptr, int datalen = 0);
+  // 处理用于发送的request和respond数据包
+  void do_request(MSGinfo msginfo, int maxRetry, long intervalUS);
+  void do_respond(MSGinfo msginfo);
+
  private:
   boost::atomic_bool    recording; // 是否录像
   boost::atomic_bool    AFCenabled; // 连续对焦是否使能
@@ -103,29 +121,13 @@ class CommProtoVariables : public boost::noncopyable {
   CommMessagePtr triopHeadSpeeds_MSG();
 
   uint16_t packSeq_;
-  enum RequestRespond {
-    REQUEST = 0,
-    RESPOND = 1,
-  };
 
-  // 生成用于发送的request和respond数据包
-  struct MSGinfo {
-    CommMessagePtr msgptr;
-    TimedTaskID    taskidForward; // 发送的消息使用taskidForward注册定时任务,接收的消息使用taskidBackward取消定时任务
-  };
-  MSGinfo gen_request_respond(CommDeviceEnum target, CommCmdSetEnum cmdSet, CommCmdIDEnum cmdID,
-                              bool needAckApp, bool needAckProto, uint16_t packSeq, RequestRespond reqres,
-                              char *data = nullptr, int datalen = 0);
   MSGinfo gen_request_ping(CommDeviceEnum target);
   MSGinfo gen_respond_ping(CommDeviceEnum target, uint16_t packseq);
   MSGinfo gen_request_status(CommDeviceEnum target);
   MSGinfo gen_respond_status(CommDeviceEnum target, uint16_t packseq);
   MSGinfo gen_request_version(CommDeviceEnum target);
   MSGinfo gen_respond_version(CommDeviceEnum target, uint16_t packseq);
-
-  // 处理用于发送的request和respond数据包
-  void do_request(MSGinfo msginfo, int maxRetry, long intervalUS);
-  void do_respond(MSGinfo msginfo);
 
   typedef uint64_t UniqueRespondID;
   inline UniqueRespondID uniquerespid(CommDeviceEnum cmdDev, CommCmdSetEnum cmdSet, CommCmdIDEnum cmdID) {

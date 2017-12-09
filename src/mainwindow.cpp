@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "../thirdparty/shareddata.h"
+//#include "../thirdparty/shareddata.h"
 #include "../thirdparty/Protocol.hpp"
 
 #include <QPixmap>
@@ -14,8 +14,6 @@
 const unsigned DEFAULT_WINDOW_WIDTH = 1000;
 const unsigned DEFAULT_WINDOW_HEIGHT = 500;
 QPoint centerPoint;
-
-int asdfasd;
 
 static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
 {
@@ -44,9 +42,9 @@ MainWindow::MainWindow(QWidget *parent) :
     mainLayout(new QHBoxLayout(this)),
     viewLable(new QLabel(this)),
     imagProc(new ImageStreamProc),
-    cameraSetting(new CameraSetting),
-    receiveDataProc(new ReceiveDataProc),
-    photoAndVideoDialog(new PhotoAndVideoDialog(this)),
+//    cameraSetting(new CameraSetting),
+    receiveDataProc(ReceiveDataProc::getInstance()),
+    photoAndVideoDialog(boost::shared_ptr<PhotoAndVideoDialog>(new PhotoAndVideoDialog(this))),
     actionGroupResolution(new QActionGroup(this)),
     actionGroupVideoStandard(new QActionGroup(this)),
     actionGroupWhiteBalance(new QActionGroup(this)),
@@ -81,18 +79,20 @@ MainWindow::MainWindow(QWidget *parent) :
     centerPoint.setY(screenRect.height() / 2 - height() / 2);
     move(centerPoint);
 
+    photoAndVideoDialog->registerSelf2Handler();
+
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
 
-    connect(photoAndVideoDialog, SIGNAL(cameraSettingChanged(const PhotoAndVideoSetting&)), this, SLOT(updatePhotoAndVideoSetting(const PhotoAndVideoSetting &)));
+    connect(photoAndVideoDialog.get(), SIGNAL(cameraSettingChanged(const PhotoAndVideoSetting&)), this, SLOT(updatePhotoAndVideoSetting(const PhotoAndVideoSetting &)));
 
     setupAction();
 
     boost::thread(&ImageStreamProc::play, imagProc);
-    CommProtoVariables::Get()->request_version(COMMDEVICE_CAMERA);
-    CommProtoVariables::Get()->request_status(COMMDEVICE_CAMERA);
+//    CommProtoVariables::Get()->request_version(COMMDEVICE_CAMERA);
+//    CommProtoVariables::Get()->request_status(COMMDEVICE_CAMERA);
 
-    CommAsyncUDP::Get()->register_recvhandler(do_recved_protocol);
-    receiveDataProc->registerDataHandler(::receiveDataDispatcher);
+//    CommAsyncUDP::Get()->register_recvhandler(do_recved_protocol);
+//    receiveDataProc->registerDataHandler(::receiveDataDispatcher);
     receiveDataProc->start();
 }
 
@@ -103,7 +103,7 @@ MainWindow::~MainWindow()
     delete mainLayout;
     delete imagProc;
     delete actionGroupResolution;
-    delete cameraSetting;
+//    delete cameraSetting;
 
     delete ui;
 }
@@ -206,11 +206,11 @@ void MainWindow::setLabelPix(const QImage &image)
     viewLable->setPixmap(pix);
 }
 
-void MainWindow::updatePhotoAndVideoSetting(const PhotoAndVideoSetting & pvSetting)
-{
-    qDebug() << "get camera setting changed signal cs.photoContinusTime:" << pvSetting.photoContinusTime;
-    cameraSetting->photoAndVideoSetting = pvSetting;
-}
+//void MainWindow::updatePhotoAndVideoSetting(const PhotoAndVideoSetting & pvSetting)
+//{
+//    qDebug() << "get camera setting changed signal cs.photoContinusTime:" << pvSetting.photoContinusTime;
+//    cameraSetting->photoAndVideoSetting = pvSetting;
+//}
 
 void MainWindow::on_action_photoAndVideo_triggered()
 {
@@ -282,31 +282,31 @@ void MainWindow::actionGroup_resolution_triggered(QAction *action)
         return;
     }
 
-    Resolution resolution;
+//    Resolution resolution;
     if (ui->action_videoStandard_PAL->isChecked()) {
         if (action == ui->action_resolution_2_7Kp24_2_7Kp24) {
-            resolution.NTSCSize.setWidth(2704);
-            resolution.NTSCSize.setHeight(1520);
-            resolution.NTSCFps = 24;
-            resolution.PALSize.setWidth(2704);
-            resolution.PALSize.setHeight(1520);
-            resolution.PALFps = 24;
+//            resolution.NTSCSize.setWidth(2704);
+//            resolution.NTSCSize.setHeight(1520);
+//            resolution.NTSCFps = 24;
+//            resolution.PALSize.setWidth(2704);
+//            resolution.PALSize.setHeight(1520);
+//            resolution.PALFps = 24;
         }
         else if (action == ui->action_resolution_2_7Kp30_2_7Kp25) {
-            resolution.NTSCSize.setWidth(2704);
-            resolution.NTSCSize.setHeight(1520);
-            resolution.NTSCFps = 30;
-            resolution.PALSize.setWidth(2704);
-            resolution.PALSize.setHeight(1520);
-            resolution.PALFps = 25;
+//            resolution.NTSCSize.setWidth(2704);
+//            resolution.NTSCSize.setHeight(1520);
+//            resolution.NTSCFps = 30;
+//            resolution.PALSize.setWidth(2704);
+//            resolution.PALSize.setHeight(1520);
+//            resolution.PALFps = 25;
         }
         else if (action == ui->action_resolution_4Kp24_4Kp24) {
-            resolution.NTSCSize.setWidth(4096);
-            resolution.NTSCSize.setHeight(2160);
-            resolution.NTSCFps = 24;
-            resolution.PALSize.setWidth(4096);
-            resolution.PALSize.setHeight(2160);
-            resolution.PALFps = 24;
+//            resolution.NTSCSize.setWidth(4096);
+//            resolution.NTSCSize.setHeight(2160);
+//            resolution.NTSCFps = 24;
+//            resolution.PALSize.setWidth(4096);
+//            resolution.PALSize.setHeight(2160);
+//            resolution.PALFps = 24;
         }
         else if (action == ui->action_resolution_4Kp30_4Kp25) {
 
@@ -350,28 +350,28 @@ void MainWindow::actionGroup_resolution_triggered(QAction *action)
     }
     else if (ui->action_videoStandard_NTSC->isChecked()) {
         if (action == ui->action_resolution_2_7Kp24_2_7Kp24) {
-            resolution.NTSCSize.setWidth(2704);
-            resolution.NTSCSize.setHeight(1520);
-            resolution.NTSCFps = 24;
-            resolution.PALSize.setWidth(2704);
-            resolution.PALSize.setHeight(1520);
-            resolution.PALFps = 24;
+//            resolution.NTSCSize.setWidth(2704);
+//            resolution.NTSCSize.setHeight(1520);
+//            resolution.NTSCFps = 24;
+//            resolution.PALSize.setWidth(2704);
+//            resolution.PALSize.setHeight(1520);
+//            resolution.PALFps = 24;
         }
         else if (action == ui->action_resolution_2_7Kp30_2_7Kp25) {
-            resolution.NTSCSize.setWidth(2704);
-            resolution.NTSCSize.setHeight(1520);
-            resolution.NTSCFps = 30;
-            resolution.PALSize.setWidth(2704);
-            resolution.PALSize.setHeight(1520);
-            resolution.PALFps = 25;
+//            resolution.NTSCSize.setWidth(2704);
+//            resolution.NTSCSize.setHeight(1520);
+//            resolution.NTSCFps = 30;
+//            resolution.PALSize.setWidth(2704);
+//            resolution.PALSize.setHeight(1520);
+//            resolution.PALFps = 25;
         }
         else if (action == ui->action_resolution_4Kp24_4Kp24) {
-            resolution.NTSCSize.setWidth(4096);
-            resolution.NTSCSize.setHeight(2160);
-            resolution.NTSCFps = 24;
-            resolution.PALSize.setWidth(4096);
-            resolution.PALSize.setHeight(2160);
-            resolution.PALFps = 24;
+//            resolution.NTSCSize.setWidth(4096);
+//            resolution.NTSCSize.setHeight(2160);
+//            resolution.NTSCFps = 24;
+//            resolution.PALSize.setWidth(4096);
+//            resolution.PALSize.setHeight(2160);
+//            resolution.PALFps = 24;
         }
         else if (action == ui->action_resolution_4Kp30_4Kp25) {
 

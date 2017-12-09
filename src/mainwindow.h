@@ -11,6 +11,7 @@
 #include <QImage>
 #include <QActionGroup>
 #include <QSpinBox>
+#include <boost/shared_ptr.hpp>
 
 namespace Ui {
 class MainWindow;
@@ -35,7 +36,7 @@ private:
     Ui::MainWindow *ui;
     QLabel *viewLable;
     QLayout *mainLayout;
-    PhotoAndVideoDialog *photoAndVideoDialog;
+    boost::shared_ptr<PhotoAndVideoDialog> photoAndVideoDialog;
     QSpinBox *exposureCompensationSpinBox;
 
     QActionGroup *actionGroupResolution;
@@ -60,8 +61,9 @@ private:
 
 private:
     ImageStreamProc *imagProc;
-    CameraSetting *cameraSetting;
-    ReceiveDataProc *receiveDataProc;
+//    CameraSetting *cameraSetting;
+//    ReceiveDataProc *receiveDataProc;
+    boost::shared_ptr<ReceiveDataProc> receiveDataProc;
 
 private:
     void setupAction();
@@ -71,7 +73,7 @@ private:
 
 private slots:
     void setLabelPix(const QImage & image);
-    void updatePhotoAndVideoSetting(const PhotoAndVideoSetting & vcSetting);
+//    void updatePhotoAndVideoSetting(const PhotoAndVideoSetting & vcSetting);
 
 private slots:
     //auto connect slots

@@ -196,7 +196,7 @@ typedef enum Remo_Camera_BurstCapNum_E
 typedef struct Remo_Camera_ContiCap_S
 {
     uint8_t ContiCapInterval;   // 连拍间隔时间
-}Remo_Camera_BurstCap_s;
+}Remo_Camera_ContiCap_s;
 typedef enum Remo_Camera_ContiCapInterval_E
 {
     ContiCapInterval_1S = 0,
@@ -234,7 +234,7 @@ typedef enum Remo_Camera_LapseCapInterval_E
 typedef struct Remo_Camera_LapseCap_TotalTime_S
 {
     uint8_t LapseCapTotalTime;   // Lapse拍照总时间
-}Remo_Camera_LapseInterval_TotalTime _s;
+}Remo_Camera_LapseInterval_TotalTime_s;
 typedef enum Remo_Camera_LapseCapTotalTime_E
 {
     LapseCapTotalTime_30S = 0,
@@ -360,7 +360,7 @@ typedef enum Remo_Camera_Thumbnail_Resolution_E
 {
     Thumbnail_Resolution_320_240,
     Thumbnail_Resolution_Bott
-};
+}Remo_Camera_Thumbnail_Resolution_e;
 
 
 typedef struct Remo_Camera_LoopRec_Interval_S
@@ -578,7 +578,7 @@ typedef enum Remo_Camera_PhotoColorType_E
     PhotoColorType_Art,
     PhotoColorType_Dream,
     PhotoColorType_Classical,
-    PhotoColorType_Nostalgic
+    PhotoColorType_Nostalgic,
     PhotoColorType_Bott
 }Remo_Camera_PhotoColorType_e;
 
@@ -808,8 +808,8 @@ typedef enum Remo_Camera_AFMode_E
 //位置都通过归一化的坐标表示x,y 取值范围：(0 ~ 1)
 typedef struct Remo_Camera_PosPoint_S
 {
-    fload x;         // 归一化的x坐标
-    fload y;         // 归一化的y坐标
+    float x;         // 归一化的x坐标
+    float y;         // 归一化的y坐标
 }Remo_Camera_PosPoint_s;
 
 typedef struct Remo_Camera_PosArea_S
@@ -881,7 +881,7 @@ typedef struct Remo_Camera_ZoomControlParam_S
             uint16_t TargetPosNo; // 目标焦段的分段值
         };
         struct {
-            uint16_t Speed;       //  变焦控制速度
+            uint16_t Speed1;       //  变焦控制速度
             uint16_t  Dir;         //  变焦方向
             uint16_t LastTime;    //  变焦操作持续时间
         };

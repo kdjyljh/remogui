@@ -6,12 +6,15 @@
 
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): {
+    QT += widgets
+    CONFIG += c++11
+}
 
 TARGET = remo_gui
 TEMPLATE = app
 
-CONFIG += c++11
+QMAKE_CXXFLAGS += -std=c++0x
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -52,7 +55,11 @@ SOURCES += \
     thirdparty/CommCmdSetEnum.cpp \
     thirdparty/CommCmdIDEnum.cpp \
     thirdparty/shareddata.cpp \
-    src/receivedataproc.cpp
+    src/receivedataproc.cpp \
+    src/cmdsender.cpp \
+    src/receivedatahandler.cpp \
+    src/protocaldatainterface.cpp \
+    src/cameraworkmode.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
@@ -61,7 +68,12 @@ HEADERS += \
     src/camerasetting.h \
     thirdparty/shareddata.h \
     src/receivedataproc.h \
-    src/protofielddef.h
+    src/camerafielddef.h \
+    src/cmdsender.h \
+    src/receivedatahandler.h \
+    src/protocaldatainterface.h \
+    src/cameraworkmode.h \
+    src/cmddef.h
 
 FORMS += \
     ui/mainwindow.ui \

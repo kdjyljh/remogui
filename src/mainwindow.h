@@ -3,14 +3,14 @@
 
 #include "imagestreamproc.h"
 #include "photoandvideodialog.h"
-#include "camerasetting.h"
+#include "aemodedialog.h"
+#include "workmodedialog.h"
 #include "receivedataproc.h"
 
 #include <QMainWindow>
 #include <QLabel>
 #include <QImage>
 #include <QActionGroup>
-#include <QSpinBox>
 #include <boost/shared_ptr.hpp>
 
 namespace Ui {
@@ -37,7 +37,9 @@ private:
     QLabel *viewLable;
     QLayout *mainLayout;
     boost::shared_ptr<PhotoAndVideoDialog> photoAndVideoDialog;
-    QSpinBox *exposureCompensationSpinBox;
+//    boost::shared_ptr<WorkModeDialog> workModeDialog;
+//    QSpinBox *exposureCompensationSpinBox;
+    boost::shared_ptr<AeModeDialog> aeModeDialog;
 
     QActionGroup *actionGroupResolution;
     QActionGroup *actionGroupVideoStandard;
@@ -62,8 +64,8 @@ private:
 private:
     ImageStreamProc *imagProc;
 //    CameraSetting *cameraSetting;
-//    ReceiveDataProc *receiveDataProc;
     boost::shared_ptr<ReceiveDataProc> receiveDataProc;
+//    boost::shared_ptr<ReceiveDataProc> receiveDataProc;
 
 private:
     void setupAction();

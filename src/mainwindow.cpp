@@ -45,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent) :
 //    cameraSetting(new CameraSetting),
     receiveDataProc(ReceiveDataProc::getInstance()),
     photoAndVideoDialog(boost::shared_ptr<PhotoAndVideoDialog>(new PhotoAndVideoDialog(this))),
+    aeModeDialog(boost::shared_ptr<AeModeDialog>(new AeModeDialog(this))),
+//    workModeDialog(boost::shared_ptr<WorkModeDialog>(new WorkModeDialog)),
     actionGroupResolution(new QActionGroup(this)),
     actionGroupVideoStandard(new QActionGroup(this)),
     actionGroupWhiteBalance(new QActionGroup(this)),
@@ -63,8 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actionGroupIntelliMode(new QActionGroup(this)),
     actionGroupCloseup(new QActionGroup(this)),
     actionGroupScene(new QActionGroup(this)),
-    actionGroupIntelligLens(new QActionGroup(this)),
-    exposureCompensationSpinBox(new QSpinBox)
+    actionGroupIntelligLens(new QActionGroup(this))
 {
     ui->setupUi(this);
 
@@ -80,10 +81,11 @@ MainWindow::MainWindow(QWidget *parent) :
     move(centerPoint);
 
     photoAndVideoDialog->registerSelf2Handler();
+//    workModeDialog->registerSelf2Handler();
 
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
 
-    connect(photoAndVideoDialog.get(), SIGNAL(cameraSettingChanged(const PhotoAndVideoSetting&)), this, SLOT(updatePhotoAndVideoSetting(const PhotoAndVideoSetting &)));
+//    connect(photoAndVideoDialog.get(), SIGNAL(cameraSettingChanged(const PhotoAndVideoSetting&)), this, SLOT(updatePhotoAndVideoSetting(const PhotoAndVideoSetting &)));
 
     setupAction();
 
@@ -215,6 +217,7 @@ void MainWindow::setLabelPix(const QImage &image)
 void MainWindow::on_action_photoAndVideo_triggered()
 {
     photoAndVideoDialog->show();
+//    workModeDialog->show();
 }
 
 void MainWindow::on_action_continuousAutoFocus_triggered()
@@ -269,11 +272,12 @@ void MainWindow::on_action_intelligence_zoomedLens_triggered()
 
 void MainWindow::on_action_exposureCompensation_triggered()
 {
-    exposureCompensationSpinBox->setRange(-3,3);
-    QRect screenRect = QApplication::desktop()->screenGeometry();
-    exposureCompensationSpinBox->move(screenRect.width() / 2, screenRect.height() / 2);
-    exposureCompensationSpinBox->setFixedSize(100, 20);
-    exposureCompensationSpinBox->show();
+//    exposureCompensationSpinBox->setRange(-3,3);
+//    QRect screenRect = QApplication::desktop()->screenGeometry();
+//    exposureCompensationSpinBox->move(screenRect.width() / 2, screenRect.height() / 2);
+//    exposureCompensationSpinBox->setFixedSize(100, 20);
+//    exposureCompensationSpinBox->show();
+    aeModeDialog->show();
 }
 
 void MainWindow::actionGroup_resolution_triggered(QAction *action)

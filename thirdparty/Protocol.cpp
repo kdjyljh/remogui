@@ -221,10 +221,10 @@ bool ProtocolStruct::decode(const char *const msgconst, int msglen) {
 
 string ProtocolStruct::print() {
   std::stringstream ss;
-  ss << CommDeviceEnum_getstr(static_cast<CommDeviceEnum>(sender)) << " -> "
-     << CommDeviceEnum_getstr(static_cast<CommDeviceEnum>(recver)) << ": ";
-  ss << CommCmdSetEnum_getstr(static_cast<CommCmdSetEnum>(cmdSet)) << ", "
-     << CommCmdIDEnum_getstr(static_cast<CommCmdIDEnum>(cmdID)) << ", seq = " << packSeq;
+//  ss << CommDeviceEnum_getstr(static_cast<CommDeviceEnum>(sender)) << " -> "
+//     << CommDeviceEnum_getstr(static_cast<CommDeviceEnum>(recver)) << ": ";
+//  ss << CommCmdSetEnum_getstr(static_cast<CommCmdSetEnum>(cmdSet)) << ", "
+//     << CommCmdIDEnum_getstr(static_cast<CommCmdIDEnum>(cmdID)) << ", seq = " << packSeq;
   return ss.str();
 }
 
@@ -309,6 +309,14 @@ void CommProtoVariables::check_recved(ProtocolStruct &proto) {
     //add by ljh
     SharedData::Get()->pushData(proto);
   }
+}
+
+CommProtoVariables::MSGinfo CommProtoVariables::gen_request_respond(
+                              CommDeviceEnum target, CommCmdSetEnum cmdSet, CommCmdIDEnum cmdID,
+                              bool needAckApp, bool needAckProto, RequestRespond reqres,
+                              char *data, int datalen)
+{
+    return gen_request_respond(target, cmdSet, cmdID, needAckApp, needAckProto, packSeq_++, reqres, data, datalen);
 }
 
 CommProtoVariables::MSGinfo CommProtoVariables::gen_request_respond(

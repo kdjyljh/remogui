@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AeMOde</class>
+ <widget class="QWidget" name="AeMOde">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>619</width>
+    <height>376</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QWidget" name="formLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>20</y>
+     <width>201</width>
+     <height>161</height>
+    </rect>
+   </property>
+   <layout class="QFormLayout" name="formLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="Label">
+      <property name="text">
+       <string>曝光模式</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="ComboBox"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="Label_3">
+      <property name="text">
+       <string>光圈</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="iSOLabel">
+      <property name="text">
+       <string>ISO</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="Label_4">
+      <property name="text">
+       <string>曝光补偿</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="Label_5">
+      <property name="text">
+       <string>快门</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QComboBox" name="ComboBox_2"/>
+    </item>
+    <item row="1" column="1">
+     <widget class="QComboBox" name="ComboBox_3"/>
+    </item>
+    <item row="2" column="1">
+     <widget class="QComboBox" name="ComboBox_4"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QComboBox" name="ComboBox_5"/>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

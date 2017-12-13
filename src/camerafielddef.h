@@ -10,9 +10,9 @@
  * * * * *0x00:获取相机工作模式
  * * * * *0x01:设置相机工作模式
  * * * * *0x02:获取相机支持的工作模式列表
+ * * * * * * * TYPE=SINGLE 1; PayloadLength = 2
  * * * * *0x03:启动/停止拍照命令
  * * * * *0x04:启动/停止录像命令
- * * * * * * * TYPE=SINGLE 1; PayloadLength = 2
  */
 typedef struct Remo_Camera_WorkMode_S
 {
@@ -102,7 +102,7 @@ typedef enum Remo_Camera_RecOperation_E
 
 typedef struct Remo_Camera_ImageResolution_S
 {
-    uint8_t ImageMode;   // 分辨率
+    uint8_t ImageResolution;   // 分辨率
 }Remo_Camera_ImageResolution_s ;
 typedef enum Remo_Camera_ImageResolution_E
 {
@@ -165,7 +165,7 @@ typedef enum Remo_Camera_HDRMode_E
  * * * * *0x32:获取BURST拍照张数支持范围
  * * * * *0x33:获取定时拍照周期
  * * * * *0x34:设置定时拍照周期
- * * * * *0x35:获取定是拍照周期支持范围
+ * * * * *0x35:获取定时拍照周期支持范围
  * * * * *0x36:获取LAPSE拍照周期
  * * * * *0x37:设置LAPSE拍照周期
  * * * * *0x38:获取LAPSE拍照周期支持范围
@@ -192,7 +192,7 @@ typedef enum Remo_Camera_BurstCapNum_E
     BurstCapNum_Bott
 }Remo_Camera_BurstCapNum_e;
 
-
+//定时拍照
 typedef struct Remo_Camera_ContiCap_S
 {
     uint8_t ContiCapInterval;   // 连拍间隔时间
@@ -312,7 +312,7 @@ typedef enum Remo_Camera_PanoMode_E
  */
 typedef struct Remo_Camera_MainVideo_Resolution_S
 {
-    uint8_t Resolution;   //分辨率
+    uint8_t MainVideo_Resolution;   //分辨率
 }Remo_Camera_MainVideo_Resolution_s ;
 //帧率根据NTSC/PAL格式选择是/前还是/后的帧率
 typedef enum Remo_Camera_MainVideo_Resolution_E
@@ -338,7 +338,7 @@ typedef enum Remo_Camera_MainVideo_Resolution_E
 
 typedef struct Remo_Camera_SubVideo_Resolution_S
 {
-    uint8_t Resolution;   // 分辨率
+    uint8_t SubVideo_Resolution;   // 分辨率
 } Remo_Camera_SubVideo_Resolution_s;
 typedef enum Remo_Camera_SubVideo_Resolution_E
 {
@@ -354,7 +354,7 @@ typedef enum Remo_Camera_SubVideo_Resolution_E
 //相机缩略图预览分辨率
 typedef struct Remo_Camera_Thumbnail_Resolution_S
 {
-    uint8_t Resolution;   //分辨率
+    uint8_t ThumbnailResolution;   //分辨率
 }Remo_Camera_Thumbnail_Resolution_s;
 typedef enum Remo_Camera_Thumbnail_Resolution_E
 {
@@ -365,7 +365,7 @@ typedef enum Remo_Camera_Thumbnail_Resolution_E
 
 typedef struct Remo_Camera_LoopRec_Interval_S
 {
-    uint8_t Interval;   //录像周期
+    uint8_t LoopRecInterval;   //录像周期
 }Remo_Camera_LoopRec_Interval_s;
 typedef enum Remo_Camera_LoopRec_Interval_E
 {
@@ -425,7 +425,7 @@ typedef enum Remo_Camera_LapseRec_TotalTime_E
 //慢动作回放模式分辨率
 typedef struct Remo_Camera_SlowMotion_Resolution_S
 {
-    uint8_t Resolution;   //分辨率
+    uint8_t SlowMotion_Resolution;   //分辨率
 } Remo_Camera_SlowMotion_Resolution_s;
 typedef enum Remo_Camera_SlowMotion_Resolution_E
 {
@@ -489,31 +489,31 @@ typedef enum Remo_Camera_SlowMotion_Resolution_E
  * * * * *0xcd:获取拍照模式下ISO设定值支持的范围
  * * * * *0xce:获取录像模式下ISO设定值支持的范围
  * * * * *0xcf:获取光圈设定值支持的范围
- * * * * *0xcf:获取测光模式
- * * * * *0xd0:设置测光模式
- * * * * *0xd1:获取测光模式支持的范围
- * * * * *0xd2:获取抗闪烁模式设置
- * * * * *0xd3:设置抗闪烁模式
- * * * * *0xd1:获取抗闪烁模式支持的范围
- * * * * *0xd4:获取AE LOCK 状态
- * * * * *0xd5:设置 AE LOCK状态
- * * * * *0xd6:获取相机的对焦模式
- * * * * *0xd7:设置相机的对焦模式
- * * * * *0xd8:获取相机的对焦模式支持的范围
- * * * * *0xd9:获取相机对焦位置参数
- * * * * *0xda:设置相机对焦位置参数启动对焦,设置相机的对焦点中心位置,这个操作会启动单次对焦
- * * * * *0xdb:获取相机对焦状态,获取相机的对焦状态,用于交互提示对焦.这个命令大部分情况下不会使用,一般通过相机推送获得这个状态
- * * * * *0xdc:获取相机对焦结果
- * * * * *0xe0:获取当前相机焦段信息
- * * * * *0xe1:设置相机变焦参数启动变焦
- * * * * *0xe2:获取相机变焦状态信息
- * * * * *0xe3:立即停止相机变焦
- * * * * *0xea:获取相机锐度参数
- * * * * *0xeb:设置相机的锐度参数
- * * * * *0xf9:获取相机旋转参数
- * * * * *0xfa:设置相机旋转参数命令
- * * * * *0xfb:获取相机旋转参数支持的范围
- * * * * *0x103:获取直方图数据
+ * * * * *0xd0:获取测光模式
+ * * * * *0xd1:设置测光模式
+ * * * * *0xd2:获取测光模式支持的范围
+ * * * * *0xd3:获取抗闪烁模式设置
+ * * * * *0xd4:设置抗闪烁模式
+ * * * * *0xd5:获取抗闪烁模式支持的范围
+ * * * * *0xd6:获取AE LOCK 状态
+ * * * * *0xd7:设置 AE LOCK状态
+ * * * * *0xe0:获取相机的对焦模式
+ * * * * *0xe1:设置相机的对焦模式
+ * * * * *0xe2:获取相机的对焦模式支持的范围
+ * * * * *0xe3:获取相机对焦位置参数,用于交互上显示对焦窗大小
+ * * * * *0xe4:设置相机对焦位置参数启动对焦,设置相机的对焦点中心位置,这个操作会启动单次对焦
+ * * * * *0xe5:获取相机对焦状态,获取相机的对焦状态,用于交互提示对焦.这个命令大部分情况下不会使用,一般通过相机推送获得这个状态
+ * * * * *0xe6:获取相机对焦结果
+ * * * * *0xf0:获取当前相机焦段信息
+ * * * * *0xf1:设置相机变焦参数启动变焦
+ * * * * *0xf2:获取相机变焦状态信息
+ * * * * *0xf3:立即停止相机变焦
+ * * * * *0xf8:获取相机锐度参数
+ * * * * *0xf9:设置相机的锐度参数
+ * * * * *0xfa:获取相机旋转参数
+ * * * * *0xfb:设置相机旋转参数命令
+ * * * * *0xfc:获取相机旋转参数支持的范围
+ * * * * *0x100:获取直方图数据
  */
 
 typedef struct Remo_Camera_CapStorageType_S

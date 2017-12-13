@@ -100,9 +100,11 @@ class CommProtoVariables : public boost::noncopyable {
 
   static boost::shared_ptr<CommProtoVariables> Get();
 
-  MSGinfo gen_request_respond(CommDeviceEnum target, CommCmdSetEnum cmdSet, CommCmdIDEnum cmdID,
-                              bool needAckApp, bool needAckProto, uint16_t packSeq, RequestRespond reqres,
-                              char *data = nullptr, int datalen = 0);
+  CommProtoVariables::MSGinfo gen_request_respond(
+                                CommDeviceEnum target, CommCmdSetEnum cmdSet, CommCmdIDEnum cmdID,
+                                bool needAckApp, bool needAckProto, RequestRespond reqres,
+                                char *data, int datalen);
+
   // 处理用于发送的request和respond数据包
   void do_request(MSGinfo msginfo, int maxRetry, long intervalUS);
   void do_respond(MSGinfo msginfo);
@@ -128,6 +130,10 @@ class CommProtoVariables : public boost::noncopyable {
   MSGinfo gen_respond_status(CommDeviceEnum target, uint16_t packseq);
   MSGinfo gen_request_version(CommDeviceEnum target);
   MSGinfo gen_respond_version(CommDeviceEnum target, uint16_t packseq);
+
+  MSGinfo gen_request_respond(CommDeviceEnum target, CommCmdSetEnum cmdSet, CommCmdIDEnum cmdID,
+                              bool needAckApp, bool needAckProto, uint16_t packSeq, RequestRespond reqres,
+                              char *data = nullptr, int datalen = 0);
 
   typedef uint64_t UniqueRespondID;
   inline UniqueRespondID uniquerespid(CommDeviceEnum cmdDev, CommCmdSetEnum cmdSet, CommCmdIDEnum cmdID) {

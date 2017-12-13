@@ -4,16 +4,17 @@
 #include "cmddef.h"
 #include "protocaldatainterface.h"
 #include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
 
-class ProtocalDataInterface;
+class ProtocolDataInterface;
 
 class ReceiveDataHandler : public boost::noncopyable
 {
 public:
     static boost::shared_ptr<ReceiveDataHandler> getInstance();
 
-    void registerDataHandler(const ProtocalDataInterface & handler) {
-        handlerList.push_back(handler);
+    void registerDataHandler(boost::shared_ptr<ProtocolDataInterface> handler) {
+        handlerPtrList.push_back(handler);
     }
 
     virtual void handle();
@@ -26,7 +27,8 @@ private:
 //    Remo_CmdType_e map2CmdType();
 
 private:
-    std::vector<ProtocalDataInterface> handlerList;
+    //must be ptr, using virtual funciton handle
+    std::vector<boost::shared_ptr<ProtocolDataInterface>> handlerPtrList;
     ProtocolStruct data;
 };
 

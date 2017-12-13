@@ -42,7 +42,6 @@ SOURCES += \
     src/imagestreamproc.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
-    src/camerasetting.cpp \
     thirdparty/CommAsyncUDP.cpp \
     thirdparty/CommGlobal.cpp \
     thirdparty/Protocol.cpp \
@@ -56,28 +55,33 @@ SOURCES += \
     thirdparty/CommCmdIDEnum.cpp \
     thirdparty/shareddata.cpp \
     src/receivedataproc.cpp \
-    src/cmdsender.cpp \
     src/receivedatahandler.cpp \
     src/protocaldatainterface.cpp \
-    src/cameraworkmode.cpp
+    src/cameraworkmode.cpp \
+    src/workmodedialog.cpp \
+    src/itemdatadef.cpp \
+    src/aemodedialog.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
     src/imagestreamproc.h \
     src/mainwindow.h \
-    src/camerasetting.h \
     thirdparty/shareddata.h \
     src/receivedataproc.h \
     src/camerafielddef.h \
-    src/cmdsender.h \
     src/receivedatahandler.h \
     src/protocaldatainterface.h \
     src/cameraworkmode.h \
-    src/cmddef.h
+    src/cmddef.h \
+    src/itemdatadef.h \
+    src/workmodedialog.h \
+    src/aemodedialog.h
 
 FORMS += \
     ui/mainwindow.ui \
-    ui/photoandvideo.ui
+    ui/photoandvideo.ui \
+    ui/workmode.ui \
+    ui/aemode.ui
 
 RESOURCES += \
     resource/image.qrc

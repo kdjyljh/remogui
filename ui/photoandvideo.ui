@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>429</width>
-    <height>452</height>
+    <width>561</width>
+    <height>552</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,13 +17,13 @@
    <property name="geometry">
     <rect>
      <x>50</x>
-     <y>70</y>
-     <width>341</width>
-     <height>351</height>
+     <y>120</y>
+     <width>361</width>
+     <height>381</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tab_photo">
     <attribute name="title">
@@ -35,7 +35,7 @@
        <x>10</x>
        <y>10</y>
        <width>251</width>
-       <height>151</height>
+       <height>182</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="formLayout">
@@ -47,23 +47,9 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="LineEdit_photo_singel">
+       <widget class="QLineEdit" name="LineEdit_SubWorkMode_Photo_Single">
         <property name="enabled">
          <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="Label_2">
-        <property name="text">
-         <string>多张连拍</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="LineEdit_photo_multi">
-        <property name="text">
-         <string>3</string>
         </property>
        </widget>
       </item>
@@ -74,24 +60,10 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="LineEdit_photo_delayed">
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
        <widget class="QLabel" name="Label_4">
         <property name="text">
          <string>连续拍摄(fps)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="LineEdit_photo_continus">
-        <property name="text">
-         <string>1</string>
         </property>
        </widget>
       </item>
@@ -102,21 +74,33 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="LineEdit_photo_panorama">
+      <item row="1" column="0">
+       <widget class="QLabel" name="Label_13">
         <property name="text">
-         <string>180</string>
+         <string>多张连拍</string>
         </property>
        </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="ComboBox_SubWorkMode_MultiPhoto_Burst"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="ComboBox_SubWorkMode_Photo_Delay"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="ComboBox_SubWorkMode_MultiPhoto_Continue"/>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="ComboBox_SubWorkMode_MultiPhoto_Panorama"/>
       </item>
      </layout>
     </widget>
     <widget class="QGroupBox" name="groupBox">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>170</y>
-       <width>251</width>
+       <x>20</x>
+       <y>200</y>
+       <width>241</width>
        <height>131</height>
       </rect>
      </property>
@@ -140,13 +124,6 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="LineEdit_photo_lapse_intervalTime">
-         <property name="text">
-          <string>0.5</string>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="Label_7">
          <property name="text">
@@ -154,17 +131,16 @@
          </property>
         </widget>
        </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="ComboBox_LapseCapInterval"/>
+       </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="LineEdit_photo_lapse_continueTime">
-         <property name="text">
-          <string>1</string>
-         </property>
-        </widget>
+        <widget class="QComboBox" name="ComboBox_LapseCapTotalTime"/>
        </item>
       </layout>
      </widget>
     </widget>
-    <widget class="QRadioButton" name="radioButton_photo_singel">
+    <widget class="QRadioButton" name="radioButton_SubWorkMode_Photo_Single">
      <property name="geometry">
       <rect>
        <x>300</x>
@@ -180,7 +156,7 @@
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QRadioButton" name="radioButton_photo_multi">
+    <widget class="QRadioButton" name="radioButton_SubWorkMode_MultiPhoto_Burst">
      <property name="geometry">
       <rect>
        <x>300</x>
@@ -193,7 +169,7 @@
       <string/>
      </property>
     </widget>
-    <widget class="QRadioButton" name="radioButton_photo_delayed">
+    <widget class="QRadioButton" name="radioButton_SubWorkMode_Photo_Delay">
      <property name="geometry">
       <rect>
        <x>300</x>
@@ -206,7 +182,7 @@
       <string/>
      </property>
     </widget>
-    <widget class="QRadioButton" name="radioButton_photo_continus">
+    <widget class="QRadioButton" name="radioButton_SubWorkMode_MultiPhoto_Continue">
      <property name="geometry">
       <rect>
        <x>300</x>
@@ -219,7 +195,7 @@
       <string/>
      </property>
     </widget>
-    <widget class="QRadioButton" name="radioButton_photo_panorama">
+    <widget class="QRadioButton" name="radioButton_SubWorkMode_MultiPhoto_Panorama">
      <property name="geometry">
       <rect>
        <x>300</x>
@@ -232,11 +208,11 @@
       <string/>
      </property>
     </widget>
-    <widget class="QRadioButton" name="radioButton_photo_lapse">
+    <widget class="QRadioButton" name="radioButton_SubWorkMode_MultiPhoto_Lapse">
      <property name="geometry">
       <rect>
-       <x>300</x>
-       <y>230</y>
+       <x>290</x>
+       <y>270</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -255,8 +231,8 @@
       <rect>
        <x>10</x>
        <y>20</y>
-       <width>231</width>
-       <height>171</height>
+       <width>251</width>
+       <height>151</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="formLayout_3">
@@ -281,13 +257,6 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="LineEdit_video_circle">
-        <property name="text">
-         <string>5</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="Label_10">
         <property name="text">
@@ -295,24 +264,10 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="LineEdit_video_photo">
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
        <widget class="QLabel" name="Label_11">
         <property name="text">
-         <string>延时录影</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="LineEdit_video_delay">
-        <property name="text">
-         <string>0.5</string>
+         <string>缩时录影</string>
         </property>
        </widget>
       </item>
@@ -330,9 +285,18 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="ComboBox_SubWorkMode_Recode_Loop"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="ComboBox_SubWcorkMode_Recode_Photo"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="ComboBox_SubWcorkMode_Recode_Collapses"/>
+      </item>
      </layout>
     </widget>
-    <widget class="QRadioButton" name="radioButton_video_normal">
+    <widget class="QRadioButton" name="radioButton_SubWorkMode_Recode_Normal">
      <property name="geometry">
       <rect>
        <x>290</x>
@@ -348,7 +312,7 @@
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QRadioButton" name="radioButton_video_circle">
+    <widget class="QRadioButton" name="radioButton_SubWorkMode_Recode_Loop">
      <property name="geometry">
       <rect>
        <x>290</x>
@@ -361,7 +325,7 @@
       <string/>
      </property>
     </widget>
-    <widget class="QRadioButton" name="radioButton_video_photo">
+    <widget class="QRadioButton" name="radioButton_SubWcorkMode_Recode_Photo">
      <property name="geometry">
       <rect>
        <x>290</x>
@@ -374,7 +338,7 @@
       <string/>
      </property>
     </widget>
-    <widget class="QRadioButton" name="radioButton_video_delay">
+    <widget class="QRadioButton" name="radioButton_SubWcorkMode_Recode_Collapses">
      <property name="geometry">
       <rect>
        <x>290</x>
@@ -387,7 +351,7 @@
       <string/>
      </property>
     </widget>
-    <widget class="QRadioButton" name="radioButton_video_slowMotion">
+    <widget class="QRadioButton" name="radioButton_SubWcorkMode_Recode_SlowMotion">
      <property name="geometry">
       <rect>
        <x>290</x>
@@ -437,6 +401,32 @@
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="pushButton_Start">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>80</y>
+     <width>61</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>开始</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_Stop">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>80</y>
+     <width>71</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>结束</string>
+   </property>
   </widget>
  </widget>
  <resources/>

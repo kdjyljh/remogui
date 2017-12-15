@@ -1,8 +1,11 @@
 #include "protocaldatainterface.h"
 #include <boost/lexical_cast.hpp>
+#include <iostream>
 
 ProtocolDataInterface::ProtocolDataInterface(Remo_CmdSet_e set) :
-    cmdSet(set)
+    cmdSet(set),
+    reqMmaxRetry(5),
+    reqIntervalUS(1000000)
 {
 }
 
@@ -12,7 +15,7 @@ void ProtocolDataInterface::registerSelf2Handler()
     ReceiveDataHandler::getInstance()->registerDataHandler(shared_from_this());
 }
 
-void ProtocolDataInterface::sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet, Remo_CmdId_e cmdId, bool needAckApp, bool needAckProto,
+void ProtocolDataInterface::sendCmdCamera(CommDeviceEnum device, Remo_CmdSet_e cmdSet, Remo_CmdId_e cmdId, bool needAckApp, bool needAckProto,
                  CommProtoVariables::RequestRespond reqres, std::vector<uint8_t> data)
 {
     auto sender = CommProtoVariables::Get();
@@ -20,6 +23,7 @@ void ProtocolDataInterface::sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet,
                 device, static_cast<CommCmdSetEnum>(cmdSet),
                 static_cast<CommCmdIDEnum>(cmdId), needAckApp, needAckProto,
                 reqres, reinterpret_cast<char*>(data.data()), data.size());
+    std::cout << "Id forward is " << msginfo.taskidForward << std::endl;
     sender->do_request(msginfo, reqMmaxRetry, reqIntervalUS);
 }
 
@@ -206,5 +210,21 @@ bool ProtocolDataInterface::getSurportRange(std::set<SubItemData> & range)
         }
     }
     return false;
+}
+
+bool ProtocolDataInterface::isBigEndian()
+{
+    uint16_t * u16 = new uint16_t(0xff01);
+    return !((*(char*)u16) == 0x1);
+}
+
+void ProtocolDataInterface::endianTurn(std::vector<uint8_t> &data)
+{
+//    std::vector<uint8_t> turnData;
+//    for (std::vector<uint8_t>::reverse_iterator it = data.rbegin(); it != data.rend(); ++it) {
+//        turnData.push_back(*it);
+//    }
+
+//    data = turnData;
 }
 

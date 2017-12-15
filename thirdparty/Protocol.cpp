@@ -221,10 +221,10 @@ bool ProtocolStruct::decode(const char *const msgconst, int msglen) {
 
 string ProtocolStruct::print() {
   std::stringstream ss;
-//  ss << CommDeviceEnum_getstr(static_cast<CommDeviceEnum>(sender)) << " -> "
-//     << CommDeviceEnum_getstr(static_cast<CommDeviceEnum>(recver)) << ": ";
-//  ss << CommCmdSetEnum_getstr(static_cast<CommCmdSetEnum>(cmdSet)) << ", "
-//     << CommCmdIDEnum_getstr(static_cast<CommCmdIDEnum>(cmdID)) << ", seq = " << packSeq;
+  ss << "sender:" << int(sender) << " -> recver:"
+     << int(recver) << ", cmdSet=";
+  ss << int(cmdSet) << ", cmdID="
+     << int(cmdID) << ", seq=" << packSeq;
   return ss.str();
 }
 
@@ -277,6 +277,8 @@ void CommProtoVariables::check_recved(ProtocolStruct &proto) {
     LOG(INFO) << "ERROR: algorithm will not recv msg for " << static_cast<CommDeviceEnum>(proto.recver);
     return;
   }
+
+  LOG(INFO) << "TimeTaskId Back is " << proto.idBackward();
 
   TimedTask::Get()->cancel_work(proto.idBackward()); // 取消可能的重发任务
 

@@ -55,6 +55,7 @@ struct ProtocolStruct {
                          (static_cast<uint64_t>(packSeq)  << 24) | // 16 bit
                          (static_cast<uint64_t>(sendrecv) << 16) | // 8  bit
                          (static_cast<uint64_t>(cmd)      <<  0);  // 16 bit
+    LOG(INFO) << "id forward: " << print();
     return timed_taskid_gen(timedTaskIDPrefix4CommTask, idPostfix);
   }
   inline TimedTaskID idBackward() { // 从recver到sender
@@ -64,6 +65,7 @@ struct ProtocolStruct {
                          (static_cast<uint64_t>(packSeq)  << 24) | // 16 bit
                          (static_cast<uint64_t>(recvsend) << 16) | // 8  bit
                          (static_cast<uint64_t>(cmd)      <<  0);  // 16 bit
+    LOG(INFO) << "id backward: " << print();
     return timed_taskid_gen(timedTaskIDPrefix4CommTask, idPostfix);
   }
 

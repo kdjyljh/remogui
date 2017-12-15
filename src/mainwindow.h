@@ -19,18 +19,22 @@ class MainWindow;
 
 class ReceiveDataProc;
 
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, public ProtocolDataInterfaceImpl
 {
     Q_OBJECT
 
 public:
     ~MainWindow();
 
-    static MainWindow * getWindInstace();
+    static boost::shared_ptr<MainWindow> getWindInstace();
 
     void receiveDataDispatch(const std::vector<uint8_t> & data);
 
     void initAfterConstruct();
+
+protected:
+    void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId) override;
+    void cameraSettingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId) override;
 
 private:
     Ui::MainWindow *ui;
@@ -38,7 +42,6 @@ private:
     QLayout *mainLayout;
     boost::shared_ptr<PhotoAndVideoDialog> photoAndVideoDialog;
 //    boost::shared_ptr<WorkModeDialog> workModeDialog;
-//    QSpinBox *exposureCompensationSpinBox;
     boost::shared_ptr<AeModeDialog> aeModeDialog;
 
     QActionGroup *actionGroupResolution;
@@ -63,9 +66,7 @@ private:
 
 private:
     ImageStreamProc *imagProc;
-//    CameraSetting *cameraSetting;
     boost::shared_ptr<ReceiveDataProc> receiveDataProc;
-//    boost::shared_ptr<ReceiveDataProc> receiveDataProc;
 
 private:
     void setupAction();
@@ -112,6 +113,8 @@ private slots:
     void actionGroup_closeup_triggered(QAction *action);
     void actionGroup_scene_triggered(QAction *action);
     void actionGroup_intelligLens_triggered(QAction *action);
+
+    void menu_action_triggered(QAction *action);
 };
 
 #endif // MAINWINDOW_H

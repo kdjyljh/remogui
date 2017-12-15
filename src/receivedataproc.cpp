@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <QDebug>
 
-
 ReceiveDataProc::ReceiveDataProc()
 {
     CommAsyncUDP::Get()->register_recvhandler(do_recved_protocol);

@@ -1,13 +1,13 @@
 #ifndef WORKMODEDIALOG_H
 #define WORKMODEDIALOG_H
-#include "cameraworkmode.h"
+#include "protocoldataInterfaceimpl.h"
 #include "ui_workmode.h"
 
 #include <QDialog>
 #include <QObject>
 #include <QWidget>
 
-class WorkModeDialog : public QDialog, public CameraWorkMode
+class WorkModeDialog : public QDialog, public ProtocolDataInterfaceImpl
 {
     Q_OBJECT
 public:

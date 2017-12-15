@@ -29,15 +29,9 @@ static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
     return true;
 }
 
-static void receiveDataDispatcher(const std::vector<uint8_t> & data)
-{
-    qDebug() << "Got data respand";
-    MainWindow * winInstace = MainWindow::getWindInstace();
-    winInstace->receiveDataDispatch(data);
-}
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
+    ProtocolDataInterfaceImpl(),
     ui(new Ui::MainWindow),
     mainLayout(new QHBoxLayout(this)),
     viewLable(new QLabel(this)),
@@ -67,6 +61,11 @@ MainWindow::MainWindow(QWidget *parent) :
     actionGroupScene(new QActionGroup(this)),
     actionGroupIntelligLens(new QActionGroup(this))
 {
+    if (isBigEndian()) {
+        qDebug() << "System is Big Endian exit !!!!!!!!!!!!!!!!!!!!!!!!";
+        exit(-1); //
+    }
+
     ui->setupUi(this);
 
     QWidget *cw = new QWidget(this);
@@ -85,34 +84,37 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
 
-//    connect(photoAndVideoDialog.get(), SIGNAL(cameraSettingChanged(const PhotoAndVideoSetting&)), this, SLOT(updatePhotoAndVideoSetting(const PhotoAndVideoSetting &)));
-
     setupAction();
 
     boost::thread(&ImageStreamProc::play, imagProc);
-//    CommProtoVariables::Get()->request_version(COMMDEVICE_CAMERA);
-//    CommProtoVariables::Get()->request_status(COMMDEVICE_CAMERA);
 
-//    CommAsyncUDP::Get()->register_recvhandler(do_recved_protocol);
-//    receiveDataProc->registerDataHandler(::receiveDataDispatcher);
     receiveDataProc->start();
+
+    init_itemData();
+
+//    QActionGroup * whiteBalanceGroup = new QActionGroup(this);
+    addItem2Map(ui->menu_whiteBalance, Remo_CmdId_Camera_Get_WhiteBalance);
+
+//    sendCmdCamera(Remo_CmdId_Camera_Get_WhiteBalance_Range);
 }
 
 MainWindow::~MainWindow()
 {
-    delete imagProc;
-    delete viewLable;
-    delete mainLayout;
-    delete imagProc;
-    delete actionGroupResolution;
+//    delete imagProc;
+//    delete viewLable;
+//    delete mainLayout;
+//    delete imagProc;
+//    delete actionGroupResolution;
 //    delete cameraSetting;
 
-    delete ui;
+//    delete ui;
 }
 
-MainWindow *MainWindow::getWindInstace()
+boost::shared_ptr<MainWindow> MainWindow::getWindInstace()
 {
-    static MainWindow *instance = new MainWindow;
+    //多线程不安全
+    static boost::shared_ptr<MainWindow> instance(new MainWindow);
+    instance->registerSelf2Handler();
     return instance;
 }
 
@@ -200,6 +202,43 @@ void MainWindow::receiveDataDispatch(const std::vector<uint8_t> &data)
 
 void MainWindow::initAfterConstruct()
 {
+}
+
+void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId)
+{
+    QMenu * menu = static_cast<QMenu*>(findUiPtrById(cmdId));
+    if (nullptr != menu) {
+        QActionGroup *group = new QActionGroup(this);
+        for (auto it : rangeSet) {
+            QAction * action = new QAction(QString::fromUtf8(it.ShowStr.data()), menu);
+            action->setData(QVariant(it.Index));//将enum值放入Action的QVariant中
+            menu->addAction(action);
+            group->addAction(action);
+            connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(menu_action_triggered(QAction*)));
+        }
+        ItemData itemData;
+        if (findItemByUiPtr(menu, itemData)) {
+            sendCmdCamera(static_cast<Remo_CmdId_e>(itemData.CmdId_GetData));
+        }
+    }
+}
+
+void MainWindow::cameraSettingGot(const std::vector<uint8_t> &data, Remo_CmdId_e cmdId)
+{
+    if (data.empty()) return;
+
+    QMenu * group = static_cast<QMenu*>(findUiPtrById(cmdId));
+    if (nullptr != group) {
+        ItemData itemData;
+        int activeIndex = static_cast<int>(data.at(0));
+        if (findItemByUiPtr(group, itemData)) {
+            for (auto it : group->actions()) {
+                if (activeIndex == it->data().toInt()) {
+                    it->setChecked(true);
+                }
+            }
+        }
+    }
 }
 
 void MainWindow::setLabelPix(const QImage &image)
@@ -778,6 +817,18 @@ void MainWindow::actionGroup_intelligLens_triggered(QAction *action)
     }
     else {
 
+    }
+}
+
+void MainWindow::menu_action_triggered(QAction *action)
+{
+    if (nullptr == action) return;
+
+    QMenu *menu = action->menu();
+    ItemData itemData;
+    if (findItemByUiPtr(menu, itemData)) {
+        std::vector<uint8_t> data{action->data().toInt()};
+        sendCmdCamera(static_cast<Remo_CmdId_e>(itemData.CmdId_SetData), data);
     }
 }
 

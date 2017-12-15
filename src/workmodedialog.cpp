@@ -4,7 +4,7 @@
 
 WorkModeDialog::WorkModeDialog(QWidget * parent) :
     QDialog(parent),
-    CameraWorkMode(),
+    ProtocolDataInterfaceImpl(),
     ui(new Ui::WorkModeDialog)
 {
     ui->setupUi(this);

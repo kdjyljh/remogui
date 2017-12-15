@@ -4,12 +4,37 @@ typedef enum Remo_CmdSet_E {
     Remo_CmdSet_Universal     = 0x0,
     Remo_CmdSet_Camera        = 0x1,
     Remo_CmdSet_TriopHead     = 0x2,
-    Remo_CmdSet_Battery       = 0x3,
-    Remo_CmdSet_Interaction   = 0x4,
-    Remo_CmdSet_Factory       = 0x5,
+    Remo_CmdSet_Algorithm     = 0x3,
+    Remo_CmdSet_Battery       = 0x4,
+    Remo_CmdSet_Interaction   = 0x5,
+    Remo_CmdSet_Factory       = 0x6,
+    Remo_CmdSet_Bott,
+    Remo_CmdSet_PlaceHolder
 }Remo_CmdSet_e;
 
 
+//set类指令返回值
+/*
+ * 0: 命令执行正确，没有出现错误
+ * -1: 命令执行失败，无特殊场景下的通用用返回值
+ * -2: 输入的参数值错误
+*/
+
+typedef enum Remo_CmdId_SetCmd_ReturnValue_E{
+    Return_OK                       = 0,
+    Return_NG                       = -1,
+    Return_ParamError               = -2,
+    Return_Bott,
+    Return_PlaceHolder
+}Remo_CmdId_SetCmd_ReturnValue_e;
+
+
+typedef enum Remo_CmdId_Type_E
+{
+    CmdId_Type_Get              = 0x0,
+    CmdId_Type_Set              = 0x1,
+    CmdId_Type_GetRange         = 0x2,
+}Remo_CmdId_Type_e;
 /*
  * cmdset:0x1
  * cmdid:
@@ -151,12 +176,12 @@ typedef enum Remo_CmdId_E {
     Remo_CmdId_Camera_Get_WorkMode_Range                                = 0x02,
     Remo_CmdId_Camera_Set_CapOperation                                  = 0x03,
     Remo_CmdId_Camera_Set_RecOperation                                  = 0x04,
-    Remo_CmdId_Camera_Set_ImageResolution                               = 0x10,
-    Remo_CmdId_Camera_Get_ImageResolution                               = 0x11,
+    Remo_CmdId_Camera_Get_ImageResolution                               = 0x10,
+    Remo_CmdId_Camera_Set_ImageResolution                               = 0x11,
     Remo_CmdId_Camera_Get_ImageResolution_Range                         = 0x12,
-    Remo_CmdId_Camera_Get_CapDelayTime                                  = 0x13,
-    Remo_CmdId_Camera_Set_CapDelayTime                                  = 0x14,
-    Remo_CmdId_Camera_Get_CapDelayTime_Range                            = 0x15,
+    Remo_CmdId_Camera_Get_CapDelayTime                                  = CmdId_Type_Get << 9       | (0x13  & 0x1ff),
+    Remo_CmdId_Camera_Set_CapDelayTime                                  = CmdId_Type_Set << 9       | (0x14  & 0x1ff),
+    Remo_CmdId_Camera_Get_CapDelayTime_Range                            = CmdId_Type_GetRange << 9  | (0x15  & 0x1ff),
     Remo_CmdId_Camera_Get_CapScene                                      = 0x16,
     Remo_CmdId_Camera_Set_CapScene                                      = 0x17,
     Remo_CmdId_Camera_Get_CapScene_Range                                = 0x18,
@@ -221,9 +246,9 @@ typedef enum Remo_CmdId_E {
     Remo_CmdId_Camera_Get_CustomWB_ColorTemp                            = 0xb3,
     Remo_CmdId_Camera_Set_CustomWB_ColorTemp                            = 0xb4,
     Remo_CmdId_Camera_Get_CustomWB_ColorTemp_Range                      = 0xb5,
-    Remo_CmdId_Camera_Get_Camera_AeMode                                 = 0xb6,
-    Remo_CmdId_Camera_Set_Camera_AeMode                                 = 0xb7,
-    Remo_CmdId_Camera_Get_Camera_AeMode_Range                           = 0xb8,
+    Remo_CmdId_Camera_Get_AeMode                                        = 0xb6,
+    Remo_CmdId_Camera_Set_AeMode                                        = 0xb7,
+    Remo_CmdId_Camera_Get_AeMode_Range                                  = 0xb8,
     Remo_CmdId_Camera_Get_P_Evbias                                      = 0xb9,
     Remo_CmdId_Camera_Set_P_Evbias                                      = 0xba,
     Remo_CmdId_Camera_Get_S_Shutter                                     = 0xbb,
@@ -274,6 +299,8 @@ typedef enum Remo_CmdId_E {
     Remo_CmdId_Camera_Get_SDInfo                                        = 0x200,
     Remo_CmdId_Camera_Get_SDStatus                                      = 0x201,
     Remo_CmdId_Camera_Start_SDFormat                                    = 0x202,
+    Remo_CmdId_Camera_Bott,
+    Remo_CmdId_Camera_PlaceHolder
 }Remo_CmdId_e;
 
 #endif // CMDEF_H

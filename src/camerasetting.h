@@ -5,7 +5,7 @@
 //#include <vector>
 //#include <stdint.h>
 
-//enum CameraWorkMode
+//enum ProtocolDataInterfaceImpl
 //{
 //    photoSingel,
 //    photoMulti,
@@ -48,7 +48,7 @@
 //struct PhotoAndVideoSetting
 //{
 //    bool photoOrvideo;//true: video
-//    enum CameraWorkMode workMode;
+//    enum ProtocolDataInterfaceImpl workMode;
 //    int photoMultiTime;
 //    int photoDelayedTime;
 //    int photoContinusTime;

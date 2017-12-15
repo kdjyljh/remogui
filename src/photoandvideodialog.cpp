@@ -2,73 +2,52 @@
 #include "itemdatadef.h"
 
 #include <QDebug>
+#include <QButtonGroup>
 
-static const unsigned DEFAULT_DIALOG_WITH = 400;
+static const unsigned DEFAULT_DIALOG_WITH = 600;
 static const unsigned DEFAULT_DIALOG_HEIGHT = 550;
-
-std::map<void*, ItemData> ui2ItemData;
-void addItem2Map(void * item, Remo_CmdId_e idGet, int idSet = -100, int idRange = -100, int set = Remo_CmdSet_Camera)
-{
-    if (nullptr == item) return;
-
-    for (auto it : itemData) {
-        if (set == it.CmdSet &&
-                (idGet == it.CmdId_GetData || idSet == it.CmdId_SetData || idRange == it.CmdId_GetRange)) {
-            ui2ItemData[item] = it;
-        }
-    }
-}
-
-void * findUiPtrById(Remo_CmdId_e id, Remo_CmdSet_e set = Remo_CmdSet_Camera)
-{
-    for (auto it : ui2ItemData) {
-        ItemData item = it.second;
-        if (set == item.CmdSet &&
-                (id == item.CmdId_GetData || id == item.CmdId_SetData || id == item.CmdId_GetRange)) {
-            return it.first;
-        }
-    }
-    return nullptr;
-}
-
-bool findItemByUiPtr(void * ptr, ItemData & data)
-{
-    auto it = ui2ItemData.find(ptr);
-    if (it == ui2ItemData.end()) {
-        return false;
-    } else {
-        data = (*it).second;
-    }
-    return true;
-}
 
 PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     QDialog(parent),
-    CameraWorkMode(),
+    ProtocolDataInterfaceImpl(),
     ui(new Ui::PhotoAndVideoDialog)
 {
     ui->setupUi(this);
 
     setFixedSize(DEFAULT_DIALOG_WITH, DEFAULT_DIALOG_HEIGHT);
+    ui->pushButton_Stop->setEnabled(false);
+    QButtonGroup * buttGroup = new QButtonGroup(this);
+    buttGroup->addButton(ui->radioButton_SubWcorkMode_Recode_Collapses);
+    buttGroup->addButton(ui->radioButton_SubWcorkMode_Recode_Photo);
+    buttGroup->addButton(ui->radioButton_SubWcorkMode_Recode_SlowMotion);
+    buttGroup->addButton(ui->radioButton_SubWorkMode_Recode_Loop);
+    buttGroup->addButton(ui->radioButton_SubWorkMode_Recode_Normal);
+    buttGroup->addButton(ui->radioButton_SubWorkMode_MultiPhoto_Continue);
+    buttGroup->addButton(ui->radioButton_SubWorkMode_MultiPhoto_Lapse);
+    buttGroup->addButton(ui->radioButton_SubWorkMode_MultiPhoto_Panorama);
+    buttGroup->addButton(ui->radioButton_SubWorkMode_MultiPhoto_Burst);
+//    buttGroup->addButton(ui->radioButton_SubWorkMode_MultiPhoto_AEB);
+    buttGroup->addButton(ui->radioButton_SubWorkMode_Photo_Delay);
+    buttGroup->addButton(ui->radioButton_SubWorkMode_Photo_Single);
 
     initSurportRange();
     addItem2Map(ui->ComboBox_SubWorkMode_Photo_Delay, Remo_CmdId_Camera_Get_CapDelayTime);
 
-    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("1");
-    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("2");
-    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("3");
-    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("4");
-    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("5");
-    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("6");
-    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("7");
-    ui->ComboBox_SubWorkMode_Photo_Delay->insertItem(-2, "some", 100);
-    ui->ComboBox_SubWorkMode_Photo_Delay->insertItem(-1, "somesome");
+//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("1");
+//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("2");
+//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("3");
+//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("4");
+//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("5");
+//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("6");
+//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("7");
+//    ui->ComboBox_SubWorkMode_Photo_Delay->insertItem(-2, "some", 100);
+//    ui->ComboBox_SubWorkMode_Photo_Delay->insertItem(-1, "somesome");
 
 //    ui->formLayout->addRow(QString::fromUtf8("和最大值和step，"), (QWidget*)(new QComboBox()));
 
-    sendCmd(Remo_CmdId_Camera_Get_WorkMode);
-//    sendCmd(Remo_CmdId_Camera_Get_CapDelayTime_Range);
-//    sendCmd(Remo_CmdId_Camera_Get_CapDelayTime);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_WorkMode);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_CapDelayTime_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_CapDelayTime);
 }
 
 PhotoAndVideoDialog::~PhotoAndVideoDialog()
@@ -94,6 +73,7 @@ void PhotoAndVideoDialog::workModeGot(const Remo_Camera_WorkMode_s &workmode)
 {
     qDebug() << "PhotoAndVideoDialog::workModeGot!!!!";
     Remo_Camera_MainWorkMode_e mainWorkMode = static_cast<Remo_Camera_MainWorkMode_e>(workmode.MainWorkMode);
+    setRecVideoByMainWorkMode(mainWorkMode);
     switch (mainWorkMode) {
     case MainWorkMode_Photo:
         IF_COND_SET_ENUMITEM_ACTION_BY_TYPE(workmode.SubWorkMode, SubWorkMode_Photo_Single, radioButton, setChecked);
@@ -151,21 +131,32 @@ void PhotoAndVideoDialog::cameraSettingGot(const std::vector<uint8_t> & data, Re
 
 void PhotoAndVideoDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId)
 {
-    for (auto it : rangeSet) {
-        QComboBox * ptr = static_cast<QComboBox*>(findUiPtrById(cmdId));
-        if (nullptr != ptr) {
-            ptr->insertItem(it.Index, it.ShowStr, QVariant(it.Index));//插入item并存储enum值在QVariant中
-            ItemData itemData;
-            if (findItemByUiPtr(ptr, itemData)) {
-                sendCmd(static_cast<Remo_CmdId_e>(itemData.CmdId_GetData));//获取当前相机设置值
-            }
+    QComboBox * ptr = static_cast<QComboBox*>(findUiPtrById(cmdId));
+    if (nullptr != ptr) {
+        for (auto it : rangeSet) {
+            ptr->insertItem(it.Index, QString::fromUtf8(it.ShowStr.data()), QVariant(it.Index));//插入item并存储enum值在QVariant中
+        }
+        ItemData itemData;
+        if (findItemByUiPtr(ptr, itemData)) {
+            sendCmdCamera(static_cast<Remo_CmdId_e>(itemData.CmdId_GetData));//获取当前相机设置值
+            qDebug() << "send cmd to get current camera setting id is " << itemData.CmdId_GetData;
         }
     }
 }
 
 void PhotoAndVideoDialog::initSurportRange()
 {
-    sendCmd(Remo_CmdId_Camera_Get_CapDelayTime_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_CapDelayTime_Range);
+}
+
+void PhotoAndVideoDialog::setRecVideoByMainWorkMode(Remo_Camera_MainWorkMode_e mainWorkMode)
+{
+    if (MainWorkMode_Photo == mainWorkMode ||
+        MainWorKMode_MultiPhoto == mainWorkMode) {
+        recordOrCapture = false;
+    } else {
+        recordOrCapture = true;
+    }
 }
 
 #ifndef ON_ENUMITEM_ACTION
@@ -173,11 +164,12 @@ void PhotoAndVideoDialog::initSurportRange()
 #define ON_ENUMITEM_ACTION(mainEnum, enumItem, type, action, ...) \
     void PhotoAndVideoDialog::on_##type##_##enumItem##_##action()\
     {\
+        setRecVideoByMainWorkMode(mainEnum);\
         Remo_Camera_WorkMode_s workMode;\
         workMode.MainWorkMode = mainEnum;\
         workMode.SubWorkMode = enumItem;\
         async_setWorkMode(workMode);\
-        sendCmd(__VA_ARGS__);\
+        sendCmdCamera(__VA_ARGS__);\
     }
 
 ON_ENUMITEM_ACTION(MainWorkMode_Photo, SubWorkMode_Photo_Single, radioButton, clicked)
@@ -196,22 +188,45 @@ ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWcorkMode_Recode_SlowMotion, radioBut
 
 void PhotoAndVideoDialog::on_pushButton_Start_clicked()
 {
-//    if ()
+    if (recordOrCapture) {
+        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
+    } else {
+        sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
+    }
+    ui->pushButton_Stop->setEnabled(true);
+    ui->pushButton_Start->setEnabled(false);
 }
 
 void PhotoAndVideoDialog::on_pushButton_Stop_clicked()
 {
-
+    if (recordOrCapture) {
+        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
+    } else {
+        sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
+    }
+    ui->pushButton_Start->setEnabled(true);
+    ui->pushButton_Stop->setEnabled(false);
 }
 
 void PhotoAndVideoDialog::on_ComboBox_SubWorkMode_Photo_Delay_activated(int index)
 {
-    int itemIndex = ui->ComboBox_SubWorkMode_Photo_Delay->itemData(index).toInt();
-    ItemData itemdata;
-    if (findItemByUiPtr(ui->ComboBox_SubWorkMode_Photo_Delay, itemdata)) {
-        sendCmd(static_cast<Remo_CmdId_e>(itemdata.CmdId_SetData));
-        qDebug() << "on_ComboBox_SubWorkMode_Photo_Delay_activated send cmd" \
-                 << index << "cmdid is " << itemdata.CmdId_SetData;
+//    int itemIndex = ui->ComboBox_SubWorkMode_Photo_Delay->itemData(index).toInt();
+//    ItemData itemdata;
+//    if (findItemByUiPtr(ui->ComboBox_SubWorkMode_Photo_Delay, itemdata)) {
+//        sendCmdCamera(static_cast<Remo_CmdId_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
+//        qDebug() << "on_ComboBox_SubWorkMode_Photo_Delay_activated send cmd" \
+//                 << index << "cmdid is " << itemdata.CmdId_SetData;
+//    }
+
+    QComboBox * comboBox = dynamic_cast<QComboBox*>(sender());
+    if (nullptr != comboBox) {
+        int itemIndex = comboBox->itemData(index).toInt();
+        ItemData itemdata;
+        if (findItemByUiPtr(comboBox, itemdata)) {
+            sendCmdCamera(static_cast<Remo_CmdId_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
+            qDebug() << "on_ComboBox_SubWorkMode_Photo_Delay_activated send cmd" \
+                     << index << "cmdid is " << itemdata.CmdId_SetData;
+        }
     }
 }
 

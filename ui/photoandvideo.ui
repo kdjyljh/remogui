@@ -16,14 +16,14 @@
   <widget class="QTabWidget" name="tabWidget_photoAndVedio">
    <property name="geometry">
     <rect>
-     <x>50</x>
+     <x>30</x>
      <y>120</y>
-     <width>361</width>
-     <height>381</height>
+     <width>501</width>
+     <height>371</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="tab_photo">
     <attribute name="title">
@@ -32,10 +32,10 @@
     <widget class="QWidget" name="formLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>251</width>
-       <height>182</height>
+       <x>40</x>
+       <y>20</y>
+       <width>241</width>
+       <height>161</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="formLayout">
@@ -98,8 +98,8 @@
     <widget class="QGroupBox" name="groupBox">
      <property name="geometry">
       <rect>
-       <x>20</x>
-       <y>200</y>
+       <x>40</x>
+       <y>190</y>
        <width>241</width>
        <height>131</height>
       </rect>
@@ -143,8 +143,8 @@
     <widget class="QRadioButton" name="radioButton_SubWorkMode_Photo_Single">
      <property name="geometry">
       <rect>
-       <x>300</x>
-       <y>10</y>
+       <x>10</x>
+       <y>20</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -153,14 +153,14 @@
       <string/>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
     <widget class="QRadioButton" name="radioButton_SubWorkMode_MultiPhoto_Burst">
      <property name="geometry">
       <rect>
-       <x>300</x>
-       <y>40</y>
+       <x>10</x>
+       <y>60</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -172,8 +172,8 @@
     <widget class="QRadioButton" name="radioButton_SubWorkMode_Photo_Delay">
      <property name="geometry">
       <rect>
-       <x>300</x>
-       <y>80</y>
+       <x>10</x>
+       <y>90</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -185,8 +185,8 @@
     <widget class="QRadioButton" name="radioButton_SubWorkMode_MultiPhoto_Continue">
      <property name="geometry">
       <rect>
-       <x>300</x>
-       <y>110</y>
+       <x>10</x>
+       <y>120</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -198,8 +198,8 @@
     <widget class="QRadioButton" name="radioButton_SubWorkMode_MultiPhoto_Panorama">
      <property name="geometry">
       <rect>
-       <x>300</x>
-       <y>140</y>
+       <x>10</x>
+       <y>150</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -211,8 +211,8 @@
     <widget class="QRadioButton" name="radioButton_SubWorkMode_MultiPhoto_Lapse">
      <property name="geometry">
       <rect>
-       <x>290</x>
-       <y>270</y>
+       <x>10</x>
+       <y>250</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -220,6 +220,48 @@
      <property name="text">
       <string/>
      </property>
+    </widget>
+    <widget class="QWidget" name="formLayoutWidget_4">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>20</y>
+       <width>191</width>
+       <height>101</height>
+      </rect>
+     </property>
+     <layout class="QFormLayout" name="formLayout_4">
+      <item row="0" column="0">
+       <widget class="QLabel" name="hDRLabel">
+        <property name="text">
+         <string>HDR模式</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="hDRComboBox"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="Label_2">
+        <property name="text">
+         <string>场景</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="ComboBox"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="Label_14">
+        <property name="text">
+         <string>分辨率</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="ComboBox_2"/>
+      </item>
+     </layout>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_video">
@@ -229,7 +271,7 @@
     <widget class="QWidget" name="formLayoutWidget_3">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>40</x>
        <y>20</y>
        <width>251</width>
        <height>151</height>
@@ -299,7 +341,7 @@
     <widget class="QRadioButton" name="radioButton_SubWorkMode_Recode_Normal">
      <property name="geometry">
       <rect>
-       <x>290</x>
+       <x>10</x>
        <y>20</y>
        <width>41</width>
        <height>21</height>
@@ -308,14 +350,17 @@
      <property name="text">
       <string/>
      </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
     <widget class="QRadioButton" name="radioButton_SubWorkMode_Recode_Loop">
      <property name="geometry">
       <rect>
-       <x>290</x>
+       <x>10</x>
        <y>60</y>
        <width>31</width>
        <height>21</height>
@@ -328,7 +373,7 @@
     <widget class="QRadioButton" name="radioButton_SubWcorkMode_Recode_Photo">
      <property name="geometry">
       <rect>
-       <x>290</x>
+       <x>10</x>
        <y>90</y>
        <width>41</width>
        <height>21</height>
@@ -341,7 +386,7 @@
     <widget class="QRadioButton" name="radioButton_SubWcorkMode_Recode_Collapses">
      <property name="geometry">
       <rect>
-       <x>290</x>
+       <x>10</x>
        <y>120</y>
        <width>41</width>
        <height>21</height>
@@ -354,7 +399,7 @@
     <widget class="QRadioButton" name="radioButton_SubWcorkMode_Recode_SlowMotion">
      <property name="geometry">
       <rect>
-       <x>290</x>
+       <x>10</x>
        <y>150</y>
        <width>41</width>
        <height>21</height>
@@ -364,49 +409,65 @@
       <string/>
      </property>
     </widget>
+    <widget class="QWidget" name="formLayoutWidget_5">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>190</y>
+       <width>251</width>
+       <height>120</height>
+      </rect>
+     </property>
+     <layout class="QFormLayout" name="formLayout_5">
+      <item row="0" column="0">
+       <widget class="QLabel" name="Label_15">
+        <property name="text">
+         <string>主码流分辨率</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="ComboBox_3"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="Label_16">
+        <property name="text">
+         <string>实时预览分辨率</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="ComboBox_4"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="thumbnailLabel">
+        <property name="text">
+         <string>录像thumbnail分辨率</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="Label_17">
+        <property name="text">
+         <string>慢动作回放分辨率</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="ComboBox_5"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="ComboBox_6"/>
+      </item>
+     </layout>
+    </widget>
    </widget>
-  </widget>
-  <widget class="QWidget" name="horizontalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>20</y>
-     <width>291</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QRadioButton" name="radioButton_videoMode">
-      <property name="text">
-       <string>录影</string>
-      </property>
-      <property name="checked">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QRadioButton" name="radioButton_photoMode">
-      <property name="text">
-       <string>拍照</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="pushButton_updateSetting">
-      <property name="text">
-       <string>更新配置</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
   </widget>
   <widget class="QPushButton" name="pushButton_Start">
    <property name="geometry">
     <rect>
-     <x>80</x>
-     <y>80</y>
+     <x>120</x>
+     <y>40</y>
      <width>61</width>
      <height>31</height>
     </rect>
@@ -418,8 +479,8 @@
   <widget class="QPushButton" name="pushButton_Stop">
    <property name="geometry">
     <rect>
-     <x>240</x>
-     <y>80</y>
+     <x>270</x>
+     <y>40</y>
      <width>71</width>
      <height>31</height>
     </rect>

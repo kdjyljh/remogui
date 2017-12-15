@@ -14,6 +14,9 @@ public:
     static boost::shared_ptr<ReceiveDataHandler> getInstance();
 
     void registerDataHandler(boost::shared_ptr<ProtocolDataInterface> handler) {
+        for (auto it : handlerPtrList) {
+            if (it == handler) return;
+        }
         handlerPtrList.push_back(handler);
     }
 

@@ -57,10 +57,10 @@ SOURCES += \
     src/receivedataproc.cpp \
     src/receivedatahandler.cpp \
     src/protocaldatainterface.cpp \
-    src/cameraworkmode.cpp \
     src/workmodedialog.cpp \
     src/itemdatadef.cpp \
-    src/aemodedialog.cpp
+    src/aemodedialog.cpp \
+    src/protocoldataInterfaceimpl.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
@@ -71,11 +71,11 @@ HEADERS += \
     src/camerafielddef.h \
     src/receivedatahandler.h \
     src/protocaldatainterface.h \
-    src/cameraworkmode.h \
     src/cmddef.h \
     src/itemdatadef.h \
     src/workmodedialog.h \
-    src/aemodedialog.h
+    src/aemodedialog.h \
+    src/protocoldataInterfaceimpl.h
 
 FORMS += \
     ui/mainwindow.ui \

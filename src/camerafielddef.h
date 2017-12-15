@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+
 /*************工作模式控制命令族**************/
 /*
  * cmdset:0x1
@@ -108,6 +109,7 @@ typedef enum Remo_Camera_ImageResolution_E
 {
     ImageResolution_3840_2160 = 0,
     ImageResolution_4000_3000,
+    ImageResolution_Bott
 }Remo_Camera_ImageResolution_e;
 
 

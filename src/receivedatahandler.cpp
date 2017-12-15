@@ -3,23 +3,7 @@
 
 ReceiveDataHandler::ReceiveDataHandler()
 {
-//    ReceiveDataProc::getInstance()->registerHandler(shared_from_this());
 }
-
-//Remo_CmdType_e ReceiveDataHandler::map2CmdType()
-//{
-//    Remo_CmdId_e id = data->cmdID;
-//    Remo_CmdSet_e set = data->cmdSet;
-//    if (set == Remo_CmdSet_Camera && 0xa0 > id && 0x00 <= id) {
-//        return Remo_CmdType_Camera_WorkMode;
-//    }
-//    else if (set == Remo_CmdSet_Camera && 0x200 > id && 0xa0 <= id) {
-//        return Remo_CmdType_Camera_AdvancedSetting;
-//    }
-//    else {
-//        return Remo_CmdType_Camera_WorkMode;
-//    }
-//}
 
 boost::shared_ptr<ReceiveDataHandler> ReceiveDataHandler::getInstance()
 {

@@ -31,7 +31,7 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QComboBox" name="ComboBox"/>
+     <widget class="QComboBox" name="ComboBox_AeMode"/>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="Label_3">
@@ -62,16 +62,16 @@
      </widget>
     </item>
     <item row="4" column="1">
-     <widget class="QComboBox" name="ComboBox_2"/>
+     <widget class="QComboBox" name="ComboBox_Shutter"/>
     </item>
     <item row="1" column="1">
-     <widget class="QComboBox" name="ComboBox_3"/>
+     <widget class="QComboBox" name="ComboBox_Aperture"/>
     </item>
     <item row="2" column="1">
-     <widget class="QComboBox" name="ComboBox_4"/>
+     <widget class="QComboBox" name="ComboBox_ISO"/>
     </item>
     <item row="3" column="1">
-     <widget class="QComboBox" name="ComboBox_5"/>
+     <widget class="QComboBox" name="ComboBox_Evbias"/>
     </item>
    </layout>
   </widget>

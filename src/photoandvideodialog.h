@@ -2,12 +2,12 @@
 #define PHOTOANDVIDEODIALOG_H
 #include "ui_photoandvideo.h"
 //#include "camerasetting.h"
-#include "cameraworkmode.h"
+#include "protocoldataInterfaceimpl.h"
 
 #include <QDialog>
 #include <map>
 
-class PhotoAndVideoDialog : public QDialog, public CameraWorkMode
+class PhotoAndVideoDialog : public QDialog, public ProtocolDataInterfaceImpl
 {
 Q_OBJECT
 public:
@@ -31,11 +31,13 @@ signals:
 //    void cameraSettingChanged(const PhotoAndVideoSetting &pvSetting);
 
 private:
-    Ui::PhotoAndVideoDialog *ui; // 来自uic生成的header中的类（photoandvideodialog.ui）
+    Ui::PhotoAndVideoDialog *ui; // 来自uic生成的header中的类（photoandvideodialog.ui
+    bool recordOrCapture; //但前是拍照还算录影模式  : true为录影模式
 //    PhotoAndVideoSetting photoAndVideoSetting;
     void initSurportRange();
+    void setRecVideoByMainWorkMode(Remo_Camera_MainWorkMode_e mainWorkMode);
 
-    void getWorkModeFromCamera();
+//    void getWorkModeFromCamera();
 private slots:
     void on_radioButton_SubWorkMode_Photo_Single_clicked();
     void on_radioButton_SubWorkMode_Photo_Delay_clicked();

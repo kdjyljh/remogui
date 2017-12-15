@@ -1,18 +1,13 @@
 #include "mainwindow.h"
 #include <QApplication>
-
-#include <unordered_map>
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
-#include <boost/thread.hpp>
+//#include <boost/shared_ptr.hpp>
 #include "../thirdparty/Protocol.hpp"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    MainWindow * instance = MainWindow::getWindInstace();
-    instance->show();
+    MainWindow::getWindInstace()->show();
 
     return a.exec();
 }

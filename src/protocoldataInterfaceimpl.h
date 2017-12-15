@@ -3,20 +3,20 @@
 #include "protocaldatainterface.h"
 #include "camerafielddef.h"
 
-class CameraWorkMode : public ProtocolDataInterface
+class ProtocolDataInterfaceImpl : public ProtocolDataInterface
 {
 public:
-    CameraWorkMode();
+    ProtocolDataInterfaceImpl();
 
     void async_setWorkMode(const Remo_Camera_WorkMode_s & workmode);
 
     virtual void handle() override;
 
-    void sendCmd(Remo_CmdId_e cmdId,
+    void sendCmdCamera(Remo_CmdId_e cmdId,
                    std::vector<uint8_t> data = std::vector<uint8_t>(),
             CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
 
-    void sendCmd() {}
+    void sendCmdCamera() {}
 
 protected:
     virtual void workModeGot(const Remo_Camera_WorkMode_s & workmode) {}

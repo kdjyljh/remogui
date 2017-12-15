@@ -42,13 +42,16 @@ public:
 
     Remo_CmdSet_e getCmdSet(){ return cmdSet;}
 
-    void sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet, Remo_CmdId_e cmdId, bool needAckApp, bool needAckProto,
+    void sendCmdCamera(CommDeviceEnum device, Remo_CmdSet_e cmdSet, Remo_CmdId_e cmdId, bool needAckApp, bool needAckProto,
                      CommProtoVariables::RequestRespond reqres, std::vector<uint8_t> data);
+
+    static bool isBigEndian();
+    static void endianTurn(std::vector<uint8_t> & data);
 
 protected:
     ProtocolStruct data;
-    int reqMmaxRetry = 5;
-    long reqIntervalUS = 50000;
+    int reqMmaxRetry;
+    long reqIntervalUS;
 
     bool rangePayloadParer(uint8_t *srcData, int srcLength, Range_Data **destData, int *destLength);
     bool mergeRange(Range_Data *srcRange, int srcLength, std::set<SubItemData> & destRange);

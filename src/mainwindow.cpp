@@ -40,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     receiveDataProc(ReceiveDataProc::getInstance()),
     photoAndVideoDialog(boost::shared_ptr<PhotoAndVideoDialog>(new PhotoAndVideoDialog(this))),
     aeModeDialog(boost::shared_ptr<AeModeDialog>(new AeModeDialog(this))),
+    focusDialog(boost::shared_ptr<FocusDialog>(new FocusDialog(this))),
 //    workModeDialog(boost::shared_ptr<WorkModeDialog>(new WorkModeDialog)),
     actionGroupResolution(new QActionGroup(this)),
     actionGroupVideoStandard(new QActionGroup(this)),
@@ -120,77 +121,77 @@ boost::shared_ptr<MainWindow> MainWindow::getWindInstace()
 
 void MainWindow::setupAction()
 {
-    addActionToGroupByMenu(ui->menu_resolution, actionGroupResolution);
-    connect(this->actionGroupResolution, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_resolution_triggered(QAction*)));
-    ui->action_resolution_2_7Kp24_2_7Kp24->setData(QVariant("2704,1520,24,2704,1520,24"));
-    ui->action_resolution_2_7Kp30_2_7Kp25->setData(QVariant("2704,1520,30,2704,1520,25"));
-    ui->action_resolution_4Kp24_4Kp24->setData(QVariant("4096,2160,24,4096,2160,24"));
-    ui->action_resolution_4Kp30_4Kp25->setData(QVariant("3840,2160,30,4096,2160,25"));
-    ui->action_resolution_720p24_720p24->setData(QVariant("1080,720,24,1080,720,24"));
-    ui->action_resolution_720p30_720p25->setData(QVariant("1280,720,30,1080,720,25"));
-    ui->action_resolution_720p48_720p48->setData(QVariant("1280,720,48,1080,720,48"));
-    ui->action_resolution_720p60_720p50->setData(QVariant("1280,720,60,1080,720,50"));
-    ui->action_resolution_720p120_720p100->setData(QVariant("1280,720,120,1080,720,100"));
-    ui->action_resolution_720p240_720p200->setData(QVariant("1280,720,240,1080,720,200"));
-    ui->action_resolution_1080p24_1080p24->setData(QVariant("1920,1080,24,1920,1080,24"));
-    ui->action_resolution_1080p30_1080p25->setData(QVariant("1920,1080,30,1920,1080,25"));
-    ui->action_resolution_1080p48_1080p48->setData(QVariant("1920,1080,48,1920,1080,48"));
-    ui->action_resolution_1080p60_1080p50->setData(QVariant("1920,1080,60,1920,1080,50"));
-    ui->action_resolution_1080p120_1080p100->setData(QVariant("1920,1080,120,1920,1080,100"));
+//    addActionToGroupByMenu(ui->menu_resolution, actionGroupResolution);
+//    connect(this->actionGroupResolution, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_resolution_triggered(QAction*)));
+//    ui->action_resolution_2_7Kp24_2_7Kp24->setData(QVariant("2704,1520,24,2704,1520,24"));
+//    ui->action_resolution_2_7Kp30_2_7Kp25->setData(QVariant("2704,1520,30,2704,1520,25"));
+//    ui->action_resolution_4Kp24_4Kp24->setData(QVariant("4096,2160,24,4096,2160,24"));
+//    ui->action_resolution_4Kp30_4Kp25->setData(QVariant("3840,2160,30,4096,2160,25"));
+//    ui->action_resolution_720p24_720p24->setData(QVariant("1080,720,24,1080,720,24"));
+//    ui->action_resolution_720p30_720p25->setData(QVariant("1280,720,30,1080,720,25"));
+//    ui->action_resolution_720p48_720p48->setData(QVariant("1280,720,48,1080,720,48"));
+//    ui->action_resolution_720p60_720p50->setData(QVariant("1280,720,60,1080,720,50"));
+//    ui->action_resolution_720p120_720p100->setData(QVariant("1280,720,120,1080,720,100"));
+//    ui->action_resolution_720p240_720p200->setData(QVariant("1280,720,240,1080,720,200"));
+//    ui->action_resolution_1080p24_1080p24->setData(QVariant("1920,1080,24,1920,1080,24"));
+//    ui->action_resolution_1080p30_1080p25->setData(QVariant("1920,1080,30,1920,1080,25"));
+//    ui->action_resolution_1080p48_1080p48->setData(QVariant("1920,1080,48,1920,1080,48"));
+//    ui->action_resolution_1080p60_1080p50->setData(QVariant("1920,1080,60,1920,1080,50"));
+//    ui->action_resolution_1080p120_1080p100->setData(QVariant("1920,1080,120,1920,1080,100"));
 
-    addActionToGroupByMenu(ui->menu_videoStandard, actionGroupVideoStandard);
-    connect(this->actionGroupVideoStandard, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_videoStandard_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_videoStandard, actionGroupVideoStandard);
+//    connect(this->actionGroupVideoStandard, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_videoStandard_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_whiteBalance, actionGroupWhiteBalance);
-    connect(this->actionGroupWhiteBalance, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_WhiteBalance_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_whiteBalance, actionGroupWhiteBalance);
+//    connect(this->actionGroupWhiteBalance, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_WhiteBalance_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_exposure, actionGroupExposure);
-    connect(actionGroupExposure, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_exposure_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_exposure, actionGroupExposure);
+//    connect(actionGroupExposure, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_exposure_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_ISO, actionGroupISO);
-    connect(this->actionGroupISO, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_ISO_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_ISO, actionGroupISO);
+//    connect(this->actionGroupISO, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_ISO_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_exposureGear, actionGroupExposureGear);
-    connect(actionGroupExposureGear, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_exposureGear_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_exposureGear, actionGroupExposureGear);
+//    connect(actionGroupExposureGear, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_exposureGear_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_grid, actionGroupGrid);
-    connect(actionGroupGrid, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_grid_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_grid, actionGroupGrid);
+//    connect(actionGroupGrid, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_grid_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_pictureSize, actionGroupPictureSize);
-    connect(actionGroupPictureSize, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_pictureSize_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_pictureSize, actionGroupPictureSize);
+//    connect(actionGroupPictureSize, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_pictureSize_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_quality, actionGroupQuality);
-    connect(actionGroupQuality, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_quality_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_quality, actionGroupQuality);
+//    connect(actionGroupQuality, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_quality_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_corscatAvoidance, actionGroupCorscatAvoidance);
-    connect(actionGroupCorscatAvoidance, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_corscatAvoidance_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_corscatAvoidance, actionGroupCorscatAvoidance);
+//    connect(actionGroupCorscatAvoidance, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_corscatAvoidance_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_sharpening, actionGroupSharpening);
-    connect(actionGroupSharpening, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_sharpening_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_sharpening, actionGroupSharpening);
+//    connect(actionGroupSharpening, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_sharpening_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_HDR, actionGroupHDR);
-    connect(actionGroupHDR, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_HDR_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_HDR, actionGroupHDR);
+//    connect(actionGroupHDR, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_HDR_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_lens, actionGroupLens);
-    connect(actionGroupLens, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_lens_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_lens, actionGroupLens);
+//    connect(actionGroupLens, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_lens_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_PTZSpeed, actionGroupPTZSpeed);
-    connect(actionGroupPTZSpeed, SIGNAL(triggered(QAction*)), this, SLOT(actiongroup_PTZspeed_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_PTZSpeed, actionGroupPTZSpeed);
+//    connect(actionGroupPTZSpeed, SIGNAL(triggered(QAction*)), this, SLOT(actiongroup_PTZspeed_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_PTZCalibration, actionGroupPTZCalibration);
-    connect(actionGroupPTZCalibration, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_PTZCalibration_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_PTZCalibration, actionGroupPTZCalibration);
+//    connect(actionGroupPTZCalibration, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_PTZCalibration_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_intelliMode, actionGroupIntelliMode);
-    connect(actionGroupIntelliMode, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_intelliMode_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_intelliMode, actionGroupIntelliMode);
+//    connect(actionGroupIntelliMode, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_intelliMode_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_closeup, actionGroupCloseup);
-    connect(actionGroupCloseup, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_closeup_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_closeup, actionGroupCloseup);
+//    connect(actionGroupCloseup, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_closeup_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_scene, actionGroupScene);
-    connect(actionGroupScene, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_scene_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_scene, actionGroupScene);
+//    connect(actionGroupScene, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_scene_triggered(QAction*)));
 
-    addActionToGroupByMenu(ui->menu_intelligLens, actionGroupIntelligLens);
-    connect(actionGroupIntelligLens, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_intelligLens_triggered(QAction*)));
+//    addActionToGroupByMenu(ui->menu_intelligLens, actionGroupIntelligLens);
+//    connect(actionGroupIntelligLens, SIGNAL(triggered(QAction*)), this, SLOT(actionGroup_intelligLens_triggered(QAction*)));
 }
 
 void MainWindow::receiveDataDispatch(const std::vector<uint8_t> &data)
@@ -209,6 +210,8 @@ void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cm
     QMenu * menu = static_cast<QMenu*>(findUiPtrById(cmdId));
     if (nullptr != menu) {
         QActionGroup *group = new QActionGroup(this);
+
+        while (!menu->actions().empty()) menu->actions().takeFirst(); //先删除menu的子菜单
         for (auto it : rangeSet) {
             QAction * action = new QAction(QString::fromUtf8(it.ShowStr.data()), menu);
             action->setData(QVariant(it.Index));//将enum值放入Action的QVariant中
@@ -216,6 +219,7 @@ void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cm
             group->addAction(action);
             connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(menu_action_triggered(QAction*)));
         }
+
         ItemData itemData;
         if (findItemByUiPtr(menu, itemData)) {
             sendCmdCamera(static_cast<Remo_CmdId_e>(itemData.CmdId_GetData));
@@ -223,7 +227,7 @@ void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cm
     }
 }
 
-void MainWindow::cameraSettingGot(const std::vector<uint8_t> &data, Remo_CmdId_e cmdId)
+void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_e cmdId)
 {
     if (data.empty()) return;
 
@@ -247,22 +251,16 @@ void MainWindow::setLabelPix(const QImage &image)
     viewLable->setPixmap(pix);
 }
 
-//void MainWindow::updatePhotoAndVideoSetting(const PhotoAndVideoSetting & pvSetting)
-//{
-//    qDebug() << "get camera setting changed signal cs.photoContinusTime:" << pvSetting.photoContinusTime;
-//    cameraSetting->photoAndVideoSetting = pvSetting;
-//}
-
 void MainWindow::on_action_photoAndVideo_triggered()
 {
     photoAndVideoDialog->show();
 //    workModeDialog->show();
 }
 
-void MainWindow::on_action_continuousAutoFocus_triggered()
-{
-        qDebug() << "continuus Atuo Foces";
-}
+//void MainWindow::on_action_continuousAutFocusDialogs_triggered()
+//{
+//        qDebug() << "continuus Atuo Foces";
+//}
 
 void MainWindow::on_action_autoRotate_triggered()
 {
@@ -317,6 +315,11 @@ void MainWindow::on_action_exposureCompensation_triggered()
 //    exposureCompensationSpinBox->setFixedSize(100, 20);
 //    exposureCompensationSpinBox->show();
     aeModeDialog->show();
+}
+
+void MainWindow::on_action_FocusAndZoom_triggered()
+{
+    focusDialog->show();
 }
 
 void MainWindow::actionGroup_resolution_triggered(QAction *action)
@@ -563,24 +566,24 @@ void MainWindow::actionGroup_exposureGear_triggered(QAction *action)
 
 void MainWindow::actionGroup_grid_triggered(QAction *action)
 {
-    if (nullptr == action) {
+//    if (nullptr == action) {
 
-    }
-    else if (ui->action_grid_centerPoint == action) {
+//    }
+//    else if (ui->action_grid_centerPoint == action) {
 
-    }
-    else if (ui->action_grid_grid == action) {
+//    }
+//    else if (ui->action_grid_grid == action) {
 
-    }
-    else if (ui->action_grid_gridAndFocus == action) {
+//    }
+//    else if (ui->action_grid_gFocusDialogdFocus == action) {
 
-    }
-    else if (ui->action_grid_NONE == action) {
+//    }
+//    else if (ui->action_grid_NONE == action) {
 
-    }
-    else {
+//    }
+//    else {
 
-    }
+//    }
 }
 
 void MainWindow::actionGroup_pictureSize_triggered(QAction *action)

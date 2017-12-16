@@ -23,10 +23,10 @@ protected:
 //    virtual void capDelayTimeGot(const int & value){}
 //    virtual void capDelayTimeListGot(const Range_Data & range){}
     virtual void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId){}
-    virtual void cameraSettingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId) {}
+    virtual void settingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId) {}
+    virtual void controlGot() {}
 
 private:
-
 };
 
 #endif // CAMERAWORKMODE_H

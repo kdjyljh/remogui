@@ -1,28 +1,77 @@
 #include "aemodedialog.h"
 #include <QDebug>
+#include <cstring>
 
+
+struct CmdGetSetRang
+{
+    int Get;
+    int Set;
+    int Range;
+};
+
+const std::vector<CmdGetSetRang> cmdV =
+{
+    {Remo_CmdId_Camera_Get_Current_Evbias, Remo_CmdId_Camera_PlaceHolder, Remo_CmdId_Camera_Get_Current_Evbias_Range},
+    {Remo_CmdId_Camera_Get_Current_Aperture, Remo_CmdId_Camera_PlaceHolder, Remo_CmdId_Camera_Get_Current_Aperture_Range},
+    {Remo_CmdId_Camera_Get_Current_Shutter, Remo_CmdId_Camera_PlaceHolder, Remo_CmdId_Camera_Get_Current_Shutter_Range},
+    {Remo_CmdId_Camera_Get_Current_ISO, Remo_CmdId_Camera_PlaceHolder, Remo_CmdId_Camera_Get_Current_ISO_Range}
+};
+//bool findOtherCmd(CmdGetSetRang & ret, int get, int set = Remo_CmdId_Camera_PlaceHolder, int range = Remo_CmdId_Camera_PlaceHolder);
+static bool findOtherCmd(CmdGetSetRang & ret, int get, int set = Remo_CmdId_Camera_PlaceHolder, int range = Remo_CmdId_Camera_PlaceHolder)
+{
+    for (auto it : cmdV) {
+        if (get == it.Get || set == it.Set) {
+            ret = it;
+            return true;
+        }
+    }
+    return false;
+}
 
 AeModeDialog::AeModeDialog(QWidget * parent) :
     QDialog(parent),
     ProtocolDataInterfaceImpl(),
+    currentAeMode(AeMode_Bott),
     ui(new Ui::AeMOde)
 {
     ui->setupUi(this);
     setFixedSize(300, 200);
 
     addItem2Map(ui->ComboBox_AeMode, Remo_CmdId_Camera_Get_AeMode);
+    addItem2Map(ui->ComboBox_Aperture, Remo_CmdId_Camera_Get_Current_Aperture,
+                Remo_CmdId_Camera_PlaceHolder, Remo_CmdId_Camera_Get_Current_Aperture_Range, true);
+    addItem2Map(ui->ComboBox_Evbias, Remo_CmdId_Camera_Get_Current_Evbias,
+                Remo_CmdId_Camera_PlaceHolder, Remo_CmdId_Camera_Get_Current_Evbias_Range, true);
+    addItem2Map(ui->ComboBox_Shutter, Remo_CmdId_Camera_Get_Current_Shutter,
+                Remo_CmdId_Camera_PlaceHolder, Remo_CmdId_Camera_Get_Current_Shutter_Range, true);
+    addItem2Map(ui->ComboBox_ISO, Remo_CmdId_Camera_Get_Current_ISO,
+                Remo_CmdId_Camera_PlaceHolder, Remo_CmdId_Camera_Get_Current_ISO_Range, true);
 
-
+    sendCmdCamera(Remo_CmdId_Camera_Get_AeMode_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Aperture_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Shutter_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Current_ISO_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Evbias_Range);
 }
 
-void AeModeDialog::cameraSettingGot(const std::vector<uint8_t> &data, Remo_CmdId_e cmdId)
+void AeModeDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_e cmdId)
 {
-    int valueIndex = data.at(0);
-    if (Remo_CmdId_Camera_Get_AeMode == cmdId) {
-        syncUiModeByAeMode(static_cast<Remo_Camera_AeMode_e>(valueIndex));
-    }
+    int indexValue = 0;
+    memcpy(&indexValue, data.data(), 1);
 
-    QComboBox * ptr = static_cast<QComboBox*>(findUiPtrById(cmdId));
+    QComboBox * ptr = nullptr;
+    if (Remo_CmdId_Camera_Get_AeMode == cmdId) {
+        currentAeMode = static_cast<Remo_Camera_AeMode_e>(indexValue);
+        syncUiModeByAeMode();
+        ptr = static_cast<QComboBox*>(findUiPtrById(Remo_CmdId_Camera_Get_AeMode));
+    }
+    else {
+        CmdGetSetRang cmdGSR;
+        findOtherCmd(cmdGSR, cmdId);
+        ptr = static_cast<QComboBox*>(findUiPtrById(static_cast<Remo_CmdId_e>(cmdId),
+                                                    static_cast<Remo_CmdId_e>(cmdGSR.Set), static_cast<Remo_CmdId_e>(cmdGSR.Range)));
+    }
     if (nullptr != ptr) {
         ItemData itemData;
         if (findItemByUiPtr(ptr, itemData)) {
@@ -37,23 +86,44 @@ void AeModeDialog::cameraSettingGot(const std::vector<uint8_t> &data, Remo_CmdId
     }
 }
 
+//void setCurrentComboxActivated(int activatedData);
+//void setCurrentComboxRange(std::set<SubItemData> rangeSet);
+
 void AeModeDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId)
 {
-    QComboBox * ptr = static_cast<QComboBox*>(findUiPtrById(cmdId));
+//    int indexValue = 0;
+//    memcpy(&indexValue, data.data(), 1);
+
+    QComboBox * ptr = nullptr;
+    if (Remo_CmdId_Camera_Get_AeMode == cmdId) {
+        ptr = static_cast<QComboBox*>(findUiPtrById(Remo_CmdId_Camera_Get_AeMode));
+    }
+    else {
+        CmdGetSetRang cmdGSR;
+        findOtherCmd(cmdGSR, cmdId);
+        ptr = static_cast<QComboBox*>(findUiPtrById(static_cast<Remo_CmdId_e>(cmdId),
+                                                    static_cast<Remo_CmdId_e>(cmdGSR.Set), static_cast<Remo_CmdId_e>(cmdGSR.Range)));
+    }
     if (nullptr != ptr) {
+        connect(ptr, SIGNAL(activated(int)), this, SLOT(combox_activated(int)));
+
+        for (int i = 0; i < ptr->count(); ++i) {
+            ptr->removeItem(i);
+        }
+        for (auto it : rangeSet) {
+            ptr->insertItem(it.Index, QString::fromUtf8(it.ShowStr.data()), it.Index);
+        }
+
         ItemData itemData;
         if (findItemByUiPtr(ptr, itemData)) {
-            for (auto it : itemData.subItemData) {
-                ptr->insertItem(it.Index, QString::fromUtf8(it.ShowStr.data()), it.Index);
-                connect(ptr, SIGNAL(activated(int)), this, SLOT(combox_activated(int)));
-            }
+            sendCmdCamera(static_cast<Remo_CmdId_e>(itemData.CmdId_GetData));
         }
     }
 }
 
-void AeModeDialog::syncUiModeByAeMode(Remo_Camera_AeMode_e aeMode)
+void AeModeDialog::syncUiModeByAeMode()
 {
-    switch (aeMode) {
+    switch (currentAeMode) {
     case AeMode_Auto:
         ui->ComboBox_Aperture->setEnabled(false);
         ui->ComboBox_ISO->setEnabled(false);
@@ -81,6 +151,12 @@ void AeModeDialog::syncUiModeByAeMode(Remo_Camera_AeMode_e aeMode)
     default:
         break;
     }
+
+    sendCmdCamera(Remo_CmdId_Camera_Get_AeMode);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Aperture);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Shutter);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Current_ISO);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Evbias);
 }
 
 void AeModeDialog::combox_activated(int index)

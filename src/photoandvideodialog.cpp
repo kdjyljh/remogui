@@ -30,24 +30,44 @@ PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     buttGroup->addButton(ui->radioButton_SubWorkMode_Photo_Delay);
     buttGroup->addButton(ui->radioButton_SubWorkMode_Photo_Single);
 
-    initSurportRange();
+//    initSurportRange();
+    sendCmdCamera(Remo_CmdId_Camera_Get_WorkMode);
+
+    addItem2Map(ui->ComboBox_CapScene, Remo_CmdId_Camera_Get_CapScene);
+    addItem2Map(ui->ComboBox_ImageResolution, Remo_CmdId_Camera_Get_ImageResolution);
+    addItem2Map(ui->ComboBox_LapseCapInterval, Remo_CmdId_Camera_Get_LapseCap_Interval);
+    addItem2Map(ui->ComboBox_LapseCapTotalTime, Remo_CmdId_Camera_Get_LapseCap_TotalTime);
+    addItem2Map(ui->ComboBox_MainVideo_Resolution, Remo_CmdId_Camera_Get_MainVideo_Resolution);
+    addItem2Map(ui->ComboBox_SlowMotion_Resolution, Remo_CmdId_Camera_Get_SlowMotion_Resolution);
+    addItem2Map(ui->ComboBox_SubVideo_Resolution, Remo_CmdId_Camera_Get_SubVideo_Resolution);
+    addItem2Map(ui->ComboBox_SubWcorkMode_LapseRec_Interval, Remo_CmdId_Camera_Get_LapseRec_Interval);
+    addItem2Map(ui->ComboBox_SubWcorkMode_LapseRec_TotalTime, Remo_CmdId_Camera_Get_LapseRec_TotalTime_Range);
+    addItem2Map(ui->ComboBox_SubWorkMode_MultiPhoto_Burst, Remo_CmdId_Camera_Get_BurstCap);
+    addItem2Map(ui->ComboBox_SubWorkMode_MultiPhoto_Continue, Remo_CmdId_Camera_Get_ContiCap);
+    addItem2Map(ui->ComboBox_SubWorkMode_MultiPhoto_Panorama, Remo_CmdId_Camera_Get_PanoMode);
     addItem2Map(ui->ComboBox_SubWorkMode_Photo_Delay, Remo_CmdId_Camera_Get_CapDelayTime);
+    addItem2Map(ui->ComboBox_SubWorkMode_Recode_Loop, Remo_CmdId_Camera_Get_LoopRec_Interval);
+    addItem2Map(ui->comboBox_HDRMode, Remo_CmdId_Camera_Get_HDRMode);
+    addItem2Map(ui->ComboBox_Thumbnail_Resolution, Remo_CmdId_Camera_Get_Thumbnail_Resolution);
 
-//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("1");
-//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("2");
-//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("3");
-//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("4");
-//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("5");
-//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("6");
-//    ui->ComboBox_SubWorkMode_Photo_Delay->addItem("7");
-//    ui->ComboBox_SubWorkMode_Photo_Delay->insertItem(-2, "some", 100);
-//    ui->ComboBox_SubWorkMode_Photo_Delay->insertItem(-1, "somesome");
-
-//    ui->formLayout->addRow(QString::fromUtf8("和最大值和step，"), (QWidget*)(new QComboBox()));
-
-//    sendCmdCamera(Remo_CmdId_Camera_Get_WorkMode);
-//    sendCmdCamera(Remo_CmdId_Camera_Get_CapDelayTime_Range);
-//    sendCmdCamera(Remo_CmdId_Camera_Get_CapDelayTime);
+    sendCmdCamera(Remo_CmdId_Camera_Get_CapDelayTime_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_BurstCap_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_ContiCap_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_PanoMode_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_LapseCap_Interval_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_LapseCap_TotalTime_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_CapScene_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_ImageResolution_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_MainVideo_Resolution_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_SubVideo_Resolution_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Thumbnail_Resolution_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_LoopRec_Interval_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_LapseRec_Interval_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_LapseRec_TotalTime_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_SlowMotion_Resolution_Range);
+    ItemData itemData;
+    if (findItemByUiPtr(ui->comboBox_HDRMode, itemData))
+        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_HDRMode); //HDR
 }
 
 PhotoAndVideoDialog::~PhotoAndVideoDialog()
@@ -104,7 +124,7 @@ void PhotoAndVideoDialog::workModeGot(const Remo_Camera_WorkMode_s &workmode)
     }
 }
 
-void PhotoAndVideoDialog::cameraSettingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId)
+void PhotoAndVideoDialog::settingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId)
 {
     if (data.empty()) {
         return;
@@ -112,7 +132,8 @@ void PhotoAndVideoDialog::cameraSettingGot(const std::vector<uint8_t> & data, Re
 
     QComboBox *ptr = static_cast<QComboBox*>(findUiPtrById(cmdId));
     if (nullptr != ptr) {
-        int value = data.at(0);
+        int value = 0;
+        memcpy(&value, data.data(), 1);
         ItemData item;
         if (findItemByUiPtr(ptr, item)) {
             std::set<SubItemData> subItemSet = item.subItemData;
@@ -133,9 +154,13 @@ void PhotoAndVideoDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_C
 {
     QComboBox * ptr = static_cast<QComboBox*>(findUiPtrById(cmdId));
     if (nullptr != ptr) {
+        for (int i = 0; i < ptr->count(); ++i) ptr->removeItem(i);
         for (auto it : rangeSet) {
             ptr->insertItem(it.Index, QString::fromUtf8(it.ShowStr.data()), QVariant(it.Index));//插入item并存储enum值在QVariant中
         }
+
+        connect(ptr, SIGNAL(activated(int)), this, SLOT(comboBox_activated(int)));
+
         ItemData itemData;
         if (findItemByUiPtr(ptr, itemData)) {
             sendCmdCamera(static_cast<Remo_CmdId_e>(itemData.CmdId_GetData));//获取当前相机设置值
@@ -146,7 +171,7 @@ void PhotoAndVideoDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_C
 
 void PhotoAndVideoDialog::initSurportRange()
 {
-    sendCmdCamera(Remo_CmdId_Camera_Get_CapDelayTime_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_CapDelayTime_Range);
 }
 
 void PhotoAndVideoDialog::setRecVideoByMainWorkMode(Remo_Camera_MainWorkMode_e mainWorkMode)
@@ -208,7 +233,7 @@ void PhotoAndVideoDialog::on_pushButton_Stop_clicked()
     ui->pushButton_Stop->setEnabled(false);
 }
 
-void PhotoAndVideoDialog::on_ComboBox_SubWorkMode_Photo_Delay_activated(int index)
+void PhotoAndVideoDialog::comboBox_activated(int index)
 {
 //    int itemIndex = ui->ComboBox_SubWorkMode_Photo_Delay->itemData(index).toInt();
 //    ItemData itemdata;

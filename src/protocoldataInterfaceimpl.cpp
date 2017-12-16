@@ -1,7 +1,7 @@
 #include "protocoldataInterfaceimpl.h"
 
 ProtocolDataInterfaceImpl::ProtocolDataInterfaceImpl() :
-    ProtocolDataInterface(Remo_CmdSet_Camera)
+    ProtocolDataInterface()
 {
 }
 
@@ -14,16 +14,16 @@ void ProtocolDataInterfaceImpl::handle()
     std::cout << "ProtocolDataInterfaceImpl::handle idValue = " << idValue
               << " cmdId = " << cmdId << " idType = " << idType << std::endl;
 
-    std::set<SubItemData> range;
-    getSurportRange(range);
-    surportRangeGot(range, idValue);
+//    std::set<SubItemData> range;
+//    getSurportRange(range);
+//    surportRangeGot(range, idValue);
 
     if (CmdId_Type_Get == idType) {
         if (Remo_CmdId_Camera_Get_WorkMode == idValue) {
             workModeGot(*reinterpret_cast<Remo_Camera_WorkMode_S*>(data.data.data()));
             return;
         }
-        cameraSettingGot(data.data, idValue);
+        settingGot(data.data, idValue);
     }
     else if (CmdId_Type_Set == idType) {
         Remo_CmdId_SetCmd_ReturnValue_e ret = static_cast<Remo_CmdId_SetCmd_ReturnValue_e>(data.data.at(0));
@@ -37,6 +37,9 @@ void ProtocolDataInterfaceImpl::handle()
         std::set<SubItemData> range;
         getSurportRange(range);
         surportRangeGot(range, idValue);
+    }
+    else if (CmdId_Type_Control == idType) {
+        controlGot();
     }
     else {
         workModeGot(*reinterpret_cast<Remo_Camera_WorkMode_S*>(data.data.data()));

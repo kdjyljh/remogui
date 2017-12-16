@@ -21,7 +21,7 @@ public:
 protected:
     virtual void workModeGot(const Remo_Camera_WorkMode_s & workmode) override;
 //    virtual void capDelayTimeGot(const int & value) override;
-    virtual void cameraSettingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId) override;
+    virtual void settingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId) override;
     virtual void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId) override;
 
 public slots:
@@ -55,7 +55,7 @@ private slots:
     void on_pushButton_Start_clicked();
     void on_pushButton_Stop_clicked();
 
-    void on_ComboBox_SubWorkMode_Photo_Delay_activated(int index);
+    void comboBox_activated(int index);
 };
 
 #endif // PHOTOANDVIDEODIALOG_H

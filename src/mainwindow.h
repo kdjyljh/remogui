@@ -6,6 +6,7 @@
 #include "aemodedialog.h"
 #include "workmodedialog.h"
 #include "receivedataproc.h"
+#include "focusdialog.h"
 
 #include <QMainWindow>
 #include <QLabel>
@@ -34,7 +35,7 @@ public:
 
 protected:
     void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId) override;
-    void cameraSettingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId) override;
+    void settingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId) override;
 
 private:
     Ui::MainWindow *ui;
@@ -43,6 +44,7 @@ private:
     boost::shared_ptr<PhotoAndVideoDialog> photoAndVideoDialog;
 //    boost::shared_ptr<WorkModeDialog> workModeDialog;
     boost::shared_ptr<AeModeDialog> aeModeDialog;
+    boost::shared_ptr<FocusDialog> focusDialog;
 
     QActionGroup *actionGroupResolution;
     QActionGroup *actionGroupVideoStandard;
@@ -81,7 +83,7 @@ private slots:
 private slots:
     //auto connect slots
     void on_action_photoAndVideo_triggered();
-    void on_action_continuousAutoFocus_triggered();
+//    void on_action_continuousAutoFocusDialog_triggered();
     void on_action_autoRotate_triggered();
     void on_action_voices_triggered();
     void on_action_recoveryFactSetting_triggered();
@@ -92,6 +94,7 @@ private slots:
     void on_action_intelligence_sportMode_triggered();
     void on_action_intelligence_zoomedLens_triggered();
     void on_action_exposureCompensation_triggered();
+    void on_action_FocusAndZoom_triggered();
 
     //slots need connect by code
     void actionGroup_resolution_triggered(QAction *action);

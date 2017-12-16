@@ -305,7 +305,7 @@ typedef enum Remo_Camera_PanoMode_E
  * * * * *0x6c:获取缩时摄影的拍摄周期
  * * * * *0x6d:设置缩时摄影的拍摄周期
  * * * * *0x6e:获取缩时摄影的拍摄周期支持范围
- * * * * *0x6f:获取缩时摄影的持续时间
+ * * * * *0x6f:获取ISO
  * * * * *0x70:设置缩时摄影的持续时间
  * * * * *0x71:获取摄影的持续时间支持范围
  * * * * *0x72:获取慢动作回放分辨率
@@ -860,7 +860,7 @@ typedef struct Remo_Camera_FocalLengthInfo_S
     uint16_t FocalLengthMax;  // 最大焦段值
     uint16_t FocalLengthDivideNum;  // 焦段被划分成的分数
 
-}Remo_Camera_FocusLengthInfo_s;
+}Remo_Camera_FocusDialogLengthInfo_s;
 //Max为 35mm等效焦距 *10倍的放大值；FocalLengthDvideNum 将全焦段等分之后进行控制，一般分为64或者 128 或者 256焦段。
 typedef enum Remo_Camera_SpeedLevelNum_E
 {

@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tab_photo">
     <attribute name="title">
@@ -239,7 +239,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="hDRComboBox"/>
+       <widget class="QComboBox" name="comboBox_HDRMode"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="Label_2">
@@ -249,7 +249,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="ComboBox"/>
+       <widget class="QComboBox" name="ComboBox_CapScene"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="Label_14">
@@ -259,7 +259,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QComboBox" name="ComboBox_2"/>
+       <widget class="QComboBox" name="ComboBox_ImageResolution"/>
       </item>
      </layout>
     </widget>
@@ -302,14 +302,14 @@
       <item row="2" column="0">
        <widget class="QLabel" name="Label_10">
         <property name="text">
-         <string>录影拍照</string>
+         <string>缩时摄影拍摄周期</string>
         </property>
        </widget>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="Label_11">
         <property name="text">
-         <string>缩时录影</string>
+         <string>缩时摄影持续时间</string>
         </property>
        </widget>
       </item>
@@ -331,10 +331,10 @@
        <widget class="QComboBox" name="ComboBox_SubWorkMode_Recode_Loop"/>
       </item>
       <item row="2" column="1">
-       <widget class="QComboBox" name="ComboBox_SubWcorkMode_Recode_Photo"/>
+       <widget class="QComboBox" name="ComboBox_SubWcorkMode_LapseRec_Interval"/>
       </item>
       <item row="3" column="1">
-       <widget class="QComboBox" name="ComboBox_SubWcorkMode_Recode_Collapses"/>
+       <widget class="QComboBox" name="ComboBox_SubWcorkMode_LapseRec_TotalTime"/>
       </item>
      </layout>
     </widget>
@@ -351,7 +351,7 @@
       <string/>
      </property>
      <property name="checkable">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="checked">
       <bool>false</bool>
@@ -427,7 +427,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="ComboBox_3"/>
+       <widget class="QComboBox" name="ComboBox_MainVideo_Resolution"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="Label_16">
@@ -437,7 +437,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="ComboBox_4"/>
+       <widget class="QComboBox" name="ComboBox_SubVideo_Resolution"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="thumbnailLabel">
@@ -454,10 +454,10 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QComboBox" name="ComboBox_5"/>
+       <widget class="QComboBox" name="ComboBox_SlowMotion_Resolution"/>
       </item>
       <item row="2" column="1">
-       <widget class="QComboBox" name="ComboBox_6"/>
+       <widget class="QComboBox" name="ComboBox_Thumbnail_Resolution"/>
       </item>
      </layout>
     </widget>

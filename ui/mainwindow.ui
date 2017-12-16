@@ -30,26 +30,6 @@
     <property name="title">
      <string>相机</string>
     </property>
-    <widget class="QMenu" name="menu_resolution">
-     <property name="title">
-      <string>视频分辨率</string>
-     </property>
-     <addaction name="action_resolution_4Kp30_4Kp25"/>
-     <addaction name="action_resolution_4Kp24_4Kp24"/>
-     <addaction name="action_resolution_2_7Kp30_2_7Kp25"/>
-     <addaction name="action_resolution_2_7Kp24_2_7Kp24"/>
-     <addaction name="action_resolution_1080p60_1080p50"/>
-     <addaction name="action_resolution_1080p48_1080p48"/>
-     <addaction name="action_resolution_1080p30_1080p25"/>
-     <addaction name="action_resolution_1080p24_1080p24"/>
-     <addaction name="action_resolution_1080p120_1080p100"/>
-     <addaction name="action_resolution_720p240_720p200"/>
-     <addaction name="action_resolution_720p120_720p100"/>
-     <addaction name="action_resolution_720p60_720p50"/>
-     <addaction name="action_resolution_720p48_720p48"/>
-     <addaction name="action_resolution_720p30_720p25"/>
-     <addaction name="action_resolution_720p24_720p24"/>
-    </widget>
     <widget class="QMenu" name="menu_videoStandard">
      <property name="title">
       <string>视频制式</string>
@@ -75,24 +55,6 @@
      </property>
      <addaction name="action_exposure_globalMetering"/>
      <addaction name="action_exposure_spotMetering"/>
-    </widget>
-    <widget class="QMenu" name="menu_ISO">
-     <property name="title">
-      <string>ISO</string>
-     </property>
-     <addaction name="action_ISO_auto"/>
-     <addaction name="action_ISO_100_400"/>
-     <addaction name="action_ISO_200_800"/>
-     <addaction name="action_ISO_400_1200"/>
-     <addaction name="action_ISO_800_1600"/>
-     <addaction name="action_ISO_1600_3200"/>
-    </widget>
-    <widget class="QMenu" name="menu_exposureGear">
-     <property name="title">
-      <string>曝光档位</string>
-     </property>
-     <addaction name="action_exposureGear_P"/>
-     <addaction name="action_exposureGear_M"/>
     </widget>
     <widget class="QMenu" name="menu_grid">
      <property name="title">
@@ -139,14 +101,6 @@
      <addaction name="action_sharpening_higher"/>
      <addaction name="action_sharpening_highest"/>
     </widget>
-    <widget class="QMenu" name="menu_HDR">
-     <property name="title">
-      <string>HDR</string>
-     </property>
-     <addaction name="action_HDR_off"/>
-     <addaction name="action_HDR_on"/>
-     <addaction name="action_HDR_auto"/>
-    </widget>
     <widget class="QMenu" name="menu_lens">
      <property name="title">
       <string>镜头设置</string>
@@ -157,20 +111,17 @@
      <addaction name="action_lens_hanging"/>
     </widget>
     <addaction name="action_photoAndVideo"/>
-    <addaction name="menu_resolution"/>
+    <addaction name="action_FocusAndZoom"/>
     <addaction name="menu_videoStandard"/>
     <addaction name="menu_whiteBalance"/>
     <addaction name="menu_exposure"/>
     <addaction name="action_continuousAutoFocus"/>
-    <addaction name="menu_ISO"/>
-    <addaction name="menu_exposureGear"/>
     <addaction name="action_exposureCompensation"/>
     <addaction name="menu_grid"/>
     <addaction name="menu_pictureSize"/>
     <addaction name="menu_quality"/>
     <addaction name="menu_corscatAvoidance"/>
     <addaction name="menu_sharpening"/>
-    <addaction name="menu_HDR"/>
     <addaction name="action_autoRotate"/>
     <addaction name="action_voices"/>
     <addaction name="menu_lens"/>
@@ -1146,6 +1097,11 @@
   <action name="action_storageInfo">
    <property name="text">
     <string>存储信息</string>
+   </property>
+  </action>
+  <action name="action_FocusAndZoom">
+   <property name="text">
+    <string>对焦/变焦</string>
    </property>
   </action>
  </widget>

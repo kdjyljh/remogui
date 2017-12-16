@@ -60,7 +60,8 @@ SOURCES += \
     src/workmodedialog.cpp \
     src/itemdatadef.cpp \
     src/aemodedialog.cpp \
-    src/protocoldataInterfaceimpl.cpp
+    src/protocoldataInterfaceimpl.cpp \
+    src/focusdialog.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
@@ -75,13 +76,15 @@ HEADERS += \
     src/itemdatadef.h \
     src/workmodedialog.h \
     src/aemodedialog.h \
-    src/protocoldataInterfaceimpl.h
+    src/protocoldataInterfaceimpl.h \
+    src/focusdialog.h
 
 FORMS += \
     ui/mainwindow.ui \
     ui/photoandvideo.ui \
     ui/workmode.ui \
-    ui/aemode.ui
+    ui/aemode.ui \
+    ui/focus.ui
 
 RESOURCES += \
     resource/image.qrc

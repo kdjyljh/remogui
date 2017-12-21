@@ -1,4 +1,5 @@
 #include "TimedTask.hpp"
+#include "shareddata.h"
 #include "Mix.hpp"
 
 TimedTaskID timed_taskid_gen(uint8_t type, uint64_t idPostfix) {
@@ -57,6 +58,7 @@ void TimedTask::signalhandler_revocable(const boost::system::error_code &err,
     register_work(timedTaskID, func, cntRem, intervalUS, false); // 递归注册,但不允许新建定时器,因为signalhandler可能会推迟到cancel_work之后执行
   } else { // 该任务已经结束
 //    LOG(FATAL) << "通信失败多次，直接退出: " << timedTaskID << " with prefix = " << (timedTaskID >> 56);
+      LOG(INFO) << "通信失败多次，超时: " << timedTaskID << " with prefix = " << (timedTaskID >> 56);
     cancel_work(timedTaskID);
   }
 }
@@ -81,16 +83,23 @@ void TimedTask::signalhandler_irrevocable(const boost::system::error_code &err,
 }
 
 void TimedTask::cancel_work(TimedTaskID timedTaskID) { // 加锁
-  boost::lock_guard<boost::mutex> lock(mutex_);
-  auto workp = workRevocable_.find(timedTaskID);
-  if (workp != workRevocable_.end()) { // 找到了
-    boost::system::error_code err;
-    workp->second->cancel(err);
-    workRevocable_.erase(workp);
-    if (err)
-      LOG(INFO) << "error in cancel_work: " << err.message() << ", timedTaskID = " << timedTaskID;
-    // 因为该函数加锁,所以不能调用同样加锁的print()
-  }
+    bool cancel = false;
+    {
+        boost::lock_guard<boost::mutex> lock(mutex_);
+        auto workp = workRevocable_.find(timedTaskID);
+        if (workp != workRevocable_.end()) { // 找到了
+          cancel = true;
+          LOG(INFO) << "find tiemTaskId = " << timedTaskID << " is going to cancel it";
+          boost::system::error_code err;
+          workp->second->cancel(err);
+          workRevocable_.erase(workp);
+          if (err)
+            LOG(INFO) << "error in cancel_work: " << err.message() << ", timedTaskID = " << timedTaskID;
+          // 因为该函数加锁,所以不能调用同样加锁的print()
+        }
+    }
+
+    if (cancel) SharedData::Get()->pooSendDataByTimedTaskId(timedTaskID);
 }
 
 std::string TimedTask::print() { // 加锁,保护workToDo

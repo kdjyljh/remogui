@@ -5,7 +5,7 @@
 
 enum CommDeviceEnum {
   COMMDEVICE_CAMERA      = 0x1,
-  COMMDEVICE_TRIOPHEAD   = 0x2,
+  COMMDEVICE_GIMBAL      = 0x2,
   COMMDEVICE_ALGORITHM   = 0x3,
   COMMDEVICE_BATTERY     = 0x4,
   COMMDEVICE_APP         = 0x5,

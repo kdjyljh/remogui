@@ -49,6 +49,7 @@ PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     addItem2Map(ui->ComboBox_SubWorkMode_Recode_Loop, Remo_CmdId_Camera_Get_LoopRec_Interval);
     addItem2Map(ui->comboBox_HDRMode, Remo_CmdId_Camera_Get_HDRMode);
     addItem2Map(ui->ComboBox_Thumbnail_Resolution, Remo_CmdId_Camera_Get_Thumbnail_Resolution);
+    addItem2Map(ui->ComboBox_AebCap, Remo_CmdId_Camera_Get_AebCap);
 
     sendCmdCamera(Remo_CmdId_Camera_Get_CapDelayTime_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_BurstCap_Range);
@@ -65,6 +66,7 @@ PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     sendCmdCamera(Remo_CmdId_Camera_Get_LapseRec_Interval_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_LapseRec_TotalTime_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_SlowMotion_Resolution_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_AebCap_Range);
     ItemData itemData;
     if (findItemByUiPtr(ui->comboBox_HDRMode, itemData))
         surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_HDRMode); //HDR
@@ -124,8 +126,10 @@ void PhotoAndVideoDialog::workModeGot(const Remo_Camera_WorkMode_s &workmode)
     }
 }
 
-void PhotoAndVideoDialog::settingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId)
+void PhotoAndVideoDialog::settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId)
 {
+    if (!((cmdId & 0x1ff) >= 0x0 && (cmdId & 0x1ff) < 0x60)) return;
+
     if (data.empty()) {
         return;
     }
@@ -150,9 +154,15 @@ void PhotoAndVideoDialog::settingGot(const std::vector<uint8_t> & data, Remo_Cmd
 }
 
 
-void PhotoAndVideoDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId)
+void PhotoAndVideoDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId)
 {
+    qDebug() << "PhotoAndVideoDialog::surportRangeGot" << cmdId;
+    if (!((cmdId & 0x1ff) >= 0x0 && (cmdId & 0x1ff) < 0x60)) return;
+    qDebug() << "PhotoAndVideoDialog::surportRangeGot through!!!!!!!!!!!!!!" << cmdId;
+
     QComboBox * ptr = static_cast<QComboBox*>(findUiPtrById(cmdId));
+
+//    qDebug() << "find combox ptr" << ptr << "combos ptr " << ui->;
     if (nullptr != ptr) {
         for (int i = 0; i < ptr->count(); ++i) ptr->removeItem(i);
         for (auto it : rangeSet) {
@@ -163,7 +173,7 @@ void PhotoAndVideoDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_C
 
         ItemData itemData;
         if (findItemByUiPtr(ptr, itemData)) {
-            sendCmdCamera(static_cast<Remo_CmdId_e>(itemData.CmdId_GetData));//获取当前相机设置值
+            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemData.CmdId_GetData));//获取当前相机设置值
             qDebug() << "send cmd to get current camera setting id is " << itemData.CmdId_GetData;
         }
     }
@@ -214,9 +224,9 @@ ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWcorkMode_Recode_SlowMotion, radioBut
 void PhotoAndVideoDialog::on_pushButton_Start_clicked()
 {
     if (recordOrCapture) {
-        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
-    } else {
         sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
+    } else {
+        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
     }
     ui->pushButton_Stop->setEnabled(true);
     ui->pushButton_Start->setEnabled(false);
@@ -225,9 +235,9 @@ void PhotoAndVideoDialog::on_pushButton_Start_clicked()
 void PhotoAndVideoDialog::on_pushButton_Stop_clicked()
 {
     if (recordOrCapture) {
-        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
-    } else {
         sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
+    } else {
+        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
     }
     ui->pushButton_Start->setEnabled(true);
     ui->pushButton_Stop->setEnabled(false);
@@ -238,7 +248,7 @@ void PhotoAndVideoDialog::comboBox_activated(int index)
 //    int itemIndex = ui->ComboBox_SubWorkMode_Photo_Delay->itemData(index).toInt();
 //    ItemData itemdata;
 //    if (findItemByUiPtr(ui->ComboBox_SubWorkMode_Photo_Delay, itemdata)) {
-//        sendCmdCamera(static_cast<Remo_CmdId_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
+//        sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
 //        qDebug() << "on_ComboBox_SubWorkMode_Photo_Delay_activated send cmd" \
 //                 << index << "cmdid is " << itemdata.CmdId_SetData;
 //    }
@@ -248,7 +258,7 @@ void PhotoAndVideoDialog::comboBox_activated(int index)
         int itemIndex = comboBox->itemData(index).toInt();
         ItemData itemdata;
         if (findItemByUiPtr(comboBox, itemdata)) {
-            sendCmdCamera(static_cast<Remo_CmdId_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
+            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
             qDebug() << "on_ComboBox_SubWorkMode_Photo_Delay_activated send cmd" \
                      << index << "cmdid is " << itemdata.CmdId_SetData;
         }

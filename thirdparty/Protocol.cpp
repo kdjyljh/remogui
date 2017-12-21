@@ -309,7 +309,7 @@ void CommProtoVariables::check_recved(ProtocolStruct &proto) {
     LOG(INFO) << proto.print();
 
     //add by ljh
-    SharedData::Get()->pushData(proto);
+    SharedData::Get()->pushReceiveData(proto);
   }
 }
 

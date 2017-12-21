@@ -845,9 +845,9 @@ typedef enum Remo_Camera_AFResult_E
 {
     AFResult_SinglePeak_SUCCESS = 0,
     AFResult_MultiPeak_SUCCESS = 1,
-    AFResult_Undefined = -1,
-    AFResult_MultiPeak_Failed = -2,
-    AFResult_NoTrendFound = -3,
+    AFResult_Undefined = 2,
+    AFResult_MultiPeak_Failed = 3,
+    AFResult_NoTrendFound = 4,
     AFResult_Bott
 }Remo_Camera_AFResult_e;
 

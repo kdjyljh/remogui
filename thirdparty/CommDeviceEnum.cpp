@@ -7,9 +7,9 @@ CommDeviceEnumDesc::CommDeviceEnumDesc() {
   set_.insert(COMMDEVICE_CAMERA);
   CHECK(en2str_.size() == set_.size() && str2en_.size() == set_.size());
     
-  en2str_[COMMDEVICE_TRIOPHEAD] = "COMMDEVICE_TRIOPHEAD";
-  str2en_["COMMDEVICE_TRIOPHEAD"] = COMMDEVICE_TRIOPHEAD;
-  set_.insert(COMMDEVICE_TRIOPHEAD);
+  en2str_[COMMDEVICE_GIMBAL] = "COMMDEVICE_GIMBAL";
+  str2en_["COMMDEVICE_GIMBAL"] = COMMDEVICE_GIMBAL;
+  set_.insert(COMMDEVICE_GIMBAL);
   CHECK(en2str_.size() == set_.size() && str2en_.size() == set_.size());
     
   en2str_[COMMDEVICE_ALGORITHM] = "COMMDEVICE_ALGORITHM";

@@ -5,6 +5,7 @@
 #include "protocaldatainterface.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/unordered_map.hpp>
 
 class ProtocolDataInterface;
 
@@ -33,6 +34,7 @@ private:
     //must be ptr, using virtual funciton handle
     std::vector<boost::shared_ptr<ProtocolDataInterface>> handlerPtrList;
     ProtocolStruct data;
+    static boost::unordered_map<uint32_t, std::vector<uint8_t>> deviceStatus;
 };
 
 #endif // RECEIVEDATAHANDLER_H

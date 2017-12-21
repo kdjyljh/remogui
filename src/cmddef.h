@@ -3,7 +3,7 @@
 typedef enum Remo_CmdSet_E {
     Remo_CmdSet_Universal     = 0x0,
     Remo_CmdSet_Camera        = 0x1,
-    Remo_CmdSet_TriopHead     = 0x2,
+    Remo_CmdSet_Gimbal        = 0x2,
     Remo_CmdSet_Algorithm     = 0x3,
     Remo_CmdSet_Battery       = 0x4,
     Remo_CmdSet_Interaction   = 0x5,
@@ -171,12 +171,12 @@ typedef enum Remo_CmdId_Type_E
  * * * * *0x201:获取存储卡当前状态
  * * * * *0x202:格式化SD卡
  */
-typedef enum Remo_CmdId_E {
-    Remo_CmdId_Camera_Get_WorkMode                                      = CmdId_Type_Get << 9       | (0x0  & 0x1ff),
-    Remo_CmdId_Camera_Set_WorkMode                                      = CmdId_Type_Set << 9       | (0x0  & 0x1ff),
-    Remo_CmdId_Camera_Get_WorkMode_Range                                = CmdId_Type_GetRange << 9  | (0x0  & 0x1ff),
-    Remo_CmdId_Camera_Set_CapOperation                                  = CmdId_Type_Control << 9   | (0x1  & 0x1ff),
-    Remo_CmdId_Camera_Set_RecOperation                                  = CmdId_Type_Control << 9   | (0x2  & 0x1ff),
+typedef enum Remo_CmdId_Camera_E {
+    Remo_CmdId_Camera_Get_WorkMode                                      = CmdId_Type_Get << 9       | (0x0   & 0x1ff),
+    Remo_CmdId_Camera_Set_WorkMode                                      = CmdId_Type_Set << 9       | (0x0   & 0x1ff),
+    Remo_CmdId_Camera_Get_WorkMode_Range                                = CmdId_Type_GetRange << 9  | (0x0   & 0x1ff),
+    Remo_CmdId_Camera_Set_CapOperation                                  = CmdId_Type_Control << 9   | (0x1   & 0x1ff),
+    Remo_CmdId_Camera_Set_RecOperation                                  = CmdId_Type_Control << 9   | (0x2   & 0x1ff),
     Remo_CmdId_Camera_Get_ImageResolution                               = CmdId_Type_Get << 9       | (0x10  & 0x1ff),
     Remo_CmdId_Camera_Set_ImageResolution                               = CmdId_Type_Set << 9       | (0x10  & 0x1ff),
     Remo_CmdId_Camera_Get_ImageResolution_Range                         = CmdId_Type_GetRange << 9  | (0x10  & 0x1ff),
@@ -299,13 +299,53 @@ typedef enum Remo_CmdId_E {
     Remo_CmdId_Camera_Get_SDInfo                                        = CmdId_Type_Get << 9       | (0xf0  & 0x1ff),
     Remo_CmdId_Camera_Get_SDStatus                                      = CmdId_Type_Get << 9       | (0xf1  & 0x1ff),
     Remo_CmdId_Camera_Start_SDFormat                                    = CmdId_Type_Control << 9   | (0xf2  & 0x1ff),
-    Remo_CmdId_Camera_Get_WifiModuleInfo                                = CmdId_Type_Get << 9       | (0x150  & 0x1ff),
-    Remo_CmdId_Camera_Get_WifiWorkStatus                                = CmdId_Type_Get << 9       | (0x151  & 0x1ff),
-    Remo_CmdId_Camera_Set_WifiWorkStatus                                = CmdId_Type_Control << 9   | (0x151  & 0x1ff),
-    Remo_CmdId_Camera_Switch_WifiWorkMode                               = CmdId_Type_Control << 9   | (0x152  & 0x1ff),
-    Remo_CmdId_Camera_FactoryReset                                      = CmdId_Type_Control << 9   | (0x156  & 0x1ff),
+    Remo_CmdId_Camera_Get_WifiModuleInfo                                = CmdId_Type_Get << 9       | (0x150 & 0x1ff),
+    Remo_CmdId_Camera_Get_WifiWorkStatus                                = CmdId_Type_Get << 9       | (0x151 & 0x1ff),
+    Remo_CmdId_Camera_Set_WifiWorkStatus                                = CmdId_Type_Control << 9   | (0x151 & 0x1ff),
+    Remo_CmdId_Camera_Switch_WifiWorkMode                               = CmdId_Type_Control << 9   | (0x152 & 0x1ff),
+    Remo_CmdId_Camera_FactoryReset                                      = CmdId_Type_Control << 9   | (0x156 & 0x1ff),
     Remo_CmdId_Camera_Bott,
     Remo_CmdId_Camera_PlaceHolder
-}Remo_CmdId_e;
+}Remo_CmdId_Camera_e;
+
+
+
+/*云台命令字段定义
+ * 0x00 获取云台姿态角（地球坐标系下）
+ * 0x01 获取云台角速度（地球坐标系下）
+ * 0x02 设置云台绝对姿态角参考值（地球坐标系下）
+ * 0x03 设置云台相对姿态角参考值（地球坐标系下）
+ * 0x04 设置云台角速度参考值（地球坐标系下）
+ * 0x05 设置云台角速度-时间参考值（地球坐标系下）
+ * 0x20 Roll轴工作模式（横拍or竖拍）
+ * 0x21 Roll轴微调控制
+ * 0x22 Yaw，Pitch或Roll轴锁定
+ * 0x23 复位至默认值
+ * 0x24 速度响应灵敏度控制
+ * 0x25 速度响应插值方式
+ * 0x26 自动校准模式
+ * 0x27 恢复出厂设置
+ * 0x40 云台设备信息获取
+ */
+typedef enum Remo_CmdId__Gimbal_E
+{
+    Remo_CmdId_Gimbal_Get_AttiAngle                                 = 0x00,
+    Remo_CmdId_Gimbal_Get_AnguVelo                                  = 0x01,
+    Remo_CmdId_Gimbal_Set_AbsAttiAngle                              = 0x02,
+    Remo_CmdId_Gimbal_Set_RelaAttiAngle                             = 0x03,
+    Remo_CmdId_Gimbal_Set_AnguVelo                                  = 0x04,
+    Remo_CmdId_Gimbal_Set_AnguVeloInter                             = 0x05,
+    Remo_CmdId_Gimbal_Set_Roll_WorkMode                             = 0x20,
+    Remo_CmdId_Gimbal_Set_RollFineTuning                           = 0x21,
+    Remo_CmdId_Gimbal_Set_LockAxis                                  = 0x22,
+    Remo_CmdId_Gimbal_Reset                                         = 0x23,
+    Remo_CmdId_Gimbal_Set_VeloSlope                                 = 0x24,
+    Remo_CmdId_Gimbal_Set_InterPolation                             = 0x25,
+    Remo_CmdId_Gimbal_Start_Calibrate                               = 0x26,
+    Remo_CmdId_Gimbal_FactoryReset                                  = 0x27,
+    Remo_CmdId_Gimbal_Get_DeviceInfo                                = 0x40,
+    Remo_CmdId_Gimbal_Bott,
+    Remo_CmdId_Gimbal_PlaceHolder
+}Remo_CmdId_Gimbal_e;
 
 #endif // CMDEF_H

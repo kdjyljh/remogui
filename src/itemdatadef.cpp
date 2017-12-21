@@ -1,5 +1,6 @@
 #include "itemdatadef.h"
 #include <boost/bind.hpp>
+#include <iostream>
 
 ItemData constructItemData(int cmdSet, int cmdid_get, int cmdid_set, int cmdid_getRange, std::string mainShowStr, std::set<SubItemData> subData)
 {
@@ -327,6 +328,15 @@ void init_itemData()
                            Remo_CmdId_Camera_Get_AFMode, Remo_CmdId_Camera_Set_AFMode, Remo_CmdId_Camera_Get_AFMode_Range, "对焦模式",
                             {{AFMode_MF , "MF"}, {AFMode_AFS , "AFS"}, {AFMode_AFC , "AFC"}}));
     itemData.insert(constructItemData_Camera_(
+                           Remo_CmdId_Camera_Get_AFStatus, Remo_CmdId_Camera_Bott, Remo_CmdId_Camera_Bott, "对焦状态",
+                            {{AFResult_SinglePeak_SUCCESS , "单峰对焦成功"}, {AFResult_MultiPeak_SUCCESS , "多峰对焦成功"},
+                            {AFResult_Undefined , "对焦失败无定义"}, {AFResult_MultiPeak_Failed , "多峰对焦失败"},
+                            {AFResult_NoTrendFound , "没找到对焦趋势"}}));
+    itemData.insert(constructItemData_Camera_(
+                           Remo_CmdId_Camera_Get_AFResult, Remo_CmdId_Camera_Bott, Remo_CmdId_Camera_Bott, "对焦结果",
+                            {{AFStatus_IDLE_SUCCESS , "上次对焦结束且成功"}, {AFStatus_IDLE_IDLE_FAILED , "上次对焦结束且失败"},
+                            {AFStatus_IDLE_FOCUSING , "正在对焦"}}));
+    itemData.insert(constructItemData_Camera_(
                            Remo_CmdId_Camera_Get_PosArea, Remo_CmdId_Camera_Bott, Remo_CmdId_Camera_Bott, "对焦位置"));
     itemData.insert(constructItemData_Camera_(
                            Remo_CmdId_Camera_Get_Sharpness, Remo_CmdId_Camera_Set_Sharpness, Remo_CmdId_Camera_Bott, "锐度",
@@ -342,7 +352,7 @@ void init_itemData()
 }
 
 std::map<void*, ItemData> ui2ItemData;
-void addItem2Map(void * item, Remo_CmdId_e idGet, int idSet, int idRange, int set, bool addItemData)
+void addItem2Map(void * item, Remo_CmdId_Camera_e idGet, int idSet, int idRange, int set, bool addItemData)
 {
     if (nullptr == item) return;
 
@@ -372,6 +382,7 @@ void addItem2Map(void * item, Remo_CmdId_e idGet, int idSet, int idRange, int se
     }
 
     for (auto it : itemData) {
+//        std::cout << "set" << it.CmdSet << " idGet " << it.CmdId_GetData << " idSet " << it.CmdId_SetData << " idRange " << it.CmdId_GetRange << std::endl;
         if (set == it.CmdSet &&
                 (idGet == it.CmdId_GetData || idSet == it.CmdId_SetData || idRange == it.CmdId_GetRange)) {
             ui2ItemData[item] = it;
@@ -379,7 +390,7 @@ void addItem2Map(void * item, Remo_CmdId_e idGet, int idSet, int idRange, int se
     }
 }
 
-void * findUiPtrById(Remo_CmdId_e id, Remo_CmdSet_e set)
+void * findUiPtrById(Remo_CmdId_Camera_e id, Remo_CmdSet_e set)
 {
     for (auto it : ui2ItemData) {
         ItemData item = it.second;
@@ -402,7 +413,7 @@ bool findItemByUiPtr(void * ptr, ItemData & data)
     return true;
 }
 
-void *findUiPtrById(Remo_CmdId_e idGet, Remo_CmdId_e idSet, Remo_CmdId_e idGetRange, Remo_CmdSet_e set)
+void *findUiPtrById(Remo_CmdId_Camera_e idGet, Remo_CmdId_Camera_e idSet, Remo_CmdId_Camera_e idGetRange, Remo_CmdSet_e set)
 {
     for (auto it : ui2ItemData) {
         ItemData item = it.second;

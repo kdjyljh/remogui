@@ -6,17 +6,27 @@
 #include <boost/thread/mutex.hpp>
 #include <deque>
 #include "Protocol.hpp"
+#include "TimedTask.hpp"
 
 class SharedData : public boost::noncopyable
 {
 public:
     static boost::shared_ptr<SharedData> Get();
 
-    void pushData(const ProtocolStruct & data);
-    void popData(ProtocolStruct &receivedData);
+    void pushReceiveData(const ProtocolStruct & data);
+    bool popReceiveData(ProtocolStruct &receivedData);
+
+    void pushSendData(const ProtocolStruct & data);
+    bool popSendDataBySeqId(ProtocolStruct & data, uint16_t seqId);
+    bool pooSendDataByTimedTaskId(TimedTaskID timedTaskID, ProtocolStruct & data);
+    bool pooSendDataByTimedTaskId(TimedTaskID timedTaskID) {
+        ProtocolStruct data;
+        return pooSendDataByTimedTaskId(timedTaskID, data);
+    }
 
 private:
-    static std::deque<ProtocolStruct> queue;
+    static std::deque<ProtocolStruct> receiveQueue;
+    static std::deque<ProtocolStruct> sendQueue;
 private:
     SharedData();
 };

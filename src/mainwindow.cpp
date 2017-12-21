@@ -13,6 +13,9 @@
 
 const unsigned DEFAULT_WINDOW_WIDTH = 1000;
 const unsigned DEFAULT_WINDOW_HEIGHT = 500;
+const unsigned IMAGE_RESOLUTION_WIDTH = 1280;
+const unsigned IMAGE_RESOLUTION_HEIGHT = 720;
+
 QPoint centerPoint;
 
 static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
@@ -34,13 +37,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ProtocolDataInterfaceImpl(),
     ui(new Ui::MainWindow),
     mainLayout(new QHBoxLayout(this)),
-    viewLable(new QLabel(this)),
+//    viewLable(new ViewLable(this)),
     imagProc(new ImageStreamProc),
 //    cameraSetting(new CameraSetting),
     receiveDataProc(ReceiveDataProc::getInstance()),
     photoAndVideoDialog(boost::shared_ptr<PhotoAndVideoDialog>(new PhotoAndVideoDialog(this))),
     aeModeDialog(boost::shared_ptr<AeModeDialog>(new AeModeDialog(this))),
     focusDialog(boost::shared_ptr<FocusDialog>(new FocusDialog(this))),
+    gimbalDialog(boost::shared_ptr<GimbalDialog>(new GimbalDialog(this))),
 //    workModeDialog(boost::shared_ptr<WorkModeDialog>(new WorkModeDialog)),
     actionGroupResolution(new QActionGroup(this)),
     actionGroupVideoStandard(new QActionGroup(this)),
@@ -69,10 +73,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    QWidget *cw = new QWidget(this);
-    setCentralWidget(cw);
-    cw->setLayout(mainLayout);
-    mainLayout->addWidget(viewLable);
+//    QWidget *cw = new QWidget(this);
+//    setCentralWidget(cw);
+//    cw->setLayout(mainLayout);
+
+//    mainLayout->addWidget(viewLable);
+    viewLable = new ViewLable(centralWidget());
 
 //    setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     QRect screenRect = QApplication::desktop()->screenGeometry();
@@ -91,12 +97,47 @@ MainWindow::MainWindow(QWidget *parent) :
 
     receiveDataProc->start();
 
-    init_itemData();
+    QPixmap pix;
+    pix.load("/home/jianghua/Pictures/gui.png");
+    QSize s(size());
+    QSize ss(pix.size());
+    pix = pix.scaled(size(), Qt::KeepAspectRatio);
+    ss = pix.size();
+    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
+                           pix.width(), pix.height());
+    viewLable->setPixmap(pix);
 
-//    QActionGroup * whiteBalanceGroup = new QActionGroup(this);
+    connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), viewLable, SLOT(setFocusStatus(bool)));
+
+    //    QActionGroup * whiteBalanceGroup = new QActionGroup(this);
+    addItem2Map(ui->menu_CapStorageType, Remo_CmdId_Camera_Get_CapStorageType);
+    addItem2Map(ui->menu_CapStorageQuality, Remo_CmdId_Camera_Get_CapStorageQuality);
+    addItem2Map(ui->menu_PhotoColorType, Remo_CmdId_Camera_Get_PhotoColorType);
+    addItem2Map(ui->menu_VideoMuxerType, Remo_CmdId_Camera_Get_VideoMuxerType);
+    addItem2Map(ui->menu_VideoFormat, Remo_CmdId_Camera_Get_VideoFormat);
+    addItem2Map(ui->menu_CustomWB_ColorTemp, Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
     addItem2Map(ui->menu_whiteBalance, Remo_CmdId_Camera_Get_WhiteBalance);
+    addItem2Map(ui->menu_Sharpness, Remo_CmdId_Camera_Get_Sharpness);
+    addItem2Map(ui->menu_MeterMode, Remo_CmdId_Camera_Get_MeterMode);
+    addItem2Map(ui->menu_Antiflick, Remo_CmdId_Camera_Get_Antiflick);
+    addItem2Map(ui->menu_Rotation, Remo_CmdId_Camera_Get_Rotation);
 
-//    sendCmdCamera(Remo_CmdId_Camera_Get_WhiteBalance_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageType_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageQuality_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_PhotoColorType_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_VideoMuxerType_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_WhiteBalance_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_MeterMode_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Antiflick_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Rotation_Range);
+    ItemData itemData;
+    if (findItemByUiPtr(ui->menu_Sharpness, itemData))
+        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_Sharpness);
+    if (findItemByUiPtr(ui->menu_VideoFormat, itemData))
+        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_VideoFormat);
+
+//    addActionToGroupByMenu(ui->menu_whiteBalance, actionGroupWhiteBalance);
 }
 
 MainWindow::~MainWindow()
@@ -205,30 +246,46 @@ void MainWindow::initAfterConstruct()
 {
 }
 
-void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId)
+void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId)
 {
-    QMenu * menu = static_cast<QMenu*>(findUiPtrById(cmdId));
-    if (nullptr != menu) {
-        QActionGroup *group = new QActionGroup(this);
+    if (!((cmdId >> 3) >= 0x0 && (cmdId >> 3) < 0x60 ||
+         (cmdId >> 3) >= 0x67 && (cmdId >> 3) < 0x78 ||
+         (cmdId >> 3) >= 0x7b && (cmdId >> 3) < 0x85)) {
+        return;
+    }
 
-        while (!menu->actions().empty()) menu->actions().takeFirst(); //先删除menu的子菜单
+    qDebug() << "MainWindow::surportRangeGot cmdId = " << cmdId;
+
+    QMenu * menu = static_cast<QMenu*>(findUiPtrById(cmdId));
+    qDebug() << "find menu" << menu << "sharpness " << ui->menu_Sharpness;
+    if (nullptr != menu) {
+        for (auto it : menu->actions()) menu->removeAction(it);//先删除menu的子菜单
+
+        QActionGroup *group = new QActionGroup(this);
         for (auto it : rangeSet) {
-            QAction * action = new QAction(QString::fromUtf8(it.ShowStr.data()), menu);
+            QAction * action = new QAction(QString::fromUtf8(it.ShowStr.data()), this);
             action->setData(QVariant(it.Index));//将enum值放入Action的QVariant中
             menu->addAction(action);
             group->addAction(action);
+            action->setCheckable(true);
             connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(menu_action_triggered(QAction*)));
         }
 
         ItemData itemData;
         if (findItemByUiPtr(menu, itemData)) {
-            sendCmdCamera(static_cast<Remo_CmdId_e>(itemData.CmdId_GetData));
+            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemData.CmdId_GetData));
         }
     }
 }
 
-void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_e cmdId)
+void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_e cmdId)
 {
+    if (!((cmdId & 0x1ff) >= 0x0 && (cmdId & 0x1ff) < 0x60 ||
+         (cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78 ||
+         (cmdId & 0x1ff) >= 0x7b && (cmdId & 0x1ff) < 0x85)) {
+        return;
+    }
+
     if (data.empty()) return;
 
     QMenu * group = static_cast<QMenu*>(findUiPtrById(cmdId));
@@ -245,9 +302,37 @@ void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_e cmdId
     }
 }
 
+void MainWindow::paintEvent(QPaintEvent *ev)
+{
+    QMainWindow::paintEvent(ev);
+    const QPixmap *ptr = viewLable->pixmap();
+    if (nullptr == ptr) return;
+
+    QPixmap pix(*ptr);
+    pix = pix.scaled(size(), Qt::KeepAspectRatio);
+    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
+                           pix.width(), pix.height());
+    viewLable->setPixmap(pix);
+}
+
 void MainWindow::setLabelPix(const QImage &image)
 {
-    QPixmap pix = QPixmap::fromImage(image);
+//    QPixmap pix = QPixmap::fromImage(image);
+//    QPixmap pix;
+//    pix.load("/home/jianghua/Pictures/gui.png");
+//    pix.scaledToWidth(IMAGE_RESOLUTION_WIDTH);
+//    pix.scaledToHeight(IMAGE_RESOLUTION_HEIGHT);
+//    viewLable->setGeometry((size().width() - IMAGE_RESOLUTION_WIDTH) / 2, (size().height() - IMAGE_RESOLUTION_HEIGHT) / 2,
+//                           IMAGE_RESOLUTION_WIDTH, IMAGE_RESOLUTION_HEIGHT);
+
+    QPixmap pix;
+    pix.load("/home/jianghua/Pictures/gui.png");
+    QSize s(size());
+    QSize ss(pix.size());
+    pix = pix.scaled(size(), Qt::KeepAspectRatio);
+    ss = pix.size();
+    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
+                           pix.width(), pix.height());
     viewLable->setPixmap(pix);
 }
 
@@ -262,565 +347,570 @@ void MainWindow::on_action_photoAndVideo_triggered()
 //        qDebug() << "continuus Atuo Foces";
 //}
 
-void MainWindow::on_action_autoRotate_triggered()
-{
+//void MainWindow::on_action_autoRotate_triggered()
+//{
 
-}
+//}
 
-void MainWindow::on_action_voices_triggered()
-{
+//void MainWindow::on_action_voices_triggered()
+//{
 
-}
+//}
 
-void MainWindow::on_action_recoveryFactSetting_triggered()
-{
+//void MainWindow::on_action_recoveryFactSetting_triggered()
+//{
 
-}
+//}
 
-void MainWindow::on_action_PTZ_reset_triggered()
-{
+//void MainWindow::on_action_PTZ_reset_triggered()
+//{
 
-}
+//}
 
-void MainWindow::on_action_userManage_triggered()
-{
+//void MainWindow::on_action_userManage_triggered()
+//{
 
-}
+//}
 
-void MainWindow::on_action_deviceInfo_triggered()
-{
+//void MainWindow::on_action_deviceInfo_triggered()
+//{
 
-}
+//}
 
-void MainWindow::on_action_storageInfo_triggered()
-{
+//void MainWindow::on_action_storageInfo_triggered()
+//{
 
-}
+//}
 
-void MainWindow::on_action_intelligence_sportMode_triggered()
-{
+//void MainWindow::on_action_intelligence_sportMode_triggered()
+//{
 
-}
+//}
 
-void MainWindow::on_action_intelligence_zoomedLens_triggered()
-{
+//void MainWindow::on_action_intelligence_zoomedLens_triggered()
+//{
 
-}
+//}
 
-void MainWindow::on_action_exposureCompensation_triggered()
-{
-//    exposureCompensationSpinBox->setRange(-3,3);
-//    QRect screenRect = QApplication::desktop()->screenGeometry();
-//    exposureCompensationSpinBox->move(screenRect.width() / 2, screenRect.height() / 2);
-//    exposureCompensationSpinBox->setFixedSize(100, 20);
-//    exposureCompensationSpinBox->show();
-    aeModeDialog->show();
-}
+//void MainWindow::on_action_exposureCompensation_triggered()
+//{
+////    exposureCompensationSpinBox->setRange(-3,3);
+////    QRect screenRect = QApplication::desktop()->screenGeometry();
+////    exposureCompensationSpinBox->move(screenRect.width() / 2, screenRect.height() / 2);
+////    exposureCompensationSpinBox->setFixedSize(100, 20);
+////    exposureCompensationSpinBox->show();
+//    aeModeDialog->show();
+//}
+
+//void MainWindow::actionGroup_resolution_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+//        return;
+//    }
+
+////    Resolution resolution;
+//    if (ui->action_videoStandard_PAL->isChecked()) {
+//        if (action == ui->action_resolution_2_7Kp24_2_7Kp24) {
+////            resolution.NTSCSize.setWidth(2704);
+////            resolution.NTSCSize.setHeight(1520);
+////            resolution.NTSCFps = 24;
+////            resolution.PALSize.setWidth(2704);
+////            resolution.PALSize.setHeight(1520);
+////            resolution.PALFps = 24;
+//        }
+//        else if (action == ui->action_resolution_2_7Kp30_2_7Kp25) {
+////            resolution.NTSCSize.setWidth(2704);
+////            resolution.NTSCSize.setHeight(1520);
+////            resolution.NTSCFps = 30;
+////            resolution.PALSize.setWidth(2704);
+////            resolution.PALSize.setHeight(1520);
+////            resolution.PALFps = 25;
+//        }
+//        else if (action == ui->action_resolution_4Kp24_4Kp24) {
+////            resolution.NTSCSize.setWidth(4096);
+////            resolution.NTSCSize.setHeight(2160);
+////            resolution.NTSCFps = 24;
+////            resolution.PALSize.setWidth(4096);
+////            resolution.PALSize.setHeight(2160);
+////            resolution.PALFps = 24;
+//        }
+//        else if (action == ui->action_resolution_4Kp30_4Kp25) {
+
+//        }
+//        else if (action == ui->action_resolution_720p48_720p48) {
+
+//        }
+//        else if (action == ui->action_resolution_720p24_720p24) {
+
+//        }
+//        else if (action == ui->action_resolution_720p30_720p25) {
+
+//        }
+//        else if (action == ui->action_resolution_720p60_720p50) {
+
+//        }
+//        else if (action == ui->action_resolution_720p120_720p100) {
+
+//        }
+//        else if (action == ui->action_resolution_720p240_720p200) {
+
+//        }
+//        else if (action == ui->action_resolution_1080p24_1080p24) {
+
+//        }
+//        else if (action == ui->action_resolution_1080p30_1080p25) {
+
+//        }
+//        else if (action == ui->action_resolution_1080p48_1080p48) {
+
+//        }
+//        else if (action == ui->action_resolution_1080p60_1080p50) {
+
+//        }
+//        else if (action == ui->action_resolution_1080p120_1080p100) {
+
+//        }
+//        else {
+
+//        }
+//    }
+//    else if (ui->action_videoStandard_NTSC->isChecked()) {
+//        if (action == ui->action_resolution_2_7Kp24_2_7Kp24) {
+////            resolution.NTSCSize.setWidth(2704);
+////            resolution.NTSCSize.setHeight(1520);
+////            resolution.NTSCFps = 24;
+////            resolution.PALSize.setWidth(2704);
+////            resolution.PALSize.setHeight(1520);
+////            resolution.PALFps = 24;
+//        }
+//        else if (action == ui->action_resolution_2_7Kp30_2_7Kp25) {
+////            resolution.NTSCSize.setWidth(2704);
+////            resolution.NTSCSize.setHeight(1520);
+////            resolution.NTSCFps = 30;
+////            resolution.PALSize.setWidth(2704);
+////            resolution.PALSize.setHeight(1520);
+////            resolution.PALFps = 25;
+//        }
+//        else if (action == ui->action_resolution_4Kp24_4Kp24) {
+////            resolution.NTSCSize.setWidth(4096);
+////            resolution.NTSCSize.setHeight(2160);
+////            resolution.NTSCFps = 24;
+////            resolution.PALSize.setWidth(4096);
+////            resolution.PALSize.setHeight(2160);
+////            resolution.PALFps = 24;
+//        }
+//        else if (action == ui->action_resolution_4Kp30_4Kp25) {
+
+//        }
+//        else if (action == ui->action_resolution_720p48_720p48) {
+
+//        }
+//        else if (action == ui->action_resolution_720p24_720p24) {
+
+//        }
+//        else if (action == ui->action_resolution_720p30_720p25) {
+
+//        }
+//        else if (action == ui->action_resolution_720p60_720p50) {
+
+//        }
+//        else if (action == ui->action_resolution_720p120_720p100) {
+
+//        }
+//        else if (action == ui->action_resolution_720p240_720p200) {
+
+//        }
+//        else if (action == ui->action_resolution_1080p24_1080p24) {
+
+//        }
+//        else if (action == ui->action_resolution_1080p30_1080p25) {
+
+//        }
+//        else if (action == ui->action_resolution_1080p48_1080p48) {
+
+//        }
+//        else if (action == ui->action_resolution_1080p60_1080p50) {
+
+//        }
+//        else if (action == ui->action_resolution_1080p120_1080p100) {
+
+//        }
+//        else {
+
+//        }
+//    }
+//}
+
+//void MainWindow::actionGroup_videoStandard_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+////        return NTSC;
+//    }
+//    else if (ui->action_videoStandard_NTSC == action) {
+////        return NTSC;
+//    }
+//    else if (ui->action_videoStandard_PAL == action) {
+////        return PAL;
+//    }
+//    else {
+////        return NTSC;
+//    }
+//}
+
+//void MainWindow::actionGroup_WhiteBalance_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+////        return whiteBalance_auto;
+//    }
+//    else if (ui->action_whiteBalance_daylight == action) {
+////        return whiteBalance_daylight;
+//    }
+//    else if (ui->action_whiteBalance_dusk == action) {
+////        return whiteBalance_dusk;
+//    }
+//    else if (ui->action_whiteBalance_fluoresctLamp == action) {
+////        return whiteBalance_fluoresctLamp;
+//    }
+//    else if (ui->action_whiteBalance_incandesctLamp == action) {
+////        return whiteBalance_incandesctLamp;
+//    }
+//    else if (ui->action_whiteBalance_overcast == action) {
+////        return whiteBalance_overcast;
+//    }
+//    else if (ui->action_whiteBalance_shadow == action) {
+////        return whiteBalance_shadow;
+//    }
+//    else {
+////        return whiteBalance_auto;
+//    }
+//}
+
+//void MainWindow::actionGroup_exposure_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_exposure_globalMetering == action) {
+
+//    }
+//    else if (ui->action_exposure_spotMetering == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_ISO_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_ISO_100_400 == action) {
+//    }
+//    else if (ui->action_ISO_200_800 == action) {
+
+//    }
+//    else if (ui->action_ISO_400_1200 == action) {
+
+//    }
+//    else if (ui->action_ISO_800_1600 == action) {
+
+//    }
+//    else if (ui->action_ISO_1600_3200 == action) {
+
+//    }
+//    else if (ui->action_ISO_auto == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_exposureGear_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_exposureGear_M == action) {
+
+//    }
+//    else if (ui->action_exposureGear_P == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_grid_triggered(QAction *action)
+//{
+////    if (nullptr == action) {
+
+////    }
+////    else if (ui->action_grid_centerPoint == action) {
+
+////    }
+////    else if (ui->action_grid_grid == action) {
+
+////    }
+////    else if (ui->action_grid_gFocusDialogdFocus == action) {
+
+////    }
+////    else if (ui->action_grid_NONE == action) {
+
+////    }
+////    else {
+
+////    }
+//}
+
+//void MainWindow::actionGroup_pictureSize_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_pictureSize_fullScreen == action) {
+
+//    }
+//    else if (ui->action_pictureSize_standard == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_quality_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_quality_high == action) {
+
+//    }
+//    else if (ui->action_quality_low == action) {
+
+//    }
+//    else if (ui->action_quality_standard == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_corscatAvoidance_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_corscatAvoidance_50Hz == action) {
+
+//    }
+//    else if (ui->action_corscatAvoidance_60Hz == action) {
+
+//    }
+//    else if (ui->action_corscatAvoidance_auto == action) {
+
+//    }
+//    else if (ui->action_corscatAvoidance_off == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_sharpening_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_sharpening_high == action) {
+
+//    }
+//    else if (ui->action_sharpening_higher == action) {
+
+//    }
+//    else if (ui->action_sharpening_low == action) {
+
+//    }
+//    else if (ui->action_sharpening_lower == action) {
+
+//    }
+//    else if (ui->action_sharpening_lowest == action) {
+
+//    }
+//    else if (ui->action_sharpening_standard == action) {
+
+//    }
+//    else if (ui->action_sharpening_highest == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_HDR_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_HDR_auto == action) {
+
+//    }
+//    else if (ui->action_HDR_off == action) {
+
+//    }
+//    else if (ui->action_HDR_on == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_lens_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_lens_hanging == action) {
+
+//    }
+//    else if (ui->action_lens_horizontal == action) {
+
+//    }
+//    else if (ui->action_lens_standerd == action) {
+
+//    }
+//    else if (ui->action_lens_vertical == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actiongroup_PTZspeed_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_PTZSpeed_slow == action) {
+
+//    }
+//    else if (ui->action_PTZSpeed_fast == action) {
+
+//    }
+//    else if (ui->action_PTZSpeed_intermediary == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_PTZCalibration_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_PTZCalibration_auto == action) {
+
+//    }
+//    else if (ui->action_PTZCalibration_manual == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_intelliMode_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_intelliMode_doublePerson == action) {
+
+//    }
+//    else if (ui->action_intelliMode_MultiPerson == action) {
+
+//    }
+//    else if (ui->action_intelliMode_universal == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_closeup_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_closeup_3 == action) {
+
+//    }
+//    else if (ui->action_closeup_5 == action) {
+
+//    }
+//    else if (ui->action_closeup_7 == action) {
+
+//    }
+//    else if (ui->action_closeup_wholeBody == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_scene_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_scene_activeShoot == action) {
+
+//    }
+//    else if (ui->action_scene_intelliSnap == action) {
+
+//    }
+//    else {
+
+//    }
+//}
+
+//void MainWindow::actionGroup_intelligLens_triggered(QAction *action)
+//{
+//    if (nullptr == action) {
+
+//    }
+//    else if (ui->action_intelligLens_otherLens == action) {
+
+//    }
+//    else if (ui->action_intelligLens_scanningLens == action) {
+
+//    }
+//    else {
+
+//    }
+//}
 
 void MainWindow::on_action_FocusAndZoom_triggered()
 {
     focusDialog->show();
 }
 
-void MainWindow::actionGroup_resolution_triggered(QAction *action)
+void MainWindow::on_action_Gimbal_triggered()
 {
-    if (nullptr == action) {
-        return;
-    }
-
-//    Resolution resolution;
-    if (ui->action_videoStandard_PAL->isChecked()) {
-        if (action == ui->action_resolution_2_7Kp24_2_7Kp24) {
-//            resolution.NTSCSize.setWidth(2704);
-//            resolution.NTSCSize.setHeight(1520);
-//            resolution.NTSCFps = 24;
-//            resolution.PALSize.setWidth(2704);
-//            resolution.PALSize.setHeight(1520);
-//            resolution.PALFps = 24;
-        }
-        else if (action == ui->action_resolution_2_7Kp30_2_7Kp25) {
-//            resolution.NTSCSize.setWidth(2704);
-//            resolution.NTSCSize.setHeight(1520);
-//            resolution.NTSCFps = 30;
-//            resolution.PALSize.setWidth(2704);
-//            resolution.PALSize.setHeight(1520);
-//            resolution.PALFps = 25;
-        }
-        else if (action == ui->action_resolution_4Kp24_4Kp24) {
-//            resolution.NTSCSize.setWidth(4096);
-//            resolution.NTSCSize.setHeight(2160);
-//            resolution.NTSCFps = 24;
-//            resolution.PALSize.setWidth(4096);
-//            resolution.PALSize.setHeight(2160);
-//            resolution.PALFps = 24;
-        }
-        else if (action == ui->action_resolution_4Kp30_4Kp25) {
-
-        }
-        else if (action == ui->action_resolution_720p48_720p48) {
-
-        }
-        else if (action == ui->action_resolution_720p24_720p24) {
-
-        }
-        else if (action == ui->action_resolution_720p30_720p25) {
-
-        }
-        else if (action == ui->action_resolution_720p60_720p50) {
-
-        }
-        else if (action == ui->action_resolution_720p120_720p100) {
-
-        }
-        else if (action == ui->action_resolution_720p240_720p200) {
-
-        }
-        else if (action == ui->action_resolution_1080p24_1080p24) {
-
-        }
-        else if (action == ui->action_resolution_1080p30_1080p25) {
-
-        }
-        else if (action == ui->action_resolution_1080p48_1080p48) {
-
-        }
-        else if (action == ui->action_resolution_1080p60_1080p50) {
-
-        }
-        else if (action == ui->action_resolution_1080p120_1080p100) {
-
-        }
-        else {
-
-        }
-    }
-    else if (ui->action_videoStandard_NTSC->isChecked()) {
-        if (action == ui->action_resolution_2_7Kp24_2_7Kp24) {
-//            resolution.NTSCSize.setWidth(2704);
-//            resolution.NTSCSize.setHeight(1520);
-//            resolution.NTSCFps = 24;
-//            resolution.PALSize.setWidth(2704);
-//            resolution.PALSize.setHeight(1520);
-//            resolution.PALFps = 24;
-        }
-        else if (action == ui->action_resolution_2_7Kp30_2_7Kp25) {
-//            resolution.NTSCSize.setWidth(2704);
-//            resolution.NTSCSize.setHeight(1520);
-//            resolution.NTSCFps = 30;
-//            resolution.PALSize.setWidth(2704);
-//            resolution.PALSize.setHeight(1520);
-//            resolution.PALFps = 25;
-        }
-        else if (action == ui->action_resolution_4Kp24_4Kp24) {
-//            resolution.NTSCSize.setWidth(4096);
-//            resolution.NTSCSize.setHeight(2160);
-//            resolution.NTSCFps = 24;
-//            resolution.PALSize.setWidth(4096);
-//            resolution.PALSize.setHeight(2160);
-//            resolution.PALFps = 24;
-        }
-        else if (action == ui->action_resolution_4Kp30_4Kp25) {
-
-        }
-        else if (action == ui->action_resolution_720p48_720p48) {
-
-        }
-        else if (action == ui->action_resolution_720p24_720p24) {
-
-        }
-        else if (action == ui->action_resolution_720p30_720p25) {
-
-        }
-        else if (action == ui->action_resolution_720p60_720p50) {
-
-        }
-        else if (action == ui->action_resolution_720p120_720p100) {
-
-        }
-        else if (action == ui->action_resolution_720p240_720p200) {
-
-        }
-        else if (action == ui->action_resolution_1080p24_1080p24) {
-
-        }
-        else if (action == ui->action_resolution_1080p30_1080p25) {
-
-        }
-        else if (action == ui->action_resolution_1080p48_1080p48) {
-
-        }
-        else if (action == ui->action_resolution_1080p60_1080p50) {
-
-        }
-        else if (action == ui->action_resolution_1080p120_1080p100) {
-
-        }
-        else {
-
-        }
-    }
-}
-
-void MainWindow::actionGroup_videoStandard_triggered(QAction *action)
-{
-    if (nullptr == action) {
-//        return NTSC;
-    }
-    else if (ui->action_videoStandard_NTSC == action) {
-//        return NTSC;
-    }
-    else if (ui->action_videoStandard_PAL == action) {
-//        return PAL;
-    }
-    else {
-//        return NTSC;
-    }
-}
-
-void MainWindow::actionGroup_WhiteBalance_triggered(QAction *action)
-{
-    if (nullptr == action) {
-//        return whiteBalance_auto;
-    }
-    else if (ui->action_whiteBalance_daylight == action) {
-//        return whiteBalance_daylight;
-    }
-    else if (ui->action_whiteBalance_dusk == action) {
-//        return whiteBalance_dusk;
-    }
-    else if (ui->action_whiteBalance_fluoresctLamp == action) {
-//        return whiteBalance_fluoresctLamp;
-    }
-    else if (ui->action_whiteBalance_incandesctLamp == action) {
-//        return whiteBalance_incandesctLamp;
-    }
-    else if (ui->action_whiteBalance_overcast == action) {
-//        return whiteBalance_overcast;
-    }
-    else if (ui->action_whiteBalance_shadow == action) {
-//        return whiteBalance_shadow;
-    }
-    else {
-//        return whiteBalance_auto;
-    }
-}
-
-void MainWindow::actionGroup_exposure_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_exposure_globalMetering == action) {
-
-    }
-    else if (ui->action_exposure_spotMetering == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_ISO_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_ISO_100_400 == action) {
-    }
-    else if (ui->action_ISO_200_800 == action) {
-
-    }
-    else if (ui->action_ISO_400_1200 == action) {
-
-    }
-    else if (ui->action_ISO_800_1600 == action) {
-
-    }
-    else if (ui->action_ISO_1600_3200 == action) {
-
-    }
-    else if (ui->action_ISO_auto == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_exposureGear_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_exposureGear_M == action) {
-
-    }
-    else if (ui->action_exposureGear_P == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_grid_triggered(QAction *action)
-{
-//    if (nullptr == action) {
-
-//    }
-//    else if (ui->action_grid_centerPoint == action) {
-
-//    }
-//    else if (ui->action_grid_grid == action) {
-
-//    }
-//    else if (ui->action_grid_gFocusDialogdFocus == action) {
-
-//    }
-//    else if (ui->action_grid_NONE == action) {
-
-//    }
-//    else {
-
-//    }
-}
-
-void MainWindow::actionGroup_pictureSize_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_pictureSize_fullScreen == action) {
-
-    }
-    else if (ui->action_pictureSize_standard == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_quality_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_quality_high == action) {
-
-    }
-    else if (ui->action_quality_low == action) {
-
-    }
-    else if (ui->action_quality_standard == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_corscatAvoidance_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_corscatAvoidance_50Hz == action) {
-
-    }
-    else if (ui->action_corscatAvoidance_60Hz == action) {
-
-    }
-    else if (ui->action_corscatAvoidance_auto == action) {
-
-    }
-    else if (ui->action_corscatAvoidance_off == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_sharpening_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_sharpening_high == action) {
-
-    }
-    else if (ui->action_sharpening_higher == action) {
-
-    }
-    else if (ui->action_sharpening_low == action) {
-
-    }
-    else if (ui->action_sharpening_lower == action) {
-
-    }
-    else if (ui->action_sharpening_lowest == action) {
-
-    }
-    else if (ui->action_sharpening_standard == action) {
-
-    }
-    else if (ui->action_sharpening_highest == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_HDR_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_HDR_auto == action) {
-
-    }
-    else if (ui->action_HDR_off == action) {
-
-    }
-    else if (ui->action_HDR_on == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_lens_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_lens_hanging == action) {
-
-    }
-    else if (ui->action_lens_horizontal == action) {
-
-    }
-    else if (ui->action_lens_standerd == action) {
-
-    }
-    else if (ui->action_lens_vertical == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actiongroup_PTZspeed_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_PTZSpeed_slow == action) {
-
-    }
-    else if (ui->action_PTZSpeed_fast == action) {
-
-    }
-    else if (ui->action_PTZSpeed_intermediary == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_PTZCalibration_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_PTZCalibration_auto == action) {
-
-    }
-    else if (ui->action_PTZCalibration_manual == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_intelliMode_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_intelliMode_doublePerson == action) {
-
-    }
-    else if (ui->action_intelliMode_MultiPerson == action) {
-
-    }
-    else if (ui->action_intelliMode_universal == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_closeup_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_closeup_3 == action) {
-
-    }
-    else if (ui->action_closeup_5 == action) {
-
-    }
-    else if (ui->action_closeup_7 == action) {
-
-    }
-    else if (ui->action_closeup_wholeBody == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_scene_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_scene_activeShoot == action) {
-
-    }
-    else if (ui->action_scene_intelliSnap == action) {
-
-    }
-    else {
-
-    }
-}
-
-void MainWindow::actionGroup_intelligLens_triggered(QAction *action)
-{
-    if (nullptr == action) {
-
-    }
-    else if (ui->action_intelligLens_otherLens == action) {
-
-    }
-    else if (ui->action_intelligLens_scanningLens == action) {
-
-    }
-    else {
-
-    }
+    gimbalDialog->show();
 }
 
 void MainWindow::menu_action_triggered(QAction *action)
@@ -831,7 +921,7 @@ void MainWindow::menu_action_triggered(QAction *action)
     ItemData itemData;
     if (findItemByUiPtr(menu, itemData)) {
         std::vector<uint8_t> data{action->data().toInt()};
-        sendCmdCamera(static_cast<Remo_CmdId_e>(itemData.CmdId_SetData), data);
+        sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemData.CmdId_SetData), data);
     }
 }
 

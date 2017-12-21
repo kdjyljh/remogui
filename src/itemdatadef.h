@@ -34,9 +34,9 @@ struct ItemData
 
 extern std::set<ItemData> itemData;
 extern std::map<void*, ItemData> ui2ItemData;
-extern void addItem2Map(void * item, Remo_CmdId_e idGet = Remo_CmdId_Camera_PlaceHolder, int idSet = Remo_CmdId_Camera_PlaceHolder, int idRange = Remo_CmdId_Camera_PlaceHolder, int set = Remo_CmdSet_PlaceHolder, bool addItemData = false);
-extern void * findUiPtrById(Remo_CmdId_e id, Remo_CmdSet_e set = Remo_CmdSet_Camera);
-extern void * findUiPtrById(Remo_CmdId_e idGet, Remo_CmdId_e idSet, Remo_CmdId_e idGetRange, Remo_CmdSet_e set = Remo_CmdSet_Camera);
+extern void addItem2Map(void * item, Remo_CmdId_Camera_e idGet = Remo_CmdId_Camera_PlaceHolder, int idSet = Remo_CmdId_Camera_PlaceHolder, int idRange = Remo_CmdId_Camera_PlaceHolder, int set = Remo_CmdSet_Camera, bool addItemData = false);
+extern void * findUiPtrById(Remo_CmdId_Camera_e id, Remo_CmdSet_e set = Remo_CmdSet_Camera);
+extern void * findUiPtrById(Remo_CmdId_Camera_e idGet, Remo_CmdId_Camera_e idSet, Remo_CmdId_Camera_e idGetRange, Remo_CmdSet_e set = Remo_CmdSet_Camera);
 extern bool findItemByUiPtr(void * ptr, ItemData & data);
 extern void init_itemData();
 #endif // ITEMDATADEF_H

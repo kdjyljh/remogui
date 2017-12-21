@@ -3,11 +3,13 @@
 //boost::mutex SharedData::mtx = boost::mutex();
 //boost::unique_lock<boost::mutex> SharedData::lk = boost::unique_lock<boost::mutex>(SharedData::mtx);
 //boost::condition_variable SharedData::cv = boost::condition_variable();
-static boost::mutex mtx;
-//static boost::unique_lock<boost::mutex> lk(mtx);
-static boost::condition_variable cv;
+static boost::mutex mtxReceive;
+static boost::condition_variable cvReceive;
 
-std::deque<ProtocolStruct> SharedData::queue = std::deque<ProtocolStruct>();
+static boost::mutex mtxSend;
+
+std::deque<ProtocolStruct> SharedData::receiveQueue = std::deque<ProtocolStruct>();
+std::deque<ProtocolStruct> SharedData::sendQueue;
 SharedData::SharedData()
 {
 
@@ -19,23 +21,77 @@ boost::shared_ptr<SharedData> SharedData::Get()
     return instance;
 }
 
-void SharedData::pushData(const ProtocolStruct & data)
+void SharedData::pushReceiveData(const ProtocolStruct & data)
 {
     {
-        boost::unique_lock<boost::mutex> lock(mtx);
-        queue.push_back(data);
-        cv.notify_all();
+        boost::unique_lock<boost::mutex> lock(mtxReceive);
+        receiveQueue.push_back(data);
+        cvReceive.notify_all();
     }
 }
 
-void SharedData::popData(ProtocolStruct &receivedData)
+bool SharedData::popReceiveData(ProtocolStruct &data)
 {
     {
-        boost::unique_lock<boost::mutex> lock(mtx);
-        while (queue.empty())
-            cv.wait(lock);
-        receivedData = queue.front();
-        queue.pop_front();
+        boost::unique_lock<boost::mutex> lock(mtxReceive);
+        while (receiveQueue.empty())
+            cvReceive.wait(lock);
+        data = receiveQueue.front();
+        receiveQueue.pop_front();
+    }
+
+    //如果是回应包，根据包序号找到对应的请求包，并添加请求包数据字段到响应包
+    if (data.packFlags.bits.ReqResp = CommProtoVariables::RESPOND) {
+        ProtocolStruct sendData;
+        if (popSendDataBySeqId(sendData, data.packSeq) /*&& !sendData.data.empty()*/) {
+            data.data.insert(data.data.end(), sendData.data.begin(), sendData.data.end());
+        }
+        else {
+            LOG(INFO) << "Can not find resqest packeg for response seqId = " << data.packSeq << "cmdId = " << data.cmdID;
+            return false; //没有找到对应的请求包，返回false，提示应该将包丢弃
+        }
+    }
+    return true;
+}
+
+void SharedData::pushSendData(const ProtocolStruct &data)
+{
+    {
+        boost::unique_lock<boost::mutex> lock(mtxSend);
+        sendQueue.push_back(data);
+    }
+}
+
+bool SharedData::popSendDataBySeqId(ProtocolStruct &data, uint16_t seqId)
+{
+    {
+        boost::unique_lock<boost::mutex> lock(mtxSend);
+        for (auto it = sendQueue.begin(); it != sendQueue.end();) {
+            if (seqId == it->packSeq) {
+                data = *it;
+                it = sendQueue.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+    }
+}
+
+bool SharedData::pooSendDataByTimedTaskId(TimedTaskID timedTaskID, ProtocolStruct &data)
+{
+    {
+        boost::unique_lock<boost::mutex> lock(mtxSend);
+        for (auto it = sendQueue.begin(); it != sendQueue.end();) {
+            if (timedTaskID == it->idForward()) {
+                data = *it;
+                it = sendQueue.erase(it);
+                LOG(INFO) << "find resqest packeg for imedTaskId = " << timedTaskID << " cmdId = " << data.cmdID;
+            }
+            else {
+                ++it;
+            }
+        }
     }
 }
 

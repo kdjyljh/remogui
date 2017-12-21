@@ -61,7 +61,9 @@ SOURCES += \
     src/itemdatadef.cpp \
     src/aemodedialog.cpp \
     src/protocoldataInterfaceimpl.cpp \
-    src/focusdialog.cpp
+    src/focusdialog.cpp \
+    src/viewlable.cpp \
+    src/gimbaldialog.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
@@ -77,14 +79,18 @@ HEADERS += \
     src/workmodedialog.h \
     src/aemodedialog.h \
     src/protocoldataInterfaceimpl.h \
-    src/focusdialog.h
+    src/focusdialog.h \
+    thirdparty/commlog.h \
+    src/viewlable.h \
+    src/gimbaldialog.h
 
 FORMS += \
     ui/mainwindow.ui \
     ui/photoandvideo.ui \
     ui/workmode.ui \
     ui/aemode.ui \
-    ui/focus.ui
+    ui/focus.ui \
+    ui/gimbal.ui
 
 RESOURCES += \
     resource/image.qrc

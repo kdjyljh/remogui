@@ -21,8 +21,8 @@ public:
 protected:
     virtual void workModeGot(const Remo_Camera_WorkMode_s & workmode) override;
 //    virtual void capDelayTimeGot(const int & value) override;
-    virtual void settingGot(const std::vector<uint8_t> & data, Remo_CmdId_e cmdId) override;
-    virtual void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId) override;
+    virtual void settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId) override;
+    virtual void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId) override;
 
 public slots:
 //    PhotoAndVideoSetting getSettingFromUi();

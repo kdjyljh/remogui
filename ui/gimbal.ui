@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Gimbal</class>
+ <widget class="QWidget" name="Gimbal">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>626</width>
+    <height>568</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QWidget" name="formLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>90</y>
+     <width>331</width>
+     <height>368</height>
+    </rect>
+   </property>
+   <layout class="QFormLayout" name="FormLayout_Gimbal">
+    <item row="0" column="0">
+     <widget class="QLabel" name="Label">
+      <property name="text">
+       <string>姿态角当前值(°)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="LineEdit_AttiAngle_Get">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="Label_2">
+      <property name="text">
+       <string>角速度当前值(°/s)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="LineEdit_AnguVelo_Get">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="Label_3">
+      <property name="text">
+       <string>绝对姿态角参考值</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="LineEdit_AbsAttiAngle_Set"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="Label_4">
+      <property name="text">
+       <string>相对姿态角参考值</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="LineEdit_RelaAttiAngle_Set"/>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="Label_5">
+      <property name="text">
+       <string>角速度参考值</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLineEdit" name="LineEdit_AnguVelo_Set"/>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="Label_6">
+      <property name="text">
+       <string>角速度-时间参考值</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLineEdit" name="LineEdit_AnguVeloInter_Set"/>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="rollLabel">
+      <property name="text">
+       <string>Roll轴工作模式</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QComboBox" name="ComboBox_Roll_WorkMode"/>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="rollLabel_2">
+      <property name="text">
+       <string>Roll轴角度微调</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QLineEdit" name="LineEdit_RollFineTuning"/>
+    </item>
+    <item row="8" column="0">
+     <widget class="QLabel" name="Label_7">
+      <property name="text">
+       <string>轴锁定</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="QComboBox" name="ComboBox_LockAxis"/>
+    </item>
+    <item row="9" column="0">
+     <widget class="QLabel" name="Label_10">
+      <property name="text">
+       <string>速度响应灵敏度</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="1">
+     <widget class="QLineEdit" name="LineEdit_VeloSlope"/>
+    </item>
+    <item row="10" column="0">
+     <widget class="QLabel" name="Label_8">
+      <property name="text">
+       <string>速度响应插值方式</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QComboBox" name="ComboBox_InterPolation"/>
+    </item>
+    <item row="11" column="0">
+     <widget class="QLabel" name="Label_9">
+      <property name="text">
+       <string>自动校准</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="1">
+     <widget class="QComboBox" name="ComboBox_Calibrate"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QPushButton" name="pushButton_Reset">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>20</y>
+     <width>81</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>云台复位</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_FactoryReset">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>20</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string> 恢复出厂设置</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="textEdit_DeviceInfo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>420</x>
+     <y>90</y>
+     <width>171</width>
+     <height>371</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_getGimbalInfo">
+   <property name="geometry">
+    <rect>
+     <x>420</x>
+     <y>20</y>
+     <width>131</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>重新获取云台信息</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

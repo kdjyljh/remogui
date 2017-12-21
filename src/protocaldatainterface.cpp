@@ -1,11 +1,12 @@
 #include "protocaldatainterface.h"
+#include "../thirdparty/commlog.h"
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 
+int ProtocolDataInterface::reqMmaxRetry = 5;
+long ProtocolDataInterface::reqIntervalUS = 1000000;
 ProtocolDataInterface::ProtocolDataInterface(Remo_CmdSet_e set) :
-    cmdSet(set),
-    reqMmaxRetry(5),
-    reqIntervalUS(1000000)
+    cmdSet(set)
 {
 }
 
@@ -15,16 +16,33 @@ void ProtocolDataInterface::registerSelf2Handler()
     ReceiveDataHandler::getInstance()->registerDataHandler(shared_from_this());
 }
 
-void ProtocolDataInterface::sendCmdCamera(CommDeviceEnum device, Remo_CmdSet_e cmdSet, Remo_CmdId_e cmdId, bool needAckApp, bool needAckProto,
-                 CommProtoVariables::RequestRespond reqres, std::vector<uint8_t> data)
+void ProtocolDataInterface::sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet, int cmdId, bool needAckApp, bool needAckProto,
+                 CommProtoVariables::RequestRespond reqres, std::vector<uint8_t> data, int maxRetry, long intervalUS)
 {
+    if (!(cmdId == Remo_CmdId_Camera_Set_CapOperation || cmdId == Remo_CmdId_Camera_Set_RecOperation ||
+          cmdId == Remo_CmdId_Camera_Get_WorkMode || cmdId == Remo_CmdId_Camera_Set_WorkMode)) {
+        return;
+    }
+
+    Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId);
+    Remo_CmdId_Camera_e cid = static_cast<Remo_CmdId_Camera_e>(idValue & 0x1ff);
+    Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(idValue >> 9);
+    LOG(INFO) << "#########################ProtocolDataInterface::sendCmd" << " cmdSet = " <<  cmdSet << " idValue = " << idValue
+              << " cmdId = " << cid << " idType = " << idType << std::endl;
+    LOG(INFO) << "data is ";
+    CHAR_BUFF_TO_LOG_STDERROR(data);
+
     auto sender = CommProtoVariables::Get();
     auto msginfo = sender->gen_request_respond(
                 device, static_cast<CommCmdSetEnum>(cmdSet),
                 static_cast<CommCmdIDEnum>(cmdId), needAckApp, needAckProto,
                 reqres, reinterpret_cast<char*>(data.data()), data.size());
+
     std::cout << "Id forward is " << msginfo.taskidForward << std::endl;
-    sender->do_request(msginfo, reqMmaxRetry, reqIntervalUS);
+
+    if (-1 == maxRetry) maxRetry = reqMmaxRetry;
+    if (-1 == intervalUS) intervalUS = reqIntervalUS;
+    sender->do_request(msginfo, maxRetry, intervalUS);
 }
 
 bool ProtocolDataInterface::rangePayloadParer(uint8_t *srcData, int srcLength, Range_Data **destData, int *destLength)
@@ -169,7 +187,7 @@ bool ProtocolDataInterface::mergeRange(Range_Data *srcRange, int srcLength, std:
 
     destRange.clear();
     for (auto it : itemData) {
-        if (it.CmdId_GetRange == data.cmdID) {
+        if (it.CmdId_GetRange == data.cmdID || it.CmdId_GetData == data.cmdID || it.CmdId_SetData == data.cmdID) {
             std::set<SubItemData> subData = it.subItemData;
             for (auto subIt : subData) {
                 for (int i = 0; i < srcLength; ++i) {
@@ -184,17 +202,18 @@ bool ProtocolDataInterface::mergeRange(Range_Data *srcRange, int srcLength, std:
                     else if (RANGE_1 == srcRange[i].type) {
                         if (srcRange[i].data[0] <= subIt.Index && subIt.Index <= srcRange[i].data[1]) {
                             destRange.insert(subIt);
-                            continue;
+                            break;
                         }
                     }
                     else if (SINGLE == srcRange[i].type) {
                         if (srcRange[i].data[0] == subIt.Index) {
                             destRange.insert(subIt);
-                            continue;
+                            break;
                         }
                     }
                 }
             }
+            break;
         }
     }
     return true;

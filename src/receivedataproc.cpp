@@ -36,8 +36,8 @@ void ReceiveDataProc::run()
     while (true) {
         ProtocolStruct protoData;
         //popData maybe blocked
-        SharedData::Get()->popData(protoData);
-        protocolStructProc(protoData);
+        if (SharedData::Get()->popReceiveData(protoData))
+            protocolStructProc(protoData);
     }
 }
 

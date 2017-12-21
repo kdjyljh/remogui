@@ -55,8 +55,10 @@ AeModeDialog::AeModeDialog(QWidget * parent) :
     sendCmdCamera(Remo_CmdId_Camera_Get_Current_Evbias_Range);
 }
 
-void AeModeDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_e cmdId)
+void AeModeDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_e cmdId)
 {
+    if (!((cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78)) return;
+
     int indexValue = 0;
     memcpy(&indexValue, data.data(), 1);
 
@@ -69,8 +71,8 @@ void AeModeDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_e cmd
     else {
         CmdGetSetRang cmdGSR;
         findOtherCmd(cmdGSR, cmdId);
-        ptr = static_cast<QComboBox*>(findUiPtrById(static_cast<Remo_CmdId_e>(cmdId),
-                                                    static_cast<Remo_CmdId_e>(cmdGSR.Set), static_cast<Remo_CmdId_e>(cmdGSR.Range)));
+        ptr = static_cast<QComboBox*>(findUiPtrById(static_cast<Remo_CmdId_Camera_e>(cmdId),
+                                                    static_cast<Remo_CmdId_Camera_e>(cmdGSR.Set), static_cast<Remo_CmdId_Camera_e>(cmdGSR.Range)));
     }
     if (nullptr != ptr) {
         ItemData itemData;
@@ -89,8 +91,10 @@ void AeModeDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_e cmd
 //void setCurrentComboxActivated(int activatedData);
 //void setCurrentComboxRange(std::set<SubItemData> rangeSet);
 
-void AeModeDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e cmdId)
+void AeModeDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId)
 {
+    if (!((cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78)) return;
+
 //    int indexValue = 0;
 //    memcpy(&indexValue, data.data(), 1);
 
@@ -101,8 +105,8 @@ void AeModeDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e 
     else {
         CmdGetSetRang cmdGSR;
         findOtherCmd(cmdGSR, cmdId);
-        ptr = static_cast<QComboBox*>(findUiPtrById(static_cast<Remo_CmdId_e>(cmdId),
-                                                    static_cast<Remo_CmdId_e>(cmdGSR.Set), static_cast<Remo_CmdId_e>(cmdGSR.Range)));
+        ptr = static_cast<QComboBox*>(findUiPtrById(static_cast<Remo_CmdId_Camera_e>(cmdId),
+                                                    static_cast<Remo_CmdId_Camera_e>(cmdGSR.Set), static_cast<Remo_CmdId_Camera_e>(cmdGSR.Range)));
     }
     if (nullptr != ptr) {
         connect(ptr, SIGNAL(activated(int)), this, SLOT(combox_activated(int)));
@@ -116,7 +120,7 @@ void AeModeDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_e 
 
         ItemData itemData;
         if (findItemByUiPtr(ptr, itemData)) {
-            sendCmdCamera(static_cast<Remo_CmdId_e>(itemData.CmdId_GetData));
+            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemData.CmdId_GetData));
         }
     }
 }
@@ -166,7 +170,7 @@ void AeModeDialog::combox_activated(int index)
         int itemIndex = comboBox->itemData(index).toInt();
         ItemData itemdata;
         if (findItemByUiPtr(comboBox, itemdata)) {
-            sendCmdCamera(static_cast<Remo_CmdId_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
+            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
             qDebug() << "AeModeDialog::combox_activated send cmd" \
                      << index << "cmdid is " << itemdata.CmdId_SetData;
         }

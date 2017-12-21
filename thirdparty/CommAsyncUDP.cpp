@@ -1,4 +1,6 @@
 #include "CommAsyncUDP.hpp"
+#include "commlog.h"
+#include "shareddata.h"
 
 using boost::asio::ip::udp;
 
@@ -13,6 +15,10 @@ void CommAsyncUDP::send_msg(EndpointEnum endp, const char *msg, int msglen) {
 void CommAsyncUDP::send_msg(EndpointEnum endp, CommMessagePtr msg) {
   if (msg->size() == 0)
     return;
+
+  STR_TO_LOG_FILE("*******************send buffer*******************");
+  CHAR_BUFF_TO_LOG_FILE(*msg);
+  STR_TO_LOG_FILE("*******************send buffer end*******************");
 
   UDPEndpointPtr peerEndpPtr = UDPEndpoints::Get()->fetch(endp);
   sdp_->async_send_to(boost::asio::buffer(*msg), *peerEndpPtr, // 立即异步发送该msg,注意该msg在bind中被保留
@@ -40,6 +46,13 @@ void CommAsyncUDP::handle_send(const boost::system::error_code &error, std::size
     LOG(INFO) << "send a zero length msg";
     return;
   }
+
+  int buflen = msg->size();
+  char buffer[buflen]{0};
+  std::copy(msg->begin(), msg->end(), buffer);
+  ProtocolStruct protocolStruct;
+  if (protocolStruct.decode(buffer, buflen) && CommProtoVariables::REQUEST == protocolStruct.packFlags.bits.ReqResp)
+      SharedData::Get()->pushSendData(protocolStruct);
 }
 
 void CommAsyncUDP::handle_recv(const boost::system::error_code &error, std::size_t sz) {
@@ -56,6 +69,10 @@ void CommAsyncUDP::handle_recv(const boost::system::error_code &error, std::size
     }
     recvHandlerExternal_.unlock();
   }
+
+  STR_TO_LOG_FILE("*******************receive buffer*******************");
+  CHAR_BUFF_TO_LOG_FILE(recvBuf_);
+  STR_TO_LOG_FILE("*******************receive buffer end*******************");
 
   sdp_->async_receive_from(boost::asio::buffer(recvBuf_), peerEndp_,
                            boost::bind(&CommAsyncUDP::handle_recv, this, _1, _2));

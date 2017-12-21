@@ -30,7 +30,7 @@
     <property name="title">
      <string>相机</string>
     </property>
-    <widget class="QMenu" name="menu_videoStandard">
+    <widget class="QMenu" name="menu_VideoFormat">
      <property name="title">
       <string>视频制式</string>
      </property>
@@ -49,9 +49,9 @@
      <addaction name="action_whiteBalance_shadow"/>
      <addaction name="action_whiteBalance_dusk"/>
     </widget>
-    <widget class="QMenu" name="menu_exposure">
+    <widget class="QMenu" name="menu_MeterMode">
      <property name="title">
-      <string>曝光方式</string>
+      <string>测光模式</string>
      </property>
      <addaction name="action_exposure_globalMetering"/>
      <addaction name="action_exposure_spotMetering"/>
@@ -72,7 +72,7 @@
      <addaction name="action_pictureSize_standard"/>
      <addaction name="action_pictureSize_fullScreen"/>
     </widget>
-    <widget class="QMenu" name="menu_quality">
+    <widget class="QMenu" name="menu_CapStorageQuality">
      <property name="title">
       <string>照片质量</string>
      </property>
@@ -80,7 +80,7 @@
      <addaction name="action_quality_standard"/>
      <addaction name="action_quality_low"/>
     </widget>
-    <widget class="QMenu" name="menu_corscatAvoidance">
+    <widget class="QMenu" name="menu_Antiflick">
      <property name="title">
       <string>防止闪烁</string>
      </property>
@@ -89,7 +89,7 @@
      <addaction name="action_corscatAvoidance_60Hz"/>
      <addaction name="action_corscatAvoidance_auto"/>
     </widget>
-    <widget class="QMenu" name="menu_sharpening">
+    <widget class="QMenu" name="menu_Sharpness">
      <property name="title">
       <string>锐度</string>
      </property>
@@ -110,22 +110,56 @@
      <addaction name="action_lens_standerd"/>
      <addaction name="action_lens_hanging"/>
     </widget>
+    <widget class="QMenu" name="menu_CapStorageType">
+     <property name="title">
+      <string>照片格式</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menu_VideoMuxerType">
+     <property name="title">
+      <string>视频格式</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menu_PhotoColorType">
+     <property name="title">
+      <string>照片色彩类型</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menu_CustomWB_ColorTemp">
+     <property name="title">
+      <string>色温</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menu_Rotation">
+     <property name="title">
+      <string>旋转</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menu_Histogram">
+     <property name="title">
+      <string>直方图</string>
+     </property>
+    </widget>
     <addaction name="action_photoAndVideo"/>
     <addaction name="action_FocusAndZoom"/>
-    <addaction name="menu_videoStandard"/>
+    <addaction name="menu_CapStorageType"/>
+    <addaction name="menu_CapStorageQuality"/>
+    <addaction name="menu_PhotoColorType"/>
+    <addaction name="menu_pictureSize"/>
+    <addaction name="menu_VideoMuxerType"/>
+    <addaction name="menu_VideoFormat"/>
+    <addaction name="menu_CustomWB_ColorTemp"/>
     <addaction name="menu_whiteBalance"/>
-    <addaction name="menu_exposure"/>
-    <addaction name="action_continuousAutoFocus"/>
     <addaction name="action_exposureCompensation"/>
     <addaction name="menu_grid"/>
-    <addaction name="menu_pictureSize"/>
-    <addaction name="menu_quality"/>
-    <addaction name="menu_corscatAvoidance"/>
-    <addaction name="menu_sharpening"/>
-    <addaction name="action_autoRotate"/>
+    <addaction name="menu_Sharpness"/>
+    <addaction name="menu_MeterMode"/>
+    <addaction name="menu_Antiflick"/>
+    <addaction name="menu_Rotation"/>
     <addaction name="action_voices"/>
     <addaction name="menu_lens"/>
     <addaction name="action_recoveryFactSetting"/>
+    <addaction name="menu_Histogram"/>
    </widget>
    <widget class="QMenu" name="menu_normal">
     <property name="title">
@@ -158,6 +192,7 @@
     <addaction name="action_userManage"/>
     <addaction name="action_deviceInfo"/>
     <addaction name="action_storageInfo"/>
+    <addaction name="action_Gimbal"/>
    </widget>
    <widget class="QMenu" name="menu_intelligence">
     <property name="title">
@@ -416,20 +451,6 @@
    </property>
    <property name="text">
     <string>PAL</string>
-   </property>
-  </action>
-  <action name="action_autoRotate">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>自动旋转</string>
    </property>
   </action>
   <action name="action_voices">
@@ -1102,6 +1123,56 @@
   <action name="action_FocusAndZoom">
    <property name="text">
     <string>对焦/变焦</string>
+   </property>
+  </action>
+  <action name="actiondfas">
+   <property name="text">
+    <string>dfas</string>
+   </property>
+  </action>
+  <action name="actionawsr">
+   <property name="text">
+    <string>awsr</string>
+   </property>
+  </action>
+  <action name="action13123">
+   <property name="text">
+    <string>13123</string>
+   </property>
+  </action>
+  <action name="action123">
+   <property name="text">
+    <string>123</string>
+   </property>
+  </action>
+  <action name="actiondaass">
+   <property name="text">
+    <string>daass</string>
+   </property>
+  </action>
+  <action name="actionfasd">
+   <property name="text">
+    <string>fasd</string>
+   </property>
+  </action>
+  <action name="action12">
+   <property name="text">
+    <string>12</string>
+   </property>
+  </action>
+  <action name="action12_2">
+   <property name="text">
+    <string>12</string>
+   </property>
+  </action>
+  <action name="actioneqe">
+   <property name="text">
+    <string>eqe</string>
+   </property>
+  </action>
+  <action name="action_Gimbal">
+   <property name="text">
+    <string>云台</string>
    </property>
   </action>
  </widget>

@@ -20,11 +20,6 @@ public:
     }
 
     void start();
-
-signals:
-
-public slots:
-
 private:
     boost::shared_ptr<boost::thread> thread_;
     boost::shared_ptr<ReceiveDataHandler> handler_;

@@ -28,6 +28,8 @@ void SharedData::pushReceiveData(const ProtocolStruct & data)
         receiveQueue.push_back(data);
         cvReceive.notify_all();
     }
+
+    LOG(INFO) << "SharedData::pushReceiveData success seqId = " << std::hex << data.packSeq << " cmdId = " << data.cmdID << " cmdSet = " << data.cmdSet;
 }
 
 bool SharedData::popReceiveData(ProtocolStruct &data)
@@ -47,7 +49,7 @@ bool SharedData::popReceiveData(ProtocolStruct &data)
             data.data.insert(data.data.end(), sendData.data.begin(), sendData.data.end());
         }
         else {
-            LOG(INFO) << "Can not find resqest packeg for response seqId = " << data.packSeq << "cmdId = " << data.cmdID;
+            LOG(INFO) << "Can not find resqest packeg for response seqId = " << std::hex << data.packSeq << " cmdId = " << data.cmdID << " cmdSet = " << data.cmdSet;
             return false; //没有找到对应的请求包，返回false，提示应该将包丢弃
         }
     }
@@ -56,6 +58,7 @@ bool SharedData::popReceiveData(ProtocolStruct &data)
 
 void SharedData::pushSendData(const ProtocolStruct &data)
 {
+    LOG(INFO) << "SharedData::pushSendData seqId = " << std::hex << data.packSeq  << " cmdId = " << data.cmdID << " cmdSet = " << data.cmdSet;
     {
         boost::unique_lock<boost::mutex> lock(mtxSend);
         sendQueue.push_back(data);
@@ -66,32 +69,39 @@ bool SharedData::popSendDataBySeqId(ProtocolStruct &data, uint16_t seqId)
 {
     {
         boost::unique_lock<boost::mutex> lock(mtxSend);
+        bool foundData = false;
         for (auto it = sendQueue.begin(); it != sendQueue.end();) {
             if (seqId == it->packSeq) {
                 data = *it;
                 it = sendQueue.erase(it);
+                LOG(INFO) << "SharedData::popSendDataBySeqId find resqest packeg for seqId = " << std::hex << seqId << " cmdId = " << data.cmdID << " cmdSet = " << data.cmdSet;
+                foundData = true;
             }
             else {
                 ++it;
             }
         }
+        return foundData;
     }
 }
 
-bool SharedData::pooSendDataByTimedTaskId(TimedTaskID timedTaskID, ProtocolStruct &data)
+bool SharedData::popSendDataByTimedTaskId(TimedTaskID timedTaskID, ProtocolStruct &data)
 {
     {
         boost::unique_lock<boost::mutex> lock(mtxSend);
+        bool foundData = false;
         for (auto it = sendQueue.begin(); it != sendQueue.end();) {
             if (timedTaskID == it->idForward()) {
                 data = *it;
                 it = sendQueue.erase(it);
-                LOG(INFO) << "find resqest packeg for imedTaskId = " << timedTaskID << " cmdId = " << data.cmdID;
+                LOG(INFO) << "SharedData::popSendDataByTimedTaskId find resqest packeg for TimedTaskId = " << std::hex << timedTaskID << " cmdId = " << data.cmdID << " cmdSet = " << data.cmdSet;
+                foundData = true;
             }
             else {
                 ++it;
             }
         }
+        return foundData;
     }
 }
 

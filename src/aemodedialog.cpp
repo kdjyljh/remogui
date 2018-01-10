@@ -167,10 +167,9 @@ void AeModeDialog::combox_activated(int index)
 {
     QComboBox * comboBox = dynamic_cast<QComboBox*>(sender());
     if (nullptr != comboBox) {
-        int itemIndex = comboBox->itemData(index).toInt();
         ItemData itemdata;
         if (findItemByUiPtr(comboBox, itemdata)) {
-            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
+            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData), std::vector<uint8_t>{comboBox->itemData(index).toInt()});
             qDebug() << "AeModeDialog::combox_activated send cmd" \
                      << index << "cmdid is " << itemdata.CmdId_SetData;
         }

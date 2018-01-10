@@ -18,10 +18,10 @@ public:
 
     void pushSendData(const ProtocolStruct & data);
     bool popSendDataBySeqId(ProtocolStruct & data, uint16_t seqId);
-    bool pooSendDataByTimedTaskId(TimedTaskID timedTaskID, ProtocolStruct & data);
-    bool pooSendDataByTimedTaskId(TimedTaskID timedTaskID) {
+    bool popSendDataByTimedTaskId(TimedTaskID timedTaskID, ProtocolStruct & data);
+    bool popSendDataByTimedTaskId(TimedTaskID timedTaskID) {
         ProtocolStruct data;
-        return pooSendDataByTimedTaskId(timedTaskID, data);
+        return popSendDataByTimedTaskId(timedTaskID, data);
     }
 
 private:

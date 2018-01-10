@@ -58,8 +58,8 @@ void TimedTask::signalhandler_revocable(const boost::system::error_code &err,
     register_work(timedTaskID, func, cntRem, intervalUS, false); // 递归注册,但不允许新建定时器,因为signalhandler可能会推迟到cancel_work之后执行
   } else { // 该任务已经结束
 //    LOG(FATAL) << "通信失败多次，直接退出: " << timedTaskID << " with prefix = " << (timedTaskID >> 56);
-      LOG(INFO) << "通信失败多次，超时: " << timedTaskID << " with prefix = " << (timedTaskID >> 56);
-    cancel_work(timedTaskID);
+      LOG(INFO) << "通信失败多次，超时: " << std::hex << timedTaskID;
+    cancel_work(timedTaskID, true);
   }
 }
 
@@ -82,7 +82,7 @@ void TimedTask::signalhandler_irrevocable(const boost::system::error_code &err,
   it->second->async_wait(handler);
 }
 
-void TimedTask::cancel_work(TimedTaskID timedTaskID) { // 加锁
+void TimedTask::cancel_work(TimedTaskID timedTaskID, bool timeOut) { // 加锁
     bool cancel = false;
     {
         boost::lock_guard<boost::mutex> lock(mutex_);
@@ -99,7 +99,7 @@ void TimedTask::cancel_work(TimedTaskID timedTaskID) { // 加锁
         }
     }
 
-    if (cancel) SharedData::Get()->pooSendDataByTimedTaskId(timedTaskID);
+    if (cancel && timeOut) SharedData::Get()->popSendDataByTimedTaskId(timedTaskID);
 }
 
 std::string TimedTask::print() { // 加锁,保护workToDo
@@ -126,7 +126,8 @@ void TimedTask::run() {
   io_service_.run();
 }
 
-TimedTask::TimedTask() {
+TimedTask::TimedTask()
+{
   LOG(INFO) << "CommTimedTask ctor";
 
   threadp_ = boost::make_shared<boost::thread>(&TimedTask::run, this);

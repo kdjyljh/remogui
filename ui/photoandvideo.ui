@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="tab_photo">
     <attribute name="title">
@@ -283,7 +283,7 @@
       <rect>
        <x>40</x>
        <y>20</y>
-       <width>251</width>
+       <width>301</width>
        <height>151</height>
       </rect>
      </property>
@@ -330,13 +330,6 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="LineEdit_video_slowMotion">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="ComboBox_SubWorkMode_Recode_Loop"/>
       </item>
@@ -345,6 +338,9 @@
       </item>
       <item row="3" column="1">
        <widget class="QComboBox" name="ComboBox_SubWcorkMode_LapseRec_TotalTime"/>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="ComboBox_SlowMotion_Resolution"/>
       </item>
      </layout>
     </widget>
@@ -380,24 +376,11 @@
       <string/>
      </property>
     </widget>
-    <widget class="QRadioButton" name="radioButton_SubWcorkMode_Recode_Photo">
+    <widget class="QRadioButton" name="radioButton_SubWcorkMode_Recode_LapseRec">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>90</y>
-       <width>41</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="radioButton_SubWcorkMode_Recode_Collapses">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>120</y>
+       <y>100</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -424,7 +407,7 @@
       <rect>
        <x>40</x>
        <y>190</y>
-       <width>251</width>
+       <width>301</width>
        <height>120</height>
       </rect>
      </property>
@@ -455,16 +438,6 @@
          <string>录像thumbnail分辨率</string>
         </property>
        </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="Label_17">
-        <property name="text">
-         <string>慢动作回放分辨率</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="ComboBox_SlowMotion_Resolution"/>
       </item>
       <item row="2" column="1">
        <widget class="QComboBox" name="ComboBox_Thumbnail_Resolution"/>

@@ -36,6 +36,7 @@ void FocusDialog::closeEvent(QCloseEvent *event)
 
 void FocusDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId)
 {
+    LOG(INFO) << "FocusDialog::surportRangeGot cmdId = " << std::hex << cmdId;
     if (!((cmdId & 0x1ff) >= 0x7b && (cmdId & 0x1ff) < 0x85)) return;
 
     QComboBox * ptr = static_cast<QComboBox*>(findUiPtrById(cmdId));
@@ -44,12 +45,14 @@ void FocusDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Cam
         for (auto it : rangeSet) {
             ptr->insertItem(it.Index, QString::fromUtf8(it.ShowStr.data()), it.Index);
         }
-        sendCmdCamera(Remo_CmdId_Camera_Get_AFMode);
+        if (Remo_CmdId_Camera_Get_AFMode_Range == cmdId)
+            sendCmdCamera(Remo_CmdId_Camera_Get_AFMode);
     }
 }
 
 void FocusDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_e cmdId)
 {
+    LOG(INFO) << "FocusDialog::settingGot cmdId = " << std::hex << cmdId;
     if (!((cmdId & 0x1ff) >= 0x7b && (cmdId & 0x1ff) < 0x85)) return;
 
     if (Remo_CmdId_Camera_Get_FocalLengthInfo == cmdId) {
@@ -60,11 +63,13 @@ void FocusDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera
     }
 
     QComboBox * ptr = static_cast<QComboBox*>(findUiPtrById(cmdId));
-    int indexValue;
-    memcpy(&indexValue, data.data(), 1);
+    int indexValue = data.at(0);
+//    memcpy(&indexValue, data.data(), 1);
     if (nullptr != ptr) {
         ItemData itemData;
         if (findItemByUiPtr(ptr, itemData)) {
+            QString str = ptr->objectName();
+            int coun = ptr->count();
             for (int i = 0; i < ptr->count(); ++i) {
                 if (ptr->itemData(i).toInt() == indexValue) {
                     ptr->setCurrentIndex(i);
@@ -85,12 +90,12 @@ void FocusDialog::on_ComboBox_AFMode_activated(int index)
 void FocusDialog::on_horizontalSlider_FocalLengthPosNo_sliderReleased()
 {
     qDebug() << "releaseed value " << ui->horizontalSlider_FocalLengthPosNo->value();
-    Remo_Camera_ZoomControlParam_s data;
+    Remo_Camera_ZoomControlParam_s data ;
     data.ZoomControlType = 0;
     data.Speed = ui->ComboBox_ZoomSpeed->itemData(ui->ComboBox_ZoomSpeed->currentIndex()).toInt();
     data.TargetPosNo = ui->horizontalSlider_FocalLengthPosNo->value();
     sendCmdCamera(Remo_CmdId_Camera_Set_ZoomControlParam,
-                  std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data + sizeof(data))));
+                  std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 5));
 }
 
 void FocusDialog::on_pushButton_StopZoom_clicked()

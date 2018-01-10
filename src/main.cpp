@@ -4,6 +4,7 @@
 #include "itemdatadef.h"
 
 #include <glog/logging.h>
+#include <QObject>
 
 int main(int argc, char *argv[])
 {

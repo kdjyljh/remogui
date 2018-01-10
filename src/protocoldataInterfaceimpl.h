@@ -24,6 +24,10 @@ public:
                    std::vector<uint8_t> data = std::vector<uint8_t>(),
             CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
 
+    static void sendCmdBattery(Remo_CmdId_Battery_e cmdId,
+                   std::vector<uint8_t> data = std::vector<uint8_t>(),
+            CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
+
     void sendCmdCamera() {}
 
 protected:

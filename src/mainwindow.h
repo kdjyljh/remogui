@@ -8,6 +8,7 @@
 #include "receivedataproc.h"
 #include "focusdialog.h"
 #include "gimbaldialog.h"
+#include "deviceinfodialog.h"
 #include "viewlable.h"
 
 #include <QMainWindow>
@@ -26,6 +27,7 @@ class MainWindow : public QMainWindow, public ProtocolDataInterfaceImpl
     Q_OBJECT
 
 public:
+    ImageStreamProc *imagProc;
     ~MainWindow();
 
     static boost::shared_ptr<MainWindow> getWindInstace();
@@ -49,6 +51,7 @@ private:
     boost::shared_ptr<AeModeDialog> aeModeDialog;
     boost::shared_ptr<FocusDialog> focusDialog;
     boost::shared_ptr<GimbalDialog> gimbalDialog;
+    boost::shared_ptr<DeviceInfoDialog> deviceInfoDialog;
 
     QActionGroup *actionGroupResolution;
     QActionGroup *actionGroupVideoStandard;
@@ -71,7 +74,7 @@ private:
     QActionGroup *actionGroupIntelligLens;
 
 private:
-    ImageStreamProc *imagProc;
+
     boost::shared_ptr<ReceiveDataProc> receiveDataProc;
 
 private:
@@ -97,10 +100,10 @@ private slots:
 //    void on_action_storageInfo_triggered();
 //    void on_action_intelligence_sportMode_triggered();
 //    void on_action_intelligence_zoomedLens_triggered();
-//    void on_action_exposureCompensation_triggered();
-
+    void on_action_exposureCompensation_triggered();
     void on_action_FocusAndZoom_triggered();
     void on_action_Gimbal_triggered();
+    void on_action_deviceInfo_triggered();
 
     //slots need connect by code
 //    void actionGroup_resolution_triggered(QAction *action);

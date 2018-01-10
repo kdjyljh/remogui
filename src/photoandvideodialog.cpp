@@ -12,13 +12,14 @@ PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     ProtocolDataInterfaceImpl(),
     ui(new Ui::PhotoAndVideoDialog)
 {
+    LOG(INFO) << "PhotoAndVideoDialog::PhotoAndVideoDialog construct";
     ui->setupUi(this);
 
     setFixedSize(DEFAULT_DIALOG_WITH, DEFAULT_DIALOG_HEIGHT);
     ui->pushButton_Stop->setEnabled(false);
     QButtonGroup * buttGroup = new QButtonGroup(this);
-    buttGroup->addButton(ui->radioButton_SubWcorkMode_Recode_Collapses);
-    buttGroup->addButton(ui->radioButton_SubWcorkMode_Recode_Photo);
+    buttGroup->addButton(ui->radioButton_SubWcorkMode_Recode_LapseRec);
+//    buttGroup->addButton(ui->radioButton_SubWcorkMode_Recode_Photo);
     buttGroup->addButton(ui->radioButton_SubWcorkMode_Recode_SlowMotion);
     buttGroup->addButton(ui->radioButton_SubWorkMode_Recode_Loop);
     buttGroup->addButton(ui->radioButton_SubWorkMode_Recode_Normal);
@@ -93,7 +94,7 @@ do {\
 #endif
 void PhotoAndVideoDialog::workModeGot(const Remo_Camera_WorkMode_s &workmode)
 {
-    qDebug() << "PhotoAndVideoDialog::workModeGot!!!!";
+    LOG(INFO) << "PhotoAndVideoDialog::workModeGot!!!!";
     Remo_Camera_MainWorkMode_e mainWorkMode = static_cast<Remo_Camera_MainWorkMode_e>(workmode.MainWorkMode);
     setRecVideoByMainWorkMode(mainWorkMode);
     switch (mainWorkMode) {
@@ -111,8 +112,8 @@ void PhotoAndVideoDialog::workModeGot(const Remo_Camera_WorkMode_s &workmode)
     case MainWorKMode_Record:
         IF_COND_SET_ENUMITEM_ACTION_BY_TYPE(workmode.SubWorkMode, SubWorkMode_Recode_Normal, radioButton, setChecked);
         IF_COND_SET_ENUMITEM_ACTION_BY_TYPE(workmode.SubWorkMode, SubWorkMode_Recode_Loop, radioButton, setChecked);
-        IF_COND_SET_ENUMITEM_ACTION_BY_TYPE(workmode.SubWorkMode, SubWcorkMode_Recode_Collapses, radioButton, setChecked);
-        IF_COND_SET_ENUMITEM_ACTION_BY_TYPE(workmode.SubWorkMode, SubWcorkMode_Recode_Photo, radioButton, setChecked);
+        IF_COND_SET_ENUMITEM_ACTION_BY_TYPE(workmode.SubWorkMode, SubWcorkMode_Recode_LapseRec, radioButton, setChecked);
+//        IF_COND_SET_ENUMITEM_ACTION_BY_TYPE(workmode.SubWorkMode, SubWcorkMode_Recode_Photo, radioButton, setChecked);
         IF_COND_SET_ENUMITEM_ACTION_BY_TYPE(workmode.SubWorkMode, SubWcorkMode_Recode_SlowMotion, radioButton, setChecked);
         break;
     case MainWorKMode_PlayBack:
@@ -124,10 +125,14 @@ void PhotoAndVideoDialog::workModeGot(const Remo_Camera_WorkMode_s &workmode)
     default:
         break;
     }
+
+//    if (Remo_CmdId_Camera_Set_WorkMode == ProtocolDataInterfaceImpl::data.cmdID)
+//        emit workModeChange();
 }
 
 void PhotoAndVideoDialog::settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId)
 {
+//    LOG(INFO) << "PhotoAndVideoDialog::settingGot cmdId = " << std::hex << cmdId;
     if (!((cmdId & 0x1ff) >= 0x0 && (cmdId & 0x1ff) < 0x60)) return;
 
     if (data.empty()) {
@@ -156,13 +161,12 @@ void PhotoAndVideoDialog::settingGot(const std::vector<uint8_t> & data, Remo_Cmd
 
 void PhotoAndVideoDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId)
 {
-    qDebug() << "PhotoAndVideoDialog::surportRangeGot" << cmdId;
+//    qDebug() << "PhotoAndVideoDialog::surportRangeGot" << cmdId;
     if (!((cmdId & 0x1ff) >= 0x0 && (cmdId & 0x1ff) < 0x60)) return;
-    qDebug() << "PhotoAndVideoDialog::surportRangeGot through!!!!!!!!!!!!!!" << cmdId;
+//    qDebug() << "PhotoAndVideoDialog::surportRangeGot through!!!!!!!!!!!!!!" << cmdId;
 
     QComboBox * ptr = static_cast<QComboBox*>(findUiPtrById(cmdId));
 
-//    qDebug() << "find combox ptr" << ptr << "combos ptr " << ui->;
     if (nullptr != ptr) {
         for (int i = 0; i < ptr->count(); ++i) ptr->removeItem(i);
         for (auto it : rangeSet) {
@@ -174,7 +178,7 @@ void PhotoAndVideoDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_C
         ItemData itemData;
         if (findItemByUiPtr(ptr, itemData)) {
             sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemData.CmdId_GetData));//获取当前相机设置值
-            qDebug() << "send cmd to get current camera setting id is " << itemData.CmdId_GetData;
+            LOG(INFO) << "send cmd to get current camera setting id is " << std::hex << itemData.CmdId_GetData;
         }
     }
 }
@@ -216,7 +220,7 @@ ON_ENUMITEM_ACTION(MainWorKMode_MultiPhoto, SubWorkMode_MultiPhoto_Panorama, rad
 //ON_ENUMITEM_ACTION(MainWorKMode_MultiPhoto, SubWorkMode_MultiPhoto_AEB, radioButton, clicked)
 ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWorkMode_Recode_Normal, radioButton, clicked)
 ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWorkMode_Recode_Loop, radioButton, clicked)
-ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWcorkMode_Recode_Collapses, radioButton, clicked)
+ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWcorkMode_Recode_LapseRec, radioButton, clicked)
 ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWcorkMode_Recode_Photo, radioButton, clicked)
 ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWcorkMode_Recode_SlowMotion, radioButton, clicked)
 #endif
@@ -255,10 +259,10 @@ void PhotoAndVideoDialog::comboBox_activated(int index)
 
     QComboBox * comboBox = dynamic_cast<QComboBox*>(sender());
     if (nullptr != comboBox) {
-        int itemIndex = comboBox->itemData(index).toInt();
         ItemData itemdata;
         if (findItemByUiPtr(comboBox, itemdata)) {
-            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
+            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData),
+                          std::vector<uint8_t>{comboBox->itemData(index).toInt()});
             qDebug() << "on_ComboBox_SubWorkMode_Photo_Delay_activated send cmd" \
                      << index << "cmdid is " << itemdata.CmdId_SetData;
         }

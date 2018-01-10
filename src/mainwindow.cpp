@@ -32,6 +32,7 @@ static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
     return true;
 }
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ProtocolDataInterfaceImpl(),
@@ -45,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
     aeModeDialog(boost::shared_ptr<AeModeDialog>(new AeModeDialog(this))),
     focusDialog(boost::shared_ptr<FocusDialog>(new FocusDialog(this))),
     gimbalDialog(boost::shared_ptr<GimbalDialog>(new GimbalDialog(this))),
+    deviceInfoDialog(boost::shared_ptr<DeviceInfoDialog>(new DeviceInfoDialog(this))),
 //    workModeDialog(boost::shared_ptr<WorkModeDialog>(new WorkModeDialog)),
     actionGroupResolution(new QActionGroup(this)),
     actionGroupVideoStandard(new QActionGroup(this)),
@@ -70,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug() << "System is Big Endian exit !!!!!!!!!!!!!!!!!!!!!!!!";
         exit(-1); //
     }
+    LOG(INFO) << "CTOR FOR MainWindow";
 
     ui->setupUi(this);
 
@@ -87,25 +90,33 @@ MainWindow::MainWindow(QWidget *parent) :
     move(centerPoint);
 
     photoAndVideoDialog->registerSelf2Handler();
+    focusDialog->registerSelf2Handler();
+    gimbalDialog->registerSelf2Handler();
+    aeModeDialog->registerSelf2Handler();
+//    deviceInfoDialog->registerSelf2Handler();
 //    workModeDialog->registerSelf2Handler();
 
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
+    connect(photoAndVideoDialog.get(), SIGNAL(workModeChange()), imagProc, SLOT(readStream_1S()));
+//    connect(photoAndVideoDialog.get(), SIGNAL(workModeChange()), this, SLOT(testSome()));
 
     setupAction();
 
     boost::thread(&ImageStreamProc::play, imagProc);
 
+
+
     receiveDataProc->start();
 
-    QPixmap pix;
-    pix.load("/home/jianghua/Pictures/gui.png");
-    QSize s(size());
-    QSize ss(pix.size());
-    pix = pix.scaled(size(), Qt::KeepAspectRatio);
-    ss = pix.size();
-    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
-                           pix.width(), pix.height());
-    viewLable->setPixmap(pix);
+//    QPixmap pix;
+//    pix.load("/home/jianghua/Pictures/gui.png");
+//    QSize s(size());
+//    QSize ss(pix.size());
+//    pix = pix.scaled(size(), Qt::KeepAspectRatio);
+//    ss = pix.size();
+//    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
+//                           pix.width(), pix.height());
+//    viewLable->setPixmap(pix);
 
     connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), viewLable, SLOT(setFocusStatus(bool)));
 
@@ -254,9 +265,10 @@ void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Came
         return;
     }
 
-    qDebug() << "MainWindow::surportRangeGot cmdId = " << cmdId;
+    LOG(INFO) << "MainWindow::surportRangeGot cmdId = " << std::hex << cmdId;
 
-    QMenu * menu = static_cast<QMenu*>(findUiPtrById(cmdId));
+//    QMenu * menu = static_cast<QMenu*>(findUiPtrById(cmdId));
+    QMenu * menu = qobject_cast<QMenu*>(static_cast<QObject*>(findUiPtrById(cmdId)));
     qDebug() << "find menu" << menu << "sharpness " << ui->menu_Sharpness;
     if (nullptr != menu) {
         for (auto it : menu->actions()) menu->removeAction(it);//先删除menu的子菜单
@@ -317,20 +329,14 @@ void MainWindow::paintEvent(QPaintEvent *ev)
 
 void MainWindow::setLabelPix(const QImage &image)
 {
-//    QPixmap pix = QPixmap::fromImage(image);
+    QPixmap pix = QPixmap::fromImage(image);
+
 //    QPixmap pix;
 //    pix.load("/home/jianghua/Pictures/gui.png");
-//    pix.scaledToWidth(IMAGE_RESOLUTION_WIDTH);
-//    pix.scaledToHeight(IMAGE_RESOLUTION_HEIGHT);
-//    viewLable->setGeometry((size().width() - IMAGE_RESOLUTION_WIDTH) / 2, (size().height() - IMAGE_RESOLUTION_HEIGHT) / 2,
-//                           IMAGE_RESOLUTION_WIDTH, IMAGE_RESOLUTION_HEIGHT);
-
-    QPixmap pix;
-    pix.load("/home/jianghua/Pictures/gui.png");
-    QSize s(size());
-    QSize ss(pix.size());
-    pix = pix.scaled(size(), Qt::KeepAspectRatio);
-    ss = pix.size();
+//    QSize s(size());
+//    QSize ss(pix.size());
+//    pix = pix.scaled(size(), Qt::KeepAspectRatio);
+//    ss = pix.size();
     viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
                            pix.width(), pix.height());
     viewLable->setPixmap(pix);
@@ -392,15 +398,15 @@ void MainWindow::on_action_photoAndVideo_triggered()
 
 //}
 
-//void MainWindow::on_action_exposureCompensation_triggered()
-//{
-////    exposureCompensationSpinBox->setRange(-3,3);
-////    QRect screenRect = QApplication::desktop()->screenGeometry();
-////    exposureCompensationSpinBox->move(screenRect.width() / 2, screenRect.height() / 2);
-////    exposureCompensationSpinBox->setFixedSize(100, 20);
-////    exposureCompensationSpinBox->show();
-//    aeModeDialog->show();
-//}
+void MainWindow::on_action_exposureCompensation_triggered()
+{
+//    exposureCompensationSpinBox->setRange(-3,3);
+//    QRect screenRect = QApplication::desktop()->screenGeometry();
+//    exposureCompensationSpinBox->move(screenRect.width() / 2, screenRect.height() / 2);
+//    exposureCompensationSpinBox->setFixedSize(100, 20);
+//    exposureCompensationSpinBox->show();
+    aeModeDialog->show();
+}
 
 //void MainWindow::actionGroup_resolution_triggered(QAction *action)
 //{
@@ -913,6 +919,11 @@ void MainWindow::on_action_Gimbal_triggered()
     gimbalDialog->show();
 }
 
+void MainWindow::on_action_deviceInfo_triggered()
+{
+    deviceInfoDialog->show();
+}
+
 void MainWindow::menu_action_triggered(QAction *action)
 {
     if (nullptr == action) return;
@@ -920,8 +931,8 @@ void MainWindow::menu_action_triggered(QAction *action)
     QMenu *menu = action->menu();
     ItemData itemData;
     if (findItemByUiPtr(menu, itemData)) {
-        std::vector<uint8_t> data{action->data().toInt()};
-        sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemData.CmdId_SetData), data);
+        sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemData.CmdId_SetData),
+                      std::vector<uint8_t>{action->data().toInt()});
     }
 }
 

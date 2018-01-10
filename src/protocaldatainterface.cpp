@@ -3,8 +3,8 @@
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 
-int ProtocolDataInterface::reqMmaxRetry = 5;
-long ProtocolDataInterface::reqIntervalUS = 1000000;
+int ProtocolDataInterface::reqMaxRetry = 5;
+long ProtocolDataInterface::reqIntervalUS = 5000000;
 ProtocolDataInterface::ProtocolDataInterface(Remo_CmdSet_e set) :
     cmdSet(set)
 {
@@ -19,16 +19,31 @@ void ProtocolDataInterface::registerSelf2Handler()
 void ProtocolDataInterface::sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet, int cmdId, bool needAckApp, bool needAckProto,
                  CommProtoVariables::RequestRespond reqres, std::vector<uint8_t> data, int maxRetry, long intervalUS)
 {
-    if (!(cmdId == Remo_CmdId_Camera_Set_CapOperation || cmdId == Remo_CmdId_Camera_Set_RecOperation ||
-          cmdId == Remo_CmdId_Camera_Get_WorkMode || cmdId == Remo_CmdId_Camera_Set_WorkMode)) {
-        return;
-    }
+//    if (!(cmdSet == Remo_CmdSet_Camera &&(cmdId == Remo_CmdId_Camera_Set_CapOperation || cmdId == Remo_CmdId_Camera_Set_RecOperation ||
+//          cmdId == Remo_CmdId_Camera_Get_WorkMode || cmdId == Remo_CmdId_Camera_Set_WorkMode ||
+//                                          cmdId == Remo_CmdId_Camera_Get_ImageResolution_Range ||
+//                                          cmdId == Remo_CmdId_Camera_Set_ImageResolution ||
+//                                          cmdId == Remo_CmdId_Camera_Get_ImageResolution ||
+//                                          cmdId == Remo_CmdId_Camera_Get_LapseCap_Interval_Range ||
+//                                          cmdId == Remo_CmdId_Camera_Get_LapseCap_TotalTime_Range))) {
+//        return;
+//    }
 
-    Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId);
-    Remo_CmdId_Camera_e cid = static_cast<Remo_CmdId_Camera_e>(idValue & 0x1ff);
-    Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(idValue >> 9);
-    LOG(INFO) << "#########################ProtocolDataInterface::sendCmd" << " cmdSet = " <<  cmdSet << " idValue = " << idValue
-              << " cmdId = " << cid << " idType = " << idType << std::endl;
+//    if (((cmdId >> 3) >= 0x0 && (cmdId >> 3) < 0x60 ||
+//         (cmdId >> 3) >= 0x67 && (cmdId >> 3) < 0x78 ||
+//         (cmdId >> 3) >= 0x7b && (cmdId >> 3) < 0x85)) {
+//        return;
+//    }
+
+//    if (!((cmdId & 0x1ff) >= 0x0 && (cmdId & 0x1ff) < 0x60)) return;
+//    if (Remo_CmdId_Camera_Get_SlowMotion_Resolution_Range != cmdId) {
+//        return;
+//    }
+
+    Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId & 0x1ff);
+    Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(cmdId >> 9);
+    LOG(INFO) << "#########################ProtocolDataInterface::sendCmd" << std::hex << " cmdSet = " <<  cmdSet << " cmdId = " << cmdId
+              << " idValue = " << idValue << " idType = " << idType << std::endl;
     LOG(INFO) << "data is ";
     CHAR_BUFF_TO_LOG_STDERROR(data);
 
@@ -38,9 +53,9 @@ void ProtocolDataInterface::sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet,
                 static_cast<CommCmdIDEnum>(cmdId), needAckApp, needAckProto,
                 reqres, reinterpret_cast<char*>(data.data()), data.size());
 
-    std::cout << "Id forward is " << msginfo.taskidForward << std::endl;
+//    LOG(INFO) << "Id forward is " << msginfo.taskidForward << std::endl;
 
-    if (-1 == maxRetry) maxRetry = reqMmaxRetry;
+    if (-1 == maxRetry) maxRetry = reqMaxRetry;
     if (-1 == intervalUS) intervalUS = reqIntervalUS;
     sender->do_request(msginfo, maxRetry, intervalUS);
 }

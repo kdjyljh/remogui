@@ -36,6 +36,13 @@ typedef enum Remo_CmdId_Type_E
     CmdId_Type_GetRange         = 0x2,
     CmdId_Type_Control          = 0x3
 }Remo_CmdId_Type_e;
+
+//typedef enum Remo_CmdId_Battery_Type_E
+//{
+//    Battery_Info = 0x00,
+//    Charger_Info = 0x01
+//}Remo_CmdId_Battery_Type_e;
+
 /*
  * cmdset:0x1
  * cmdid:
@@ -336,7 +343,7 @@ typedef enum Remo_CmdId__Gimbal_E
     Remo_CmdId_Gimbal_Set_AnguVelo                                  = 0x04,
     Remo_CmdId_Gimbal_Set_AnguVeloInter                             = 0x05,
     Remo_CmdId_Gimbal_Set_Roll_WorkMode                             = 0x20,
-    Remo_CmdId_Gimbal_Set_RollFineTuning                           = 0x21,
+    Remo_CmdId_Gimbal_Set_RollFineTuning                            = 0x21,
     Remo_CmdId_Gimbal_Set_LockAxis                                  = 0x22,
     Remo_CmdId_Gimbal_Reset                                         = 0x23,
     Remo_CmdId_Gimbal_Set_VeloSlope                                 = 0x24,
@@ -347,5 +354,18 @@ typedef enum Remo_CmdId__Gimbal_E
     Remo_CmdId_Gimbal_Bott,
     Remo_CmdId_Gimbal_PlaceHolder
 }Remo_CmdId_Gimbal_e;
+
+
+
+
+//电源系统指令
+typedef enum Remo_CmdId_Battery_E
+{
+    Remo_CmdId_Battery_Get_Battery_Info     = 0x01,
+    Remo_CmdId_Battery_Get_Charger_Info     = 0x02,
+    Remo_CmdId_Battery_Bott,
+    Remo_CmdId_Battery_PlaceHolder
+}Remo_CmdId_Battery_e;
+
 
 #endif // CMDEF_H

@@ -20,15 +20,11 @@ public:
 
 protected:
     virtual void workModeGot(const Remo_Camera_WorkMode_s & workmode) override;
-//    virtual void capDelayTimeGot(const int & value) override;
     virtual void settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId) override;
     virtual void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId) override;
 
-public slots:
-//    PhotoAndVideoSetting getSettingFromUi();
-
 signals:
-//    void cameraSettingChanged(const PhotoAndVideoSetting &pvSetting);
+    void workModeChange();
 
 private:
     Ui::PhotoAndVideoDialog *ui; // 来自uic生成的header中的类（photoandvideodialog.ui
@@ -48,7 +44,7 @@ private slots:
 //    void on_radioButton_SubWorkMode_MultiPhoto_AEB_clicked();
     void on_radioButton_SubWorkMode_Recode_Normal_clicked();
     void on_radioButton_SubWorkMode_Recode_Loop_clicked();
-    void on_radioButton_SubWcorkMode_Recode_Collapses_clicked();
+    void on_radioButton_SubWcorkMode_Recode_LapseRec_clicked();
     void on_radioButton_SubWcorkMode_Recode_Photo_clicked();
     void on_radioButton_SubWcorkMode_Recode_SlowMotion_clicked();
 

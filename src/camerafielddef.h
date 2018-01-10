@@ -49,7 +49,7 @@ typedef enum Remo_Camera_WorkMode_Recode_E
 {
     SubWorkMode_Recode_Normal = 0,
     SubWorkMode_Recode_Loop,
-    SubWcorkMode_Recode_Collapses,
+    SubWcorkMode_Recode_LapseRec,
     SubWcorkMode_Recode_Photo,
     SubWcorkMode_Recode_SlowMotion,
     SubWcorkMode_Recode_Bott
@@ -371,7 +371,7 @@ typedef struct Remo_Camera_LoopRec_Interval_S
 }Remo_Camera_LoopRec_Interval_s;
 typedef enum Remo_Camera_LoopRec_Interval_E
 {
-    LoopRec_Interval_2MIN = 10,
+    LoopRec_Interval_2MIN = 0,
     LoopRec_Interval_5MIN,
     LoopRec_Interval_10MIN,
     LoopRec_Interval_25MIN,
@@ -874,6 +874,7 @@ typedef enum Remo_Camera_SpeedLevelNum_E
 
 
 //相机变焦的target位置和速度
+#pragma pack(1)
 typedef struct Remo_Camera_ZoomControlParam_S
 {
     uint8_t ZoomControlType;      // 变焦控制类型
@@ -887,9 +888,10 @@ typedef struct Remo_Camera_ZoomControlParam_S
             uint16_t  Dir;         //  变焦方向
             uint16_t LastTime;    //  变焦操作持续时间
         };
-
     };
 }Remo_Camera_ZoomControlParam_s;
+#pragma pack()
+
 typedef enum Remo_Camera_ZoomControlType_E
 {
     ZoomControlType_AbsPos = 0,
@@ -1023,4 +1025,69 @@ typedef enum Remo_Camera_SDFormat_DCFCreate_E
 * * * * *0x500:
 */
 /*************相机工厂生产相关命令族*************/
+
+
+
+
+/*************电池相关命令族*************/
+typedef struct Remo_Battery_BatteryInfo_S
+{
+    uint16_t Temperature;  //温度  ℃
+    uint16_t Voltage;       //电池电压 mV
+    uint16_t Current; //电池电流，mA,正为充电，负为放电
+    uint16_t Capacity;    //剩余容量  %
+    uint16_t Charge_full; //满电容量 mAh
+    uint16_t Status;  //电池状态 enum
+    uint16_t Health; // 健康状态 bit
+    uint16_t Cell_Voltage[3];//各个电池电压 mV
+}Remo_Battery_BatteryInfo_s;
+typedef enum Remo_Battery_BatteryStatus_E
+{
+    Power_Supply_Status_Charging            = 0x0,
+    Power_Supply_Status_Discharging         = 0x1,
+    Power_Supply_Status_Bott
+}Remo_Battery_BatteryStatus_e;
+typedef enum Remo_Battery_BatteryHealth_E
+{
+    BatteryHealth_OverHeat            = 0x0,
+    BatteryHealth_Cold                = 0x1,
+    BatteryHealth_OverVoltage         = 0x2,
+    BatteryHealth_OverCurrent         = 0x3,
+    BatteryHealth_Bott
+}Remo_Battery_BatteryHealth_e;
+
+
+typedef struct Remo_Battery_ChargerInfo_S
+{
+    uint16_t Input_Voltage; //输入电压 mV
+    uint16_t Input_Current; //输入电流 mA
+    uint16_t Charge_Voltage; //充电电压 mV
+    uint16_t Charge_Current; //充电电流 mA
+    uint16_t Charge_Type;     //充电类型 enum
+    uint16_t Battery_Present; //电池在位情况 enum
+    uint16_t Adapter_Present; // 外部供电在位情况 enum
+}Remo_Battery_ChargerInfo_s;
+//充电类型
+typedef enum Remo_Battery_ChargeType_E
+{
+    Power_Supply_Charge_Type_None       = 0x0,
+    Power_Supply_Charge_Type_Pchg       = 0x1,
+    Power_Supply_Charge_Type_Fast       = 0x2,
+    Power_Supply_Charge_Type_Bott
+}Remo_Battery_ChargeType_e;
+//电池在位情况
+typedef enum Remo_Battery_BatteryPresent_E
+{
+    Power_Supply_Battery_Present_None   = 0x0,
+    Power_Supply_Battery_Present        = 0x1,
+    Power_Supply_Battery_Present_Bott
+}Remo_Battery_BatteryPresent_e;
+//外部供电情况
+typedef enum Remo_Battery_AdapterPresent_E
+{
+    Power_Supply_Adapter_Present_None   = 0x0,
+    Power_Supply_Adapter_Present        = 0x1,
+    Power_Supply_Adapter_Present_Bott
+}Remo_Battery_AdapterPresent_e;
+
 #endif // PROTOFIELDDEF_H

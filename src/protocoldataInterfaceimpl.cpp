@@ -8,26 +8,25 @@ ProtocolDataInterfaceImpl::ProtocolDataInterfaceImpl(Remo_CmdSet_e set) :
 
 void ProtocolDataInterfaceImpl::handle()
 {
-    Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(data.cmdID);
-    Remo_CmdId_Camera_e cmdId = static_cast<Remo_CmdId_Camera_e>(idValue & 0x1ff);
-    Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(idValue >> 9);
+    Remo_CmdId_Camera_e cmdId = static_cast<Remo_CmdId_Camera_e>(data.cmdID);
+//    Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId & 0x1ff);
+    Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(cmdId >> 9);
 
-    LOG(INFO) << "#########################ProtocolDataInterfaceImpl::handle idValue = " << idValue
-              << " cmdId = " << cmdId << " idType = " << idType << std::endl;
-    LOG(INFO) << "data is ";
-    CHAR_BUFF_TO_LOG_STDERROR(data.data);
+//    LOG(INFO) << "#########################ProtocolDataInterfaceImpl::handle idValue = " << idValue
+//              << " cmdId = " << cmdId << " idType = " << idType << std::endl;
+//    LOG(INFO) << "data is ";
+//    CHAR_BUFF_TO_LOG_STDERROR(data.data);
 
-//    if (Remo_CmdId_Camera_Set_WorkMode == data.cmdID) sendCmdCamera(Remo_CmdId_Camera_Get_WorkMode);
+    if (Remo_CmdId_Camera_Get_WorkMode == cmdId || Remo_CmdId_Camera_Set_WorkMode == cmdId) {
+        Remo_Camera_WorkMode_s workMode{0};
+        memcpy(&workMode, data.data.data(), 2);
+        workModeGot(workMode);
+        return;
+    }
 
     if (CmdId_Type_Get == idType) {
-        if (Remo_CmdId_Camera_Get_WorkMode == idValue) {
-            Remo_Camera_WorkMode_s workMode;
-            memcpy(&workMode, data.data.data(), 2);
-            workModeGot(workMode);
-            return;
-        }
         std::vector<uint8_t> d(data.data.begin(), data.data.end());
-        settingGot(d, idValue);
+        settingGot(d, cmdId);
     }
 //    else if (CmdId_Type_Set == idType) {
 //        Remo_CmdId_SetCmd_ReturnValue_e ret = static_cast<Remo_CmdId_SetCmd_ReturnValue_e>(data.data.at(0));
@@ -40,7 +39,7 @@ void ProtocolDataInterfaceImpl::handle()
     else if (CmdId_Type_GetRange == idType) {
         std::set<SubItemData> range;
         getSurportRange(range);
-        surportRangeGot(range, idValue);
+        surportRangeGot(range, cmdId);
     }
     else if (CmdId_Type_Control == idType) {
         controlGot();
@@ -63,6 +62,11 @@ void ProtocolDataInterfaceImpl::sendCmdCamera(Remo_CmdId_Camera_e cmdId, int max
 void ProtocolDataInterfaceImpl::sendCmdGimbal(Remo_CmdId_Gimbal_e cmdId, std::vector<uint8_t> data, CommProtoVariables::RequestRespond reqres)
 {
     ProtocolDataInterface::sendCmd(COMMDEVICE_GIMBAL, Remo_CmdSet_Gimbal, cmdId, true, false, reqres, data);
+}
+
+void ProtocolDataInterfaceImpl::sendCmdBattery(Remo_CmdId_Battery_e cmdId, std::vector<uint8_t> data, CommProtoVariables::RequestRespond reqres)
+{
+    ProtocolDataInterface::sendCmd(COMMDEVICE_BATTERY, Remo_CmdSet_Gimbal, cmdId, true, false, reqres, data);
 }
 
 void ProtocolDataInterfaceImpl::async_setWorkMode(const Remo_Camera_WorkMode_s & workmode)

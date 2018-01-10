@@ -50,7 +50,7 @@ public:
 
 protected:
     ProtocolStruct data;
-    static int reqMmaxRetry;
+    static int reqMaxRetry;
     static long reqIntervalUS;
 
     bool rangePayloadParer(uint8_t *srcData, int srcLength, Range_Data **destData, int *destLength);

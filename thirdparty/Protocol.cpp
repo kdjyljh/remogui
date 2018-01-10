@@ -3,6 +3,8 @@
 
 const int protocolHeaderLength       = 12; // 完整版协议的通信帧的帧头长度
 
+static boost::mutex mtxPackSeq;
+
 /**
 * CRC逆序/8005/初始值为0xFFFF/异或值为0xFFFF
 */
@@ -223,7 +225,7 @@ string ProtocolStruct::print() {
   std::stringstream ss;
   ss << "sender:" << int(sender) << " -> recver:"
      << int(recver) << ", cmdSet=";
-  ss << int(cmdSet) << ", cmdID="
+  ss << int(cmdSet) << std::hex << ", cmdID="
      << int(cmdID) << ", seq=" << packSeq;
   return ss.str();
 }
@@ -306,7 +308,7 @@ void CommProtoVariables::check_recved(ProtocolStruct &proto) {
       }
     }
   } else { // 不需要回应,则说明是对方的回复信息
-    LOG(INFO) << proto.print();
+//    LOG(INFO) << proto.print();
 
     //add by ljh
     SharedData::Get()->pushReceiveData(proto);
@@ -318,7 +320,13 @@ CommProtoVariables::MSGinfo CommProtoVariables::gen_request_respond(
                               bool needAckApp, bool needAckProto, RequestRespond reqres,
                               char *data, int datalen)
 {
-    return gen_request_respond(target, cmdSet, cmdID, needAckApp, needAckProto, packSeq_++, reqres, data, datalen);
+    {
+        mtxPackSeq.lock();
+        packSeq_++;
+        mtxPackSeq.unlock();
+
+    }
+    return gen_request_respond(target, cmdSet, cmdID, needAckApp, needAckProto, packSeq_, reqres, data, datalen);
 }
 
 CommProtoVariables::MSGinfo CommProtoVariables::gen_request_respond(

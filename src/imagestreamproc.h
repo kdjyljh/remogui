@@ -30,15 +30,17 @@ public:
     explicit ImageStreamProc(QObject *parent = nullptr); // 完成一些注册和内存资源分配的工作
     virtual ~ImageStreamProc(); // 回收资源
 
+public slots:
     void play();
 
 signals:
     void imageGot(const QImage &image);
 
 public slots:
+    bool readStream_1S();
 
 private:
-    QMutex mutex;
+//    QMutex mutex;
     AVPicture  pAVPicture;
     AVFormatContext *pAVFormatContext;
     AVCodecContext *pAVCodecContext;
@@ -46,12 +48,15 @@ private:
     SwsContext * pSwsContext;
     AVPacket pAVPacket;
 
-    QString url;
+    const std::string url;
     int videoWidth;
     int videoHeight;
     int videoStreamIndex;
+    static bool streamReady; //多线程共享变量，需要加锁
 
     bool init();
+
+private slots:
 };
 
 #endif // IMAGESTREAMPROC_H

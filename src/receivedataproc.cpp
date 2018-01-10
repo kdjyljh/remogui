@@ -1,5 +1,6 @@
 #include "receivedataproc.h"
 #include "../thirdparty/shareddata.h"
+#include "../thirdparty/commlog.h"
 #include "camerafielddef.h"
 #include "cmddef.h"
 
@@ -43,6 +44,14 @@ void ReceiveDataProc::run()
 
 void ReceiveDataProc::protocolStructProc(const ProtocolStruct &ps)
 {
+    int cmdId = ps.cmdID;
+    Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId & 0x1ff);
+    Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(cmdId >> 9);
+    LOG(INFO) << "#########################ReceiveDataProc::protocolStructProc" << " cmdSet = " << std::hex << ps.cmdSet << " cmdId = " << cmdId
+              << " idValue = " << idValue << " idType = " << idType << std::endl;
+    LOG(INFO) << "data is ";
+    CHAR_BUFF_TO_LOG_STDERROR(ps.data);
+
     if (nullptr != handler_) {
         handler_->setData(ps);
         handler_->handle();

@@ -19,7 +19,7 @@ class TimedTask : public boost::noncopyable {
   void register_work(TimedTaskID timedTaskID, boost::function<void (void)> func, int cntRem, long intervalUS,
                      bool allowNewTimer = true);
   // 将取消所有标记着该帧ID的任务
-  void cancel_work(TimedTaskID timedTaskID);
+  void cancel_work(TimedTaskID timedTaskID, bool timeOut = false);
 
   void work_irrevocable(string funcname, boost::function<void (void)> func, long intervalUS); // 不可撤销的定时任务,任务名称必须唯一
 

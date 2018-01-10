@@ -29,7 +29,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 unix:LIBS += -lavdevice -lavfilter -lavformat  -lavcodec  -lswresample -lswscale -lavutil
 
-unix:LIBS += -lvdpau -lva -lX11 -lva-drm -lva-x11
+unix:LIBS += -lvdpau -lva -lX11 -lva-drm -lva-x11 -lvlc
 
 unix:LIBS += -ldl -pthread -lm
 
@@ -63,7 +63,9 @@ SOURCES += \
     src/protocoldataInterfaceimpl.cpp \
     src/focusdialog.cpp \
     src/viewlable.cpp \
-    src/gimbaldialog.cpp
+    src/gimbaldialog.cpp \
+    src/deviceinfodialog.cpp \
+    src/batteryinfo.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
@@ -82,7 +84,9 @@ HEADERS += \
     src/focusdialog.h \
     thirdparty/commlog.h \
     src/viewlable.h \
-    src/gimbaldialog.h
+    src/gimbaldialog.h \
+    src/deviceinfodialog.h \
+    src/batteryinfo.h
 
 FORMS += \
     ui/mainwindow.ui \
@@ -90,7 +94,8 @@ FORMS += \
     ui/workmode.ui \
     ui/aemode.ui \
     ui/focus.ui \
-    ui/gimbal.ui
+    ui/gimbal.ui \
+    ui/deviceinfo.ui
 
 RESOURCES += \
     resource/image.qrc

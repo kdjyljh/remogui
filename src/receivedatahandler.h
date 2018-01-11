@@ -2,7 +2,7 @@
 #define RECEIVEDATAHANDLER_H
 #include "../thirdparty/Protocol.hpp"
 #include "cmddef.h"
-#include "protocaldatainterface.h"
+#include "itemdatadef.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/unordered_map.hpp>
@@ -10,27 +10,14 @@
 
 class ProtocolDataInterface;
 
-struct ParsedData
-{
-    std::set<SubItemData> range;
-    std::vector<uint8_t> custom;
-    int cmdSet;
-    int cmdId;
-};
+
 
 class ReceiveDataHandler : public boost::noncopyable
 {
 public:
     static boost::shared_ptr<ReceiveDataHandler> getInstance();
 
-    void registerDataHandler(boost::shared_ptr<ProtocolDataInterface> handler) {
-        for (auto it : handlerPtrList) {
-            if (it == handler) return;
-        }
-        handlerPtrList.push_back(handler);
-    }
-
-    bool popData(ParsedData & data);
+    void popData(CmdContent & data);
 
     virtual void handle();
 
@@ -39,15 +26,16 @@ public:
 
 private:
     ReceiveDataHandler();
-    bool dataParser(ParsedData &parsedData);
-    void pushData(ParsedData &parsedData);
+    bool dataParser(CmdContent &parsedData);
+    void pushData(CmdContent &parsedData);
+    bool mergeRange(Range_Data *srcRange, int srcLength, std::set<SubItemData> & destRange);
+    bool rangePayloadParer(uint8_t *srcData, int srcLength, Range_Data **destData, int *destLength);
+    bool getSurportRange(std::set<SubItemData> & range);
 
 private:
-    //must be ptr, using virtual funciton handle
-    std::vector<boost::shared_ptr<ProtocolDataInterface>> handlerPtrList;
     ProtocolStruct data;
     static boost::unordered_map<uint32_t, std::vector<uint8_t>> deviceStatus;
-    static std::deque<ParsedData> parsedDataQueue;
+    static std::deque<CmdContent> parsedDataQueue;
 };
 
 #endif // RECEIVEDATAHANDLER_H

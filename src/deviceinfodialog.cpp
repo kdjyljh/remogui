@@ -2,15 +2,10 @@
 
 DeviceInfoDialog::DeviceInfoDialog(QWidget *parent) :
     QDialog(parent),
+    ProtocolDataInterfaceImpl(DispatcheType_DeviceInfo),
     ui(new Ui::DeviceInfo)
 {
     ui->setupUi(this);
-    DeviceInfoInterface::init();
-}
-
-boost::shared_ptr<DeviceInfoDialog> DeviceInfoDialog::createInstance(QWidget *parent)
-{
-    boost::shared_ptr<DeviceInfoDialog> instance(boost::shared_ptr<DeviceInfoDialog>(new DeviceInfoDialog(parent)));
 }
 
 void DeviceInfoDialog::batteryInfoHandle(std::vector<uint8_t> data)

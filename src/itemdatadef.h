@@ -7,6 +7,7 @@
 #include <set>
 #include <vector>
 #include <map>
+#include <QMetaType>
 
 struct SubItemData
 {
@@ -30,6 +31,39 @@ struct ItemData
         return (CmdSet < obj.CmdSet || CmdId_GetData < obj.CmdId_GetData ||
                 CmdId_GetRange < obj.CmdId_GetRange || CmdId_SetData < obj.CmdId_SetData);
     }
+};
+
+typedef enum Range_Type_E
+{
+    SINGLE = 0,//单个离散的数
+    RANGE_1,//最小和最大值
+    RANGE_2//最小和最大值和step，类似等差数列
+}Range_Type;
+
+typedef struct Range_Data_S
+{
+    Range_Type type;
+    int length;
+    int * data;
+}Range_Data;
+
+struct CmdContent
+{
+    std::set<SubItemData> range;
+    std::vector<uint8_t> custom;
+    int cmdSet;
+    int cmdId;
+};
+Q_DECLARE_METATYPE(CmdContent);
+
+enum DispatcheType
+{
+    DispatcheType_AeMode            = 0,
+    DispatcheType_DeviceInfo        = 1,
+    DispatcheType_Focus_Zoom        = 2,
+    DispatcheType_Gimbal            = 3,
+    DispatcheType_WorkMode          = 4,
+    DispatcheType_Algorithm         = 5
 };
 
 extern std::set<ItemData> itemData;

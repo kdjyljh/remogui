@@ -1,22 +1,22 @@
-#ifndef BATTERYINFO_H
-#define BATTERYINFO_H
+//#ifndef BATTERYINFO_H
+//#define BATTERYINFO_H
 
-#include "protocoldataInterfaceimpl.h"
-#include "deviceinfo.h"
-#include <boost/shared_ptr.hpp>
+//#include "protocoldataInterfaceimpl.h"
+//#include "deviceinfo.h"
+//#include <boost/shared_ptr.hpp>
 
-class DeviceInfoInterface;
+//class DeviceInfoInterface;
 
-class BatteryInfo : public ProtocolDataInterfaceImpl
-{
-public:
-    BatteryInfo();
-    void setHandler(boost::shared_ptr<DeviceInfoInterface> handle);
+//class BatteryInfo : public ProtocolDataInterfaceImpl
+//{
+//public:
+//    BatteryInfo();
+//    void setHandler(boost::shared_ptr<DeviceInfoInterface> handle);
 
-    virtual void handle() override;
+//    virtual void handle() override;
 
-private:
-    boost::shared_ptr<DeviceInfoInterface> batteryHandle;
-};
+//private:
+//    boost::shared_ptr<DeviceInfoInterface> batteryHandle;
+//};
 
-#endif // BATTERYINFO_H
+//#endif // BATTERYINFO_H

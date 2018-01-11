@@ -1,12 +1,12 @@
 #ifndef DEVICEINFODIALOG_H
 #define DEVICEINFODIALOG_H
 #include "ui_deviceinfo.h"
-#include "deviceinfo.h"
+#include "protocoldataInterfaceimpl.h"
 #include <QDialog>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
-class DeviceInfoDialog : public QDialog, public DeviceInfoInterface, boost::noncopyable
+class DeviceInfoDialog : public QDialog, ProtocolDataInterfaceImpl
 {
 public:
     static boost::shared_ptr<DeviceInfoDialog> createInstance(QWidget *parent = nullptr);

@@ -1,14 +1,14 @@
 #include "protocoldataInterfaceimpl.h"
 #include "../thirdparty/commlog.h"
 
-ProtocolDataInterfaceImpl::ProtocolDataInterfaceImpl(Remo_CmdSet_e set) :
-    ProtocolDataInterface(set)
+ProtocolDataInterfaceImpl::ProtocolDataInterfaceImpl(DispatcheType type) :
+    ProtocolDataInterface(type)
 {
 }
 
 void ProtocolDataInterfaceImpl::handle()
 {
-    Remo_CmdId_Camera_e cmdId = static_cast<Remo_CmdId_Camera_e>(data.cmdID);
+    Remo_CmdId_Camera_e cmdId = static_cast<Remo_CmdId_Camera_e>(content.cmdId);
 //    Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId & 0x1ff);
     Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(cmdId >> 9);
 
@@ -19,14 +19,13 @@ void ProtocolDataInterfaceImpl::handle()
 
     if (Remo_CmdId_Camera_Get_WorkMode == cmdId || Remo_CmdId_Camera_Set_WorkMode == cmdId) {
         Remo_Camera_WorkMode_s workMode{0};
-        memcpy(&workMode, data.data.data(), 2);
+        memcpy(&workMode, content.custom.data(), 2);
         workModeGot(workMode);
         return;
     }
 
     if (CmdId_Type_Get == idType) {
-        std::vector<uint8_t> d(data.data.begin(), data.data.end());
-        settingGot(d, cmdId);
+        settingGot(content.custom, cmdId);
     }
 //    else if (CmdId_Type_Set == idType) {
 //        Remo_CmdId_SetCmd_ReturnValue_e ret = static_cast<Remo_CmdId_SetCmd_ReturnValue_e>(data.data.at(0));

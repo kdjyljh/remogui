@@ -3,7 +3,7 @@
 
 GimbalDialog::GimbalDialog(QWidget *parent) :
     QDialog(parent),
-    ProtocolDataInterfaceImpl(Remo_CmdSet_Gimbal),
+    ProtocolDataInterfaceImpl(DispatcheType_Gimbal),
     ui(new Ui::Gimbal)
 {
     ui->setupUi(this);
@@ -39,7 +39,7 @@ GimbalDialog::GimbalDialog(QWidget *parent) :
 void GimbalDialog::handle()
 {
     Remo_CmdId_Gimbal_e cmdId;
-    std::vector<uint8_t> valueData = ProtocolDataInterface::data.data;
+    std::vector<uint8_t> valueData = content.custom;
     if (Remo_CmdId_Gimbal_Get_AttiAngle == cmdId) {
         if (valueData.size() != 6) {
             LOG(INFO) << "data字段数据错误" << "cmdId = " << cmdId;

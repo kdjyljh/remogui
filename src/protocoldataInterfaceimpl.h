@@ -6,7 +6,7 @@
 class ProtocolDataInterfaceImpl : public ProtocolDataInterface
 {
 public:
-    ProtocolDataInterfaceImpl(Remo_CmdSet_e set = Remo_CmdSet_Camera);
+    ProtocolDataInterfaceImpl(DispatcheType type = DispatcheType_WorkMode);
 
     void async_setWorkMode(const Remo_Camera_WorkMode_s & workmode);
 

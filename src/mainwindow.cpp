@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
     aeModeDialog(boost::shared_ptr<AeModeDialog>(new AeModeDialog(this))),
     focusDialog(boost::shared_ptr<FocusDialog>(new FocusDialog(this))),
     gimbalDialog(boost::shared_ptr<GimbalDialog>(new GimbalDialog(this))),
-    deviceInfoDialog(boost::shared_ptr<DeviceInfoDialog>(new DeviceInfoDialog(this))),
+    deviceInfoDialog(DeviceInfoDialog::createInstance(this)),
 //    workModeDialog(boost::shared_ptr<WorkModeDialog>(new WorkModeDialog)),
     actionGroupResolution(new QActionGroup(this)),
     actionGroupVideoStandard(new QActionGroup(this)),
@@ -96,9 +96,8 @@ MainWindow::MainWindow(QWidget *parent) :
 //    deviceInfoDialog->registerSelf2Handler();
 //    workModeDialog->registerSelf2Handler();
 
-    connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
-    connect(photoAndVideoDialog.get(), SIGNAL(workModeChange()), imagProc, SLOT(readStream_1S()));
-//    connect(photoAndVideoDialog.get(), SIGNAL(workModeChange()), this, SLOT(testSome()));
+//    connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
+//    connect(photoAndVideoDialog.get(), SIGNAL(workModeChange()), imagProc, SLOT(readStream_1S()));
 
     setupAction();
 

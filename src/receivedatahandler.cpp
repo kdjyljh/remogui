@@ -1,9 +1,27 @@
 #include "receivedatahandler.h"
 #include "receivedataproc.h"
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
+
+boost::mutex mtx_parsedDataQueue;
+boost::condition_variable cv_parsedDataQueue;
 
 boost::unordered_map<uint32_t, std::vector<uint8_t>> ReceiveDataHandler::deviceStatus;
+std::deque<ParsedData> ReceiveDataHandler::parsedDataQueue();
 ReceiveDataHandler::ReceiveDataHandler()
 {
+}
+
+void ReceiveDataHandler::pushData(ParsedData &parsedData)
+{
+    boost::unique_lock<boost::mutex> lock;
+    parsedDataQueue.push_back(parsedData);
+    cv_parsedDataQueue.notify_one();
+}
+
+bool ReceiveDataHandler::dataParser(DeviceParsedData &parsedData)
+{
+
 }
 
 boost::shared_ptr<ReceiveDataHandler> ReceiveDataHandler::getInstance()
@@ -12,6 +30,16 @@ boost::shared_ptr<ReceiveDataHandler> ReceiveDataHandler::getInstance()
     static boost::shared_ptr<ReceiveDataHandler> instance(new ReceiveDataHandler);
     ReceiveDataProc::getInstance()->registerHandler(instance);
     return instance;
+}
+
+bool ReceiveDataHandler::popData(ParsedData &data)
+{
+    boost::unique_lock<boost::mutex> lock;
+    while (parsedDataQueue.empty()) {
+        cv_parsedDataQueue.wait(mtx_parsedDataQueue);
+    }
+    data = parsedDataQueue.front();
+    parsedDataQueue.pop_front();
 }
 
 void ReceiveDataHandler::handle()
@@ -52,12 +80,17 @@ void ReceiveDataHandler::handle()
 
     data.data.assign(data.data.begin() + 1, data.data.end());
 
-    Remo_CmdSet_e set = static_cast<Remo_CmdSet_e>(data.cmdSet);
-    for (auto it : handlerPtrList) {
-        if (it->getCmdSet() == set) {
-            it->setData(data);
-            it->handle();
-//            break;
-        }
+    ParsedData data;
+    if(dataParser(data)) {
+
     }
+
+//    Remo_CmdSet_e set = static_cast<Remo_CmdSet_e>(data.cmdSet);
+//    for (auto it : handlerPtrList) {
+//        if (it->getCmdSet() == set) {
+//            it->setData(data);
+//            it->handle();
+////            break;
+//        }
+//    }
 }

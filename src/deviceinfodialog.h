@@ -1,17 +1,24 @@
 #ifndef DEVICEINFODIALOG_H
 #define DEVICEINFODIALOG_H
 #include "ui_deviceinfo.h"
-#include "batteryinfo.h"
+#include "deviceinfo.h"
 #include <QDialog>
+#include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
 
-class DeviceInfoDialog : public QDialog
+class DeviceInfoDialog : public QDialog, public DeviceInfoInterface, boost::noncopyable
 {
 public:
+    static boost::shared_ptr<DeviceInfoDialog> createInstance(QWidget *parent = nullptr);
+
+    virtual void batteryInfoHandle(std::vector<uint8_t> data);
+    virtual void chargerInfoHandle(std::vector<uint8_t> data);
+
+private:
     DeviceInfoDialog(QWidget *parent = nullptr);
 
 private:
     Ui::DeviceInfo *ui;
-    boost::shared_ptr<BatteryInfo> batteryInfo;
 };
 
 #endif // DEVICEINFODIALOG_H

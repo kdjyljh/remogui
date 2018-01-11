@@ -6,8 +6,17 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/unordered_map.hpp>
+#include <deque>
 
 class ProtocolDataInterface;
+
+struct ParsedData
+{
+    std::set<SubItemData> range;
+    std::vector<uint8_t> custom;
+    int cmdSet;
+    int cmdId;
+};
 
 class ReceiveDataHandler : public boost::noncopyable
 {
@@ -21,6 +30,8 @@ public:
         handlerPtrList.push_back(handler);
     }
 
+    bool popData(ParsedData & data);
+
     virtual void handle();
 
     void setData(const ProtocolStruct & data) {this->data = data;}
@@ -28,13 +39,15 @@ public:
 
 private:
     ReceiveDataHandler();
-//    Remo_CmdType_e map2CmdType();
+    bool dataParser(ParsedData &parsedData);
+    void pushData(ParsedData &parsedData);
 
 private:
     //must be ptr, using virtual funciton handle
     std::vector<boost::shared_ptr<ProtocolDataInterface>> handlerPtrList;
     ProtocolStruct data;
     static boost::unordered_map<uint32_t, std::vector<uint8_t>> deviceStatus;
+    static std::deque<ParsedData> parsedDataQueue;
 };
 
 #endif // RECEIVEDATAHANDLER_H

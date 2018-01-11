@@ -23,20 +23,20 @@ extern "C"
 #include <QMutex>
 #include <QImage>
 
-class ImageStreamProc : public QObject
+class ImageStreamProc
 {
-    Q_OBJECT
+//    Q_OBJECT
 public:
     explicit ImageStreamProc(QObject *parent = nullptr); // 完成一些注册和内存资源分配的工作
     virtual ~ImageStreamProc(); // 回收资源
 
-public slots:
+//public slots:
     void play();
 
-signals:
+//signals:
     void imageGot(const QImage &image);
 
-public slots:
+//public slots:
     bool readStream_1S();
 
 private:

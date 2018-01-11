@@ -65,7 +65,8 @@ SOURCES += \
     src/viewlable.cpp \
     src/gimbaldialog.cpp \
     src/deviceinfodialog.cpp \
-    src/batteryinfo.cpp
+    src/batteryinfo.cpp \
+    src/deviceinfo.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
@@ -86,7 +87,8 @@ HEADERS += \
     src/viewlable.h \
     src/gimbaldialog.h \
     src/deviceinfodialog.h \
-    src/batteryinfo.h
+    src/batteryinfo.h \
+    src/deviceinfo.h
 
 FORMS += \
     ui/mainwindow.ui \

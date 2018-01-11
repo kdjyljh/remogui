@@ -13,7 +13,7 @@ static boost::condition_variable cvStreamReady;
 
 bool ImageStreamProc::streamReady = false;
 ImageStreamProc::ImageStreamProc(QObject *parent) :
-    QObject(parent),
+//    QObject(parent),
     url("rtsp://192.168.1.10/livestream/12"),
     videoStreamIndex(-1),
     pAVFormatContext(nullptr),
@@ -57,16 +57,17 @@ bool ImageStreamProc::init()
     avformat_network_init();//初始化网络流格式,使用RTSP网络流时必须先执行
 
     //打开视频流
+    LOG(INFO) << "++++++++++++++++++" << url;
     int result = avformat_open_input(&pAVFormatContext, "rtsp://192.168.1.10/livestream/12", NULL, NULL);
     if (result != 0) {
-        qDebug() << "open video stream failed!!!!!!";
+        LOG(INFO) << "open video stream failed!!!!!!";
         goto error;
     }
 
     //获取视频流信息
     result = avformat_find_stream_info(pAVFormatContext,NULL);
     if (result < 0){
-        qDebug() << "get video stream information failed!!!!!";
+        LOG(INFO) << "get video stream information failed!!!!!";
         goto error;
     }
 
@@ -80,7 +81,7 @@ bool ImageStreamProc::init()
     }
 
     if (videoStreamIndex==-1){
-        qDebug() << "get video stream index failed!!!!!";
+        LOG(INFO) << "get video stream index failed!!!!!";
         goto error;
     }
 
@@ -101,11 +102,11 @@ bool ImageStreamProc::init()
     //打开对应解码器
     result = avcodec_open2(pAVCodecContext, pAVCodec, NULL);
     if (result<0){
-        qDebug()<<"open decoder failed!!!!!";
+        LOG(INFO) << "open decoder failed!!!!!";
         goto error;
     }
 
-    qDebug()<<"init video stream success!!!!";
+    LOG(INFO) << "init video stream success!!!!";
 
     streamReady = true;
     cvStreamReady.notify_all();
@@ -142,24 +143,18 @@ void ImageStreamProc::play()
 
     //一帧一帧读取视频
     int frameFinished = 0;
-//    while (true) {
+    while (true) {
         boost::unique_lock<boost::mutex> lock(mtxStreamReady);
-//                    LOG(INFO) << "ImageStreamProc::play lock got";
-        while (!streamReady) {
+        while (!streamReady)
             cvStreamReady.wait(lock);
-//                    LOG(INFO) << "ImageStreamProc::play lock release";
-        av_read_frame(pAVFormatContext, &pAVPacket);
 
         if (av_read_frame(pAVFormatContext, &pAVPacket) >= 0){
-            if (pAVPacket.stream_index == videoStreamIndex){
-//                                qDebug()<< "##############decode begin##############" <<QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
-                avcodec_decode_video2(pAVCodecContext, pAVFrame, &frameFinished, &pAVPacket);
-                if (frameFinished){
-                    sws_scale(pSwsContext, (const uint8_t* const *)pAVFrame->data, pAVFrame->linesize, 0, videoHeight, pAVPicture.data, pAVPicture.linesize);
-                    //发送获取一帧图像信号
-                    QImage image(pAVPicture.data[0], videoWidth, videoHeight, QImage::Format_RGB888);
-                    emit imageGot(image);
-                }
+            avcodec_decode_video2(pAVCodecContext, pAVFrame, &frameFinished, &pAVPacket);
+            if (frameFinished){
+                sws_scale(pSwsContext, (const uint8_t* const *)pAVFrame->data, pAVFrame->linesize, 0, videoHeight, pAVPicture.data, pAVPicture.linesize);
+                //发送获取一帧图像信号
+                //                    QImage image(pAVPicture.data[0], videoWidth, videoHeight, QImage::Format_RGB888);
+                //                    emit imageGot(image);
             }
         }
         av_free_packet(&pAVPacket);//释放资源,否则内存会一直上升

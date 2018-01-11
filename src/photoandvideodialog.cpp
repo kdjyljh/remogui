@@ -81,6 +81,7 @@ PhotoAndVideoDialog::~PhotoAndVideoDialog()
 
 void PhotoAndVideoDialog::closeEvent(QCloseEvent *event)
 {
+    LOG(INFO) << "PhotoAndVideoDialog::closeEvent";
     Q_UNUSED(event);
 }
 

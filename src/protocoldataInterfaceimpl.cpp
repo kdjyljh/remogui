@@ -36,9 +36,7 @@ void ProtocolDataInterfaceImpl::handle()
 //        }
 //    }
     else if (CmdId_Type_GetRange == idType) {
-        std::set<SubItemData> range;
-        getSurportRange(range);
-        surportRangeGot(range, cmdId);
+        surportRangeGot(content.range, cmdId);
     }
     else if (CmdId_Type_Control == idType) {
         controlGot();

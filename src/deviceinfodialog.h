@@ -6,7 +6,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
-class DeviceInfoDialog : public QDialog, ProtocolDataInterfaceImpl
+class DeviceInfoDialog : public QDialog, public ProtocolDataInterfaceImpl
 {
 public:
     static boost::shared_ptr<DeviceInfoDialog> createInstance(QWidget *parent = nullptr);

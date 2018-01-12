@@ -16,7 +16,7 @@ class ProtocolDataInterface : public boost::enable_shared_from_this<ProtocolData
 public:
     ProtocolDataInterface(DispatcheType type = DispatcheType_WorkMode);
 
-    void setContent(const CmdContent & content) {this->content = content;}
+    void setContent(CmdContent content) {this->content = content;}
 
     virtual void handle() = 0;
 

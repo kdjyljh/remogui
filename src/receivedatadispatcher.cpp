@@ -8,7 +8,18 @@ ReceiveDataDispatcher::ReceiveDataDispatcher()
 DispatcheType ReceiveDataDispatcher::mapToDispatcher(Remo_CmdSet_e cmdSet, int cmdId)
 {
     if (Remo_CmdSet_Camera == cmdSet) {
-        if (cmd)
+        if ((cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78) {
+            return DispatcheType_AeMode;
+        }
+        else if (((cmdId & 0x1ff) >= 0x7b && (cmdId & 0x1ff) < 0x85)) {
+            return DispatcheType_Focus_Zoom;
+        }
+        else if (((cmdId & 0x1ff) >= 0x0 && (cmdId & 0x1ff) < 0x60)) {
+            return DispatcheType_WorkMode;
+        }
+        else {
+            return DispatcheType_CameraDefault;
+        }
     }
     else if (Remo_CmdSet_Gimbal == cmdSet) {
         return DispatcheType_Gimbal;
@@ -39,14 +50,10 @@ void ReceiveDataDispatcher::run()
 void ReceiveDataDispatcher::dataDispatcher(QVariant content)
 {
     CmdContent cc = content.value<CmdContent>();
-//    Remo_CmdSet_e cmdSet = static_cast<Remo_CmdSet_e>(cc.cmdSet);
-//    int cmdId = cc.cmdId;
-////    Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId & 0x1ff);
-////    Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(cmdId >> 9);
     DispatcheType type = mapToDispatcher(static_cast<Remo_CmdSet_e>(cc.cmdSet), cc.cmdId);
     for (auto it : handlerPtrList) {
         if (it && it->getType() == type) {
-            it->setContent(content);
+            it->setContent(cc);
             it->handle();
         }
     }

@@ -1,7 +1,7 @@
 #ifndef IMAGESTREAMPROC_H
 #define IMAGESTREAMPROC_H
 
-#include <QObject>
+//#include <QObject>
 
 ////必须加以下内容,否则编译不能通过,为了兼容C和C99标准
 //#ifndef INT64_C
@@ -18,23 +18,24 @@ extern "C"
 #include <libswscale/swscale.h>
 #include <libavutil/frame.h>
 }
+#include <string>
 
-#include <QObject>
-#include <QMutex>
-#include <QImage>
+//#include <QObject>
+//#include <QMutex>
+//#include <QImage>
 
 class ImageStreamProc
 {
 //    Q_OBJECT
 public:
-    explicit ImageStreamProc(QObject *parent = nullptr); // 完成一些注册和内存资源分配的工作
+    explicit ImageStreamProc(); // 完成一些注册和内存资源分配的工作
     virtual ~ImageStreamProc(); // 回收资源
 
 //public slots:
     void play();
 
 //signals:
-    void imageGot(const QImage &image);
+//    void imageGot(const QImage &image);
 
 //public slots:
     bool readStream_1S();
@@ -48,7 +49,8 @@ private:
     SwsContext * pSwsContext;
     AVPacket pAVPacket;
 
-    const std::string url;
+    static const std::string url123;
+    std::string urlinstance;
     int videoWidth;
     int videoHeight;
     int videoStreamIndex;
@@ -56,7 +58,7 @@ private:
 
     bool init();
 
-private slots:
+//private slots:
 };
 
 #endif // IMAGESTREAMPROC_H

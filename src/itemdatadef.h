@@ -63,7 +63,8 @@ enum DispatcheType
     DispatcheType_Focus_Zoom        = 2,
     DispatcheType_Gimbal            = 3,
     DispatcheType_WorkMode          = 4,
-    DispatcheType_Algorithm         = 5
+    DispatcheType_Algorithm         = 5,
+    DispatcheType_CameraDefault     = 6
 };
 
 extern std::set<ItemData> itemData;

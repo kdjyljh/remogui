@@ -9,7 +9,7 @@
 #include "protocaldatainterface.h"
 #include "receivedatahandler.h"
 
-class ReceiveDataDispatcher : public boost::noncopyable, public QObject
+class ReceiveDataDispatcher : public QObject, public boost::noncopyable
 {
 Q_OBJECT
 public:

@@ -19,24 +19,7 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-
-//    boost::thread t1(&ImageStreamProc::play, MainWindow::getWindInstace()->imagProc);
-
-    ImageStreamProc *imageProc = new ImageStreamProc;
-    boost::thread t1([imageProc](){
-        for (;;) {
-            imageProc->play();
-            usleep(1000);
-        }
-    });
-    boost::thread t2([imageProc](){
-        for (;;) {
-            imageProc->readStream_1S();
-            usleep(1000);
-        }
-    });
-
-//    MainWindow::getWindInstace()->show();
+    MainWindow::getWindInstace()->show();
 
     pause();
 

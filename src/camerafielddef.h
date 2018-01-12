@@ -1036,7 +1036,7 @@ typedef struct Remo_Battery_BatteryInfo_S
     uint16_t Voltage;       //电池电压 mV
     uint16_t Current; //电池电流，mA,正为充电，负为放电
     uint16_t Capacity;    //剩余容量  %
-    uint16_t Charge_full; //满电容量 mAh
+    uint16_t Charge_Full; //满电容量 mAh
     uint16_t Status;  //电池状态 enum
     uint16_t Health; // 健康状态 bit
     uint16_t Cell_Voltage[3];//各个电池电压 mV

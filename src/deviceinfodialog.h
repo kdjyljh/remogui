@@ -11,8 +11,9 @@ class DeviceInfoDialog : public QDialog, public ProtocolDataInterfaceImpl
 public:
     static boost::shared_ptr<DeviceInfoDialog> createInstance(QWidget *parent = nullptr);
 
-    virtual void batteryInfoHandle(std::vector<uint8_t> data);
-    virtual void chargerInfoHandle(std::vector<uint8_t> data);
+    void batteryInfoHandle(std::vector<uint8_t> data);
+    void chargerInfoHandle(std::vector<uint8_t> data);
+    virtual void handle() override;
 
 private:
     DeviceInfoDialog(QWidget *parent = nullptr);

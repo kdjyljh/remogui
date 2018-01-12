@@ -101,7 +101,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setupAction();
 
-    boost::thread(&ImageStreamProc::play, imagProc);
+//    boost::thread(&ImageStreamProc::play, imagProc);
 
 
 

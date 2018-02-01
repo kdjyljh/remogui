@@ -10,13 +10,15 @@ static const unsigned DEFAULT_DIALOG_HEIGHT = 550;
 PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     QDialog(parent),
     ProtocolDataInterfaceImpl(),
-    ui(new Ui::PhotoAndVideoDialog)
+    ui(new Ui::PhotoAndVideoDialog),
+    msgDialog(new QMessageBox()),
+    button_stop_recod(nullptr),
+    isRecording(false)
 {
     LOG(INFO) << "PhotoAndVideoDialog::PhotoAndVideoDialog construct";
     ui->setupUi(this);
 
     setFixedSize(DEFAULT_DIALOG_WITH, DEFAULT_DIALOG_HEIGHT);
-    ui->pushButton_Stop->setEnabled(false);
     QButtonGroup * buttGroup = new QButtonGroup(this);
     buttGroup->addButton(ui->radioButton_SubWcorkMode_Recode_LapseRec);
 //    buttGroup->addButton(ui->radioButton_SubWcorkMode_Recode_Photo);
@@ -61,8 +63,8 @@ PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     sendCmdCamera(Remo_CmdId_Camera_Get_CapScene_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_ImageResolution_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_MainVideo_Resolution_Range);
-    sendCmdCamera(Remo_CmdId_Camera_Get_SubVideo_Resolution_Range);
-    sendCmdCamera(Remo_CmdId_Camera_Get_Thumbnail_Resolution_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_SubVideo_Resolution_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_Thumbnail_Resolution_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_LoopRec_Interval_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_LapseRec_Interval_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_LapseRec_TotalTime_Range);
@@ -71,6 +73,8 @@ PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     ItemData itemData;
     if (findItemByUiPtr(ui->comboBox_HDRMode, itemData))
         surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_HDRMode); //HDR
+
+    connect(msgDialog, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(stop_recorde(QAbstractButton*)));
 }
 
 PhotoAndVideoDialog::~PhotoAndVideoDialog()
@@ -184,6 +188,26 @@ void PhotoAndVideoDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_C
     }
 }
 
+void PhotoAndVideoDialog::retProcess(CmdContent cc)
+{
+    if (!(cc.cmdId == Remo_CmdId_Camera_Set_CapOperation &&
+        cc.cmdId == Remo_CmdId_Camera_Set_RecOperation)) return;
+
+    QString type = QString::fromLocal8Bit("拍照");
+    if (cc.cmdId == Remo_CmdId_Camera_Set_RecOperation) {
+        type = QString::fromLocal8Bit("录像");
+        if (isRecording) {
+            type = QString::fromLocal8Bit("关闭录像");
+        }
+    }
+    QString ret = QString::fromLocal8Bit("成功");
+    if (cc.ret != Return_OK)
+        ret = QString::fromLocal8Bit("未完成");
+
+    msgDialog->setText(type + ret);
+    msgDialog->setStandardButtons(QMessageBox::Ok);
+}
+
 void PhotoAndVideoDialog::initSurportRange()
 {
 //    sendCmdCamera(Remo_CmdId_Camera_Get_CapDelayTime_Range);
@@ -193,9 +217,9 @@ void PhotoAndVideoDialog::setRecVideoByMainWorkMode(Remo_Camera_MainWorkMode_e m
 {
     if (MainWorkMode_Photo == mainWorkMode ||
         MainWorKMode_MultiPhoto == mainWorkMode) {
-        recordOrCapture = false;
+//        recordOrCapture = false;
     } else {
-        recordOrCapture = true;
+//        recordOrCapture = true;
     }
 }
 
@@ -226,27 +250,58 @@ ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWcorkMode_Recode_Photo, radioButton, 
 ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWcorkMode_Recode_SlowMotion, radioButton, clicked)
 #endif
 
-void PhotoAndVideoDialog::on_pushButton_Start_clicked()
+//void PhotoAndVideoDialog::on_pushButton_Start_clicked()
+//{
+//    if (recordOrCapture) {
+//        sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
+//    } else {
+//        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
+//    }
+//    ui->pushButton_Stop->setEnabled(true);
+//    ui->pushButton_Start->setEnabled(false);
+//}
+
+//void PhotoAndVideoDialog::on_pushButton_Stop_clicked()
+//{
+//    if (recordOrCapture) {
+//        sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
+//    } else {
+//        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
+//    }
+//    ui->pushButton_Start->setEnabled(true);
+//    ui->pushButton_Stop->setEnabled(false);
+//}
+
+void PhotoAndVideoDialog::on_pushButton_Photo_clicked()
 {
-    if (recordOrCapture) {
-        sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
-    } else {
-        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
-    }
-    ui->pushButton_Stop->setEnabled(true);
-    ui->pushButton_Start->setEnabled(false);
+    msgDialog->setText(QString::fromLocal8Bit("正在拍照，稍等..."));
+    msgDialog->setWindowTitle(QString::fromLocal8Bit("提示"));
+    msgDialog->setStandardButtons(0);
+    sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
+    msgDialog->exec();
 }
 
-void PhotoAndVideoDialog::on_pushButton_Stop_clicked()
+void PhotoAndVideoDialog::on_pushButton_Record_clicked()
 {
-    if (recordOrCapture) {
-        sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
-    } else {
-        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
-    }
-    ui->pushButton_Start->setEnabled(true);
-    ui->pushButton_Stop->setEnabled(false);
+    msgDialog->setText(QString::fromLocal8Bit("正在录像"));
+
+//    msgDialog->setStandardButtons(QMessageBox::Cancel);
+//    for (auto it = msgDialog->buttons().begin(); it != msgDialog->buttons().end(); ++it) {
+//        msgDialog->removeButton(*it);
+//    }
+
+//    if (nullptr != button_stop_recod) {
+//        msgDialog->removeButton(button_stop_recod);
+//        delete button_stop_recod;
+//    }
+//    button_stop_recod = msgDialog->addButton(QString::fromLocal8Bit("停止"), QMessageBox::ActionRole);
+    msgDialog->setStandardButtons(QMessageBox::Cancel);
+    sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
+    isRecording = true;
+    msgDialog->exec();
 }
+
+
 
 void PhotoAndVideoDialog::comboBox_activated(int index)
 {
@@ -268,5 +323,14 @@ void PhotoAndVideoDialog::comboBox_activated(int index)
                      << index << "cmdid is " << itemdata.CmdId_SetData;
         }
     }
+}
+
+void PhotoAndVideoDialog::stop_recorde(QAbstractButton *button)
+{
+    LOG(INFO) << "stop_recorde";
+    msgDialog->setText(QString::fromLocal8Bit("停止录像，保存中..."));
+    msgDialog->setStandardButtons(0);
+    msgDialog->show();
+    sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
 }
 

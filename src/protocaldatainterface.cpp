@@ -41,6 +41,19 @@ void ProtocolDataInterface::sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet,
 //        return;
 //    }
 
+//    if (!(cmdSet == Remo_CmdSet_Camera &&(cmdId == Remo_CmdId_Camera_Get_WorkMode || cmdId == Remo_CmdId_Camera_Set_WorkMode))) return;
+
+//    if (cmdSet != Remo_CmdSet_Gimbal) return;
+
+
+//    if (!(cmdSet == Remo_CmdSet_Camera &&(cmdId == Remo_CmdId_Camera_Get_WhiteBalance ||
+//                                          cmdId == Remo_CmdId_Camera_Set_WhiteBalance ||
+//                                          cmdId == Remo_CmdId_Camera_Get_WhiteBalance_Range))) return;
+
+//    if (cmdId != Remo_CmdId_Camera_Set_ZoomControlParam) return;
+
+    if (cmdSet != Remo_CmdSet_Camera) return;
+
     Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId & 0x1ff);
     Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(cmdId >> 9);
     LOG(INFO) << "#########################ProtocolDataInterface::sendCmd" << std::hex << " cmdSet = " <<  cmdSet << " cmdId = " << cmdId

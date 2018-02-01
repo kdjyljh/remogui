@@ -34,6 +34,8 @@ protected:
     static int reqMaxRetry;
     static long reqIntervalUS;
 
+    virtual void retProcess(CmdContent cc){}
+
     bool rangePayloadParer(uint8_t *srcData, int srcLength, Range_Data **destData, int *destLength);
     bool mergeRange(Range_Data *srcRange, int srcLength, std::set<SubItemData> & destRange);
     bool getSurportRange(std::set<SubItemData> & range);

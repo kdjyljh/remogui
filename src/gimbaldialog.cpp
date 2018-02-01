@@ -32,13 +32,20 @@ GimbalDialog::GimbalDialog(QWidget *parent) :
     connect(ui->LineEdit_RelaAttiAngle_Set, SIGNAL(returnPressed()), this, SLOT(lineEdit_returnPressed()));
     connect(ui->LineEdit_RollFineTuning, SIGNAL(returnPressed()), this, SLOT(lineEdit_returnPressed()));
     connect(ui->LineEdit_VeloSlope, SIGNAL(returnPressed()), this, SLOT(lineEdit_returnPressed()));
+    connect(ui->PushButton_RelaAttiAngle_Up, SIGNAL(clicked(bool)), this, SLOT(pushButton_RelaAttiAngle_FineTune()));
+    connect(ui->PushButton__RelaAttiAngle_Down, SIGNAL(clicked(bool)), this, SLOT(pushButton_RelaAttiAngle_FineTune()));
+    connect(ui->PushButton__RelaAttiAngle_Left, SIGNAL(clicked(bool)), this, SLOT(pushButton_RelaAttiAngle_FineTune()));
+    connect(ui->PushButton__RelaAttiAngle_Right, SIGNAL(clicked(bool)), this, SLOT(pushButton_RelaAttiAngle_FineTune()));
+
+    ui->PushButton_RelaAttiAngle_Up->setDefault(true);
+    ui->PushButton_RelaAttiAngle_Up->setDefault(false);
 
     getDeviceInfoAndCurrentValue();
 }
 
 void GimbalDialog::handle()
 {
-    Remo_CmdId_Gimbal_e cmdId;
+    Remo_CmdId_Gimbal_e cmdId = static_cast<Remo_CmdId_Gimbal_e>(content.cmdId);
     std::vector<uint8_t> valueData = content.custom;
     if (Remo_CmdId_Gimbal_Get_AttiAngle == cmdId) {
         if (valueData.size() != 6) {
@@ -49,9 +56,9 @@ void GimbalDialog::handle()
         memcpy(&XAxisAngle, valueData.data(), 2);
         memcpy(&YAxisAngle, valueData.data() + 2, 2);
         memcpy(&ZAxisAngle, valueData.data() + 4, 2);
-        float XAxisAngleF = 180 / 32767  * XAxisAngle;
-        float YAxisAngleF = 180 / 32767  * YAxisAngle;
-        float ZAxisAngleF = 180 / 32767  * ZAxisAngle;
+        float XAxisAngleF = 180.0 / 32767  * XAxisAngle;
+        float YAxisAngleF = 180.0 / 32767  * YAxisAngle;
+        float ZAxisAngleF = 180.0 / 32767  * ZAxisAngle;
         QString showStr = QString::number(XAxisAngleF, 'f', 2) + ",";
         showStr += QString::number(YAxisAngleF, 'f', 2) + ",";
         showStr += QString::number(ZAxisAngleF, 'f', 2);
@@ -66,9 +73,9 @@ void GimbalDialog::handle()
         memcpy(&XaxisAnguVelo, valueData.data(), 2);
         memcpy(&YaxisAnguVelo, valueData.data() + 2, 2);
         memcpy(&ZaxisAnguVelo, valueData.data() + 4, 2);
-        float XaxisAnguVeloF = 360 / 32767  * XaxisAnguVelo;
-        float YaxisAnguVeloF = 360 / 32767  * YaxisAnguVelo;
-        float ZaxisAnguVeloF = 360 / 32767  * ZaxisAnguVelo;
+        float XaxisAnguVeloF = 360.0 / 32767  * XaxisAnguVelo;
+        float YaxisAnguVeloF = 360.0 / 32767  * YaxisAnguVelo;
+        float ZaxisAnguVeloF = 360.0 / 32767  * ZaxisAnguVelo;
         QString showStr = QString::number(XaxisAnguVeloF, 'f', 2) + ",";
         showStr += QString::number(YaxisAnguVeloF, 'f', 2) + ",";
         showStr += QString::number(ZaxisAnguVeloF, 'f', 2);
@@ -103,6 +110,8 @@ void GimbalDialog::getDeviceInfoAndCurrentValue()
 
 void GimbalDialog::lineEdit_returnPressed()
 {
+    LOG(INFO) << "GimbalDialog::lineEdit_returnPressed";
+
     QLineEdit * lineEdite = dynamic_cast<QLineEdit*>(sender());
     if (nullptr == lineEdite) return;
 
@@ -149,8 +158,9 @@ void GimbalDialog::on_ComboBox_Roll_WorkMode_activated(int index)
     sendCmdGimbal(Remo_CmdId_Gimbal_Set_Roll_WorkMode, std::vector<uint8_t>{value});
 }
 
-void GimbalDialog::on_pushButton_Reset_clicked()
+void GimbalDialog::on_pushButton_Reset_Gimbal_clicked()
 {
+    LOG(INFO) << "GimbalDialog::on_pushButton_Reset_Gimbal_clicked sender:" << sender()->objectName().toStdString();
     sendCmdGimbal(Remo_CmdId_Gimbal_Reset, std::vector<uint8_t>{1});
 }
 
@@ -162,6 +172,37 @@ void GimbalDialog::on_pushButton_FactoryReset_clicked()
 void GimbalDialog::on_pushButton_getGimbalInfo_clicked()
 {
     getDeviceInfoAndCurrentValue();
+}
+
+void GimbalDialog::pushButton_RelaAttiAngle_FineTune()
+{
+    uint16_t data[3];
+    int stay_value = -32768;
+    for (int i = 0; i < 3; ++i) {
+        memcpy(data + i, &stay_value, 2);
+    }
+    int step = 32768.0 / 10;
+    QPushButton *sder = dynamic_cast<QPushButton*>(sender());
+    if (ui->PushButton_RelaAttiAngle_Up == sder) {
+        memcpy(data + 1, &step, 2);
+    }
+    else if (ui->PushButton__RelaAttiAngle_Down == sder) {
+        step *= -1;
+        memcpy(data + 1, &step, 2);
+    }
+    else if (ui->PushButton__RelaAttiAngle_Left == sder) {
+        memcpy(data + 2, &step, 2);
+    }
+    else if (ui->PushButton__RelaAttiAngle_Right == sder) {
+        step *= -1;
+        memcpy(data + 2, &step, 2);
+    }
+    else {
+        return;
+    }
+
+    sendCmdGimbal(Remo_CmdId_Gimbal_Set_RelaAttiAngle,
+                  std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + sizeof(data)));
 }
 
 void GimbalDialog::on_ComboBox_LockAxis_activated(int index)

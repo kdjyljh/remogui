@@ -29,15 +29,17 @@ private slots:
     void on_ComboBox_InterPolation_activated(int index);
     void on_ComboBox_LockAxis_activated(int index);
     void on_ComboBox_Roll_WorkMode_activated(int index);
-    void on_pushButton_Reset_clicked();
+    void on_pushButton_Reset_Gimbal_clicked();
     void on_pushButton_FactoryReset_clicked();
     void on_pushButton_getGimbalInfo_clicked();
+    void pushButton_RelaAttiAngle_FineTune();
 };
 
 
 template<class DataSizeType>
 bool GimbalDialog::LineEdit_SendCmd(QLineEdit *lineEdite, int dataSize, int sendDataRangeSize, int showDataRangeSize, int sendNotSetValue, int showNotSetValue, int cmdId)
 {
+    LOG(INFO) << "GimbalDialog::LineEdit_SendCmd";
     if (nullptr == lineEdite) return false;
     QStringList strList = lineEdite->text().split(',', QString::SkipEmptyParts);
     for (auto it : strList) {

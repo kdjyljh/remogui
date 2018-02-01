@@ -23,7 +23,7 @@
      <x>0</x>
      <y>0</y>
      <width>1124</width>
-     <height>28</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_camera">
@@ -160,6 +160,7 @@
     <addaction name="menu_lens"/>
     <addaction name="action_recoveryFactSetting"/>
     <addaction name="menu_Histogram"/>
+    <addaction name="action_Aelock"/>
    </widget>
    <widget class="QMenu" name="menu_normal">
     <property name="title">
@@ -1173,6 +1174,17 @@
   <action name="action_Gimbal">
    <property name="text">
     <string>云台</string>
+   </property>
+  </action>
+  <action name="action_Aelock">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>AELock</string>
    </property>
   </action>
  </widget>

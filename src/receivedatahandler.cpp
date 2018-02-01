@@ -15,7 +15,7 @@ ReceiveDataHandler::ReceiveDataHandler()
 
 void ReceiveDataHandler::pushData(CmdContent &parsedData)
 {
-    boost::unique_lock<boost::mutex> lock;
+    boost::unique_lock<boost::mutex> lock(mtx_parsedDataQueue);
     parsedDataQueue.push_back(parsedData);
     cv_parsedDataQueue.notify_one();
 }
@@ -211,7 +211,7 @@ bool ReceiveDataHandler::dataParser(CmdContent &parsedData)
     bool ret = true;
     Remo_CmdId_Camera_e cmdId = static_cast<Remo_CmdId_Camera_e>(data.cmdID);
     Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(cmdId >> 9);
-    memset(&parsedData, 0, sizeof(parsedData));
+//    memset(&parsedData, 0, sizeof(parsedData));
     parsedData.cmdId = data.cmdID;
     parsedData.cmdSet = data.cmdSet;
 
@@ -224,6 +224,9 @@ bool ReceiveDataHandler::dataParser(CmdContent &parsedData)
             else {
                 ret = false;
             }
+        }
+        else {
+            parsedData.custom = data.data;
         }
     }
     else {
@@ -243,7 +246,7 @@ boost::shared_ptr<ReceiveDataHandler> ReceiveDataHandler::getInstance()
 
 void ReceiveDataHandler::popData(CmdContent &data)
 {
-    boost::unique_lock<boost::mutex> lock;
+    boost::unique_lock<boost::mutex> lock(mtx_parsedDataQueue);
     while (parsedDataQueue.empty()) {
         cv_parsedDataQueue.wait(lock);
     }
@@ -253,7 +256,7 @@ void ReceiveDataHandler::popData(CmdContent &data)
 
 void ReceiveDataHandler::handle()
 {
-    if (data.data.empty()) return;
+    if (data.data.size() < 1) return;
 
     Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(data.cmdID >> 9);
     uint16_t idValue = data.cmdID & 0x1ff;
@@ -265,6 +268,9 @@ void ReceiveDataHandler::handle()
         key = key << 24 | idValue;
         deviceStatus[key] = data.data;
     }
+
+    CmdContent cc;
+    cc.ret = ret;
 
     if (ret != Return_OK) {
         if (CmdId_Type_Set == idType) {
@@ -282,15 +288,16 @@ void ReceiveDataHandler::handle()
                 LOG(INFO) << "restore device status failed, can not find device key !!!!!!!!!!!!!!!!!!!!";
             }
         }
+
         else {
+            pushData(cc);
             return;
         }
     }
 
     data.data.assign(data.data.begin() + 1, data.data.end());
 
-    CmdContent data;
-    if(dataParser(data)) {
-        pushData(data);
+    if(dataParser(cc)) {
+        pushData(cc);
     }
 }

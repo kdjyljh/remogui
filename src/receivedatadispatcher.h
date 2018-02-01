@@ -2,6 +2,7 @@
 #define RECEIVEDATADISPATCHER_H
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include <QObject>
 #include <QVariant>
@@ -9,7 +10,7 @@
 #include "protocaldatainterface.h"
 #include "receivedatahandler.h"
 
-class ReceiveDataDispatcher : public QObject, public boost::noncopyable
+class ReceiveDataDispatcher : public QObject, public boost::noncopyable, public boost::enable_shared_from_this<ReceiveDataDispatcher>
 {
 Q_OBJECT
 public:
@@ -22,7 +23,7 @@ public:
         handlerPtrList.push_back(handler);
     }
 
-    void run();
+    void start();
 
 signals:
     void dataGot(QVariant content);
@@ -33,6 +34,7 @@ private slots:
 private:
     ReceiveDataDispatcher();
     DispatcheType mapToDispatcher(Remo_CmdSet_e cmdSet, int cmdId);
+    void run();
 
 private:
     //must be ptr, using virtual funciton handle

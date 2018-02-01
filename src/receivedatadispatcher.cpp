@@ -1,4 +1,5 @@
 #include "receivedatadispatcher.h"
+#include <boost/thread.hpp>
 
 ReceiveDataDispatcher::ReceiveDataDispatcher()
 {
@@ -36,6 +37,11 @@ boost::shared_ptr<ReceiveDataDispatcher> ReceiveDataDispatcher::getInstance()
     return instance;
 }
 
+void ReceiveDataDispatcher::start()
+{
+    boost::thread t(&ReceiveDataDispatcher::run, shared_from_this());
+}
+
 void ReceiveDataDispatcher::run()
 {
     while(true) {
@@ -50,6 +56,9 @@ void ReceiveDataDispatcher::run()
 void ReceiveDataDispatcher::dataDispatcher(QVariant content)
 {
     CmdContent cc = content.value<CmdContent>();
+
+    if (cc.custom.empty() && cc.range.empty()) return;
+
     DispatcheType type = mapToDispatcher(static_cast<Remo_CmdSet_e>(cc.cmdSet), cc.cmdId);
     for (auto it : handlerPtrList) {
         if (it && it->getType() == type) {

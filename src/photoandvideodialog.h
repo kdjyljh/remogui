@@ -5,6 +5,7 @@
 #include "protocoldataInterfaceimpl.h"
 
 #include <QDialog>
+#include <QMessageBox>
 #include <map>
 
 class PhotoAndVideoDialog : public QDialog, public ProtocolDataInterfaceImpl
@@ -22,16 +23,22 @@ protected:
     virtual void workModeGot(const Remo_Camera_WorkMode_s & workmode) override;
     virtual void settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId) override;
     virtual void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId) override;
+    virtual void retProcess(CmdContent cc);
 
 signals:
     void workModeChange();
 
 private:
     Ui::PhotoAndVideoDialog *ui; // 来自uic生成的header中的类（photoandvideodialog.ui
-    bool recordOrCapture; //但前是拍照还算录影模式  : true为录影模式
+    bool isRecording; //但前是拍照还算录影模式  : true为录影模式
 //    PhotoAndVideoSetting photoAndVideoSetting;
     void initSurportRange();
     void setRecVideoByMainWorkMode(Remo_Camera_MainWorkMode_e mainWorkMode);
+
+    QMessageBox *msgDialog;
+    QAbstractButton *button_stop_recod;
+
+
 
 //    void getWorkModeFromCamera();
 private slots:
@@ -48,10 +55,13 @@ private slots:
     void on_radioButton_SubWcorkMode_Recode_Photo_clicked();
     void on_radioButton_SubWcorkMode_Recode_SlowMotion_clicked();
 
-    void on_pushButton_Start_clicked();
-    void on_pushButton_Stop_clicked();
+//    void on_pushButton_Start_clicked();
+//    void on_pushButton_Stop_clicked();
+    void on_pushButton_Photo_clicked();
+    void on_pushButton_Record_clicked();
 
     void comboBox_activated(int index);
+    void stop_recorde(QAbstractButton *button);
 };
 
 #endif // PHOTOANDVIDEODIALOG_H

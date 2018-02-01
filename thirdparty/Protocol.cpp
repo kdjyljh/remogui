@@ -443,7 +443,7 @@ void do_recved_protocol(UDPEndpoint endp, CommMessagePtr msgptr) {
 }
 
 static void do_recved_general(UDPEndpoint &endpoint, ProtocolStruct &proto) {
-  LOG(INFO) << "recv msg from " << endpoint.address() << ":" << endpoint.port() << ", " << proto.print();
+  LOG(INFO) << "do_recved_general " << endpoint.address() << ":" << endpoint.port() << ", " << proto.print();
   CommProtoVariables::Get()->check_recved(proto);
 }
 

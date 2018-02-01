@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 //#include "../thirdparty/shareddata.h"
 #include "../thirdparty/Protocol.hpp"
+#include "receivedatadispatcher.h"
 
 #include <QPixmap>
 #include <QHBoxLayout>
@@ -35,7 +36,7 @@ static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ProtocolDataInterfaceImpl(),
+    ProtocolDataInterfaceImpl(DispatcheType_CameraDefault),
     ui(new Ui::MainWindow),
     mainLayout(new QHBoxLayout(this)),
 //    viewLable(new ViewLable(this)),
@@ -96,26 +97,17 @@ MainWindow::MainWindow(QWidget *parent) :
 //    deviceInfoDialog->registerSelf2Handler();
 //    workModeDialog->registerSelf2Handler();
 
-//    connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
-//    connect(photoAndVideoDialog.get(), SIGNAL(workModeChange()), imagProc, SLOT(readStream_1S()));
+    connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
+    connect(photoAndVideoDialog.get(), SIGNAL(workModeChange()), imagProc, SLOT(readStream_1S()));
 
     setupAction();
 
-//    boost::thread(&ImageStreamProc::play, imagProc);
+    boost::thread(&ImageStreamProc::play, imagProc);
 
 
 
     receiveDataProc->start();
-
-//    QPixmap pix;
-//    pix.load("/home/jianghua/Pictures/gui.png");
-//    QSize s(size());
-//    QSize ss(pix.size());
-//    pix = pix.scaled(size(), Qt::KeepAspectRatio);
-//    ss = pix.size();
-//    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
-//                           pix.width(), pix.height());
-//    viewLable->setPixmap(pix);
+    ReceiveDataDispatcher::getInstance()->start();
 
     connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), viewLable, SLOT(setFocusStatus(bool)));
 
@@ -132,20 +124,22 @@ MainWindow::MainWindow(QWidget *parent) :
     addItem2Map(ui->menu_Antiflick, Remo_CmdId_Camera_Get_Antiflick);
     addItem2Map(ui->menu_Rotation, Remo_CmdId_Camera_Get_Rotation);
 
-    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageType_Range);
-    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageQuality_Range);
-    sendCmdCamera(Remo_CmdId_Camera_Get_PhotoColorType_Range);
-    sendCmdCamera(Remo_CmdId_Camera_Get_VideoMuxerType_Range);
-    sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageType_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageQuality_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_PhotoColorType_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_VideoMuxerType_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_WhiteBalance_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_MeterMode_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_Antiflick_Range);
-    sendCmdCamera(Remo_CmdId_Camera_Get_Rotation_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_Rotation_Range);
     ItemData itemData;
     if (findItemByUiPtr(ui->menu_Sharpness, itemData))
-        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_Sharpness);
+//        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_Sharpness);
     if (findItemByUiPtr(ui->menu_VideoFormat, itemData))
         surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_VideoFormat);
+
+    sendCmdCamera(Remo_CmdId_Camera_Get_AELockStatus);
 
 //    addActionToGroupByMenu(ui->menu_whiteBalance, actionGroupWhiteBalance);
 }
@@ -258,11 +252,11 @@ void MainWindow::initAfterConstruct()
 
 void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId)
 {
-    if (!((cmdId >> 3) >= 0x0 && (cmdId >> 3) < 0x60 ||
-         (cmdId >> 3) >= 0x67 && (cmdId >> 3) < 0x78 ||
-         (cmdId >> 3) >= 0x7b && (cmdId >> 3) < 0x85)) {
-        return;
-    }
+//    if (!((cmdId >> 3) >= 0x0 && (cmdId >> 3) < 0x60 ||
+//         (cmdId >> 3) >= 0x67 && (cmdId >> 3) < 0x78 ||
+//         (cmdId >> 3) >= 0x7b && (cmdId >> 3) < 0x85)) {
+//        return;
+//    }
 
     LOG(INFO) << "MainWindow::surportRangeGot cmdId = " << std::hex << cmdId;
 
@@ -272,14 +266,19 @@ void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Came
     if (nullptr != menu) {
         for (auto it : menu->actions()) menu->removeAction(it);//先删除menu的子菜单
 
+        connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(menu_action_triggered(QAction*)));
+
         QActionGroup *group = new QActionGroup(this);
         for (auto it : rangeSet) {
-            QAction * action = new QAction(QString::fromUtf8(it.ShowStr.data()), this);
+            QAction * action = new QAction(QString::fromUtf8(it.ShowStr.data()), menu);
             action->setData(QVariant(it.Index));//将enum值放入Action的QVariant中
+//            action->setMenu(menu);
             menu->addAction(action);
             group->addAction(action);
             action->setCheckable(true);
-            connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(menu_action_triggered(QAction*)));
+//            QMenu *p = action->menu();
+//            int i = 0;
+//            i++;
         }
 
         ItemData itemData;
@@ -291,13 +290,19 @@ void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Came
 
 void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_e cmdId)
 {
-    if (!((cmdId & 0x1ff) >= 0x0 && (cmdId & 0x1ff) < 0x60 ||
-         (cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78 ||
-         (cmdId & 0x1ff) >= 0x7b && (cmdId & 0x1ff) < 0x85)) {
-        return;
-    }
+//    if (!((cmdId & 0x1ff) >= 0x0 && (cmdId & 0x1ff) < 0x60 ||
+//         (cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78 ||
+//         (cmdId & 0x1ff) >= 0x7b && (cmdId & 0x1ff) < 0x85)) {
+//        return;
+//    }
 
     if (data.empty()) return;
+
+    if (cmdId == Remo_CmdId_Camera_Get_AELockStatus) {
+        bool status = data[0];
+        ui->action_Aelock->setChecked(status);
+        return;
+    }
 
     QMenu * group = static_cast<QMenu*>(findUiPtrById(cmdId));
     if (nullptr != group) {
@@ -923,15 +928,35 @@ void MainWindow::on_action_deviceInfo_triggered()
     deviceInfoDialog->show();
 }
 
+void MainWindow::on_action_Aelock_triggered(bool status)
+{
+    sendCmdCamera(Remo_CmdId_Camera_Set_AELockStatus, std::vector<uint8_t>{status});
+}
+
 void MainWindow::menu_action_triggered(QAction *action)
 {
     if (nullptr == action) return;
 
-    QMenu *menu = action->menu();
+//    QMenu *menu = action->menu();
+    QMenu *menu = dynamic_cast<QMenu*>(action->parent());
+    int data =  action->data().toInt();
+    if (menu == ui->menu_whiteBalance && data == WhiteBalance_Custom) {
+        QWidget *customWBWidget = new QWidget;
+        QSlider *customWBSlider = new QSlider(customWBWidget);
+//        customWBWidget->setLayout(new QVBoxLayout(customWBWidget));
+//        customWBWidget->layout()->addWidget(customWBSlider);
+        customWBWidget->setGeometry(QRect(centerPoint, QSize(200, 10)));
+//        customWBSlider->setGeometry(QRect(0, 0, 200, 10));
+        customWBSlider->setOrientation(Qt::Horizontal);
+//        customWBWidget->layout()->setGeometry(QRect(centerPoint, QSize(200, 10)));
+        customWBWidget->show();
+        return;
+//        whiteBalanceSlider->close();
+    }
     ItemData itemData;
     if (findItemByUiPtr(menu, itemData)) {
         sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemData.CmdId_SetData),
-                      std::vector<uint8_t>{action->data().toInt()});
+                      std::vector<uint8_t>{data});
     }
 }
 

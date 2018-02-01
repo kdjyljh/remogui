@@ -38,7 +38,7 @@ unix:LIBS += -Wl,--start-group \
     -lavfilter \
     -Wl,--end-group
 
-unix:LIBS += -lvdpau -lva -lX11 -lva-drm -lva-x11 -lvlc
+unix:LIBS += -lvdpau -lva -lX11 -lva-drm -lva-x11
 
 unix:LIBS += -ldl -pthread -lm
 
@@ -108,7 +108,8 @@ FORMS += \
     ui/aemode.ui \
     ui/focus.ui \
     ui/gimbal.ui \
-    ui/deviceinfo.ui
+    ui/deviceinfo.ui \
+    ui/dialog.ui
 
 RESOURCES += \
     resource/image.qrc

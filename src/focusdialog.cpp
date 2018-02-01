@@ -4,7 +4,7 @@
 
 FocusDialog::FocusDialog(QWidget * parent) :
     QDialog(parent),
-    ProtocolDataInterfaceImpl(),
+    ProtocolDataInterfaceImpl(DispatcheType_Focus_Zoom),
     ui(new Ui::Focus)
 {
     ui->setupUi(this);
@@ -24,6 +24,8 @@ FocusDialog::FocusDialog(QWidget * parent) :
     ui->ComboBox_ZoomSpeed->addItem(QString::fromUtf8("中等"), 2);
     ui->ComboBox_ZoomSpeed->addItem(QString::fromUtf8("较快"), 3);
     ui->ComboBox_ZoomSpeed->addItem(QString::fromUtf8("最快"), 4);
+
+    ui->horizontalSlider_FocalLengthPosNo->setRange(0, 255);
 
     sendCmdCamera(Remo_CmdId_Camera_Get_AFMode_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_FocalLengthInfo);
@@ -68,8 +70,8 @@ void FocusDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera
     if (nullptr != ptr) {
         ItemData itemData;
         if (findItemByUiPtr(ptr, itemData)) {
-            QString str = ptr->objectName();
-            int coun = ptr->count();
+//            QString str = ptr->objectName();
+//            int coun = ptr->count();
             for (int i = 0; i < ptr->count(); ++i) {
                 if (ptr->itemData(i).toInt() == indexValue) {
                     ptr->setCurrentIndex(i);
@@ -80,6 +82,14 @@ void FocusDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera
 }
 
 void FocusDialog::on_ComboBox_AFMode_activated(int index)
+{
+    QComboBox * ptr = dynamic_cast<QComboBox*>(sender());
+    if (nullptr != ptr) {
+        sendCmdCamera(Remo_CmdId_Camera_Set_AFMode, std::vector<uint8_t>{ptr->itemData(index).toInt()});
+    }
+}
+
+void FocusDialog::on_ComboBox_ZoomSpeed_activated(int index)
 {
     QComboBox * ptr = dynamic_cast<QComboBox*>(sender());
     if (nullptr != ptr) {

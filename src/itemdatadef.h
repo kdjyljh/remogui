@@ -53,6 +53,7 @@ struct CmdContent
     std::vector<uint8_t> custom;
     int cmdSet;
     int cmdId;
+    int ret;
 };
 Q_DECLARE_METATYPE(CmdContent);
 

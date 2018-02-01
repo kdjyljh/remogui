@@ -31,7 +31,7 @@ static bool findOtherCmd(CmdGetSetRang & ret, int get, int set = Remo_CmdId_Came
 
 AeModeDialog::AeModeDialog(QWidget * parent) :
     QDialog(parent),
-    ProtocolDataInterfaceImpl(),
+    ProtocolDataInterfaceImpl(DispatcheType_AeMode),
     currentAeMode(AeMode_Bott),
     ui(new Ui::AeMOde)
 {
@@ -57,7 +57,7 @@ AeModeDialog::AeModeDialog(QWidget * parent) :
 
 void AeModeDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_e cmdId)
 {
-    if (!((cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78)) return;
+//    if (!((cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78)) return;
 
     int indexValue = 0;
     memcpy(&indexValue, data.data(), 1);
@@ -93,13 +93,13 @@ void AeModeDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camer
 
 void AeModeDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId)
 {
-    if (!((cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78)) return;
+//    if (!((cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78)) return;
 
 //    int indexValue = 0;
 //    memcpy(&indexValue, data.data(), 1);
 
     QComboBox * ptr = nullptr;
-    if (Remo_CmdId_Camera_Get_AeMode == cmdId) {
+    if (Remo_CmdId_Camera_Get_AeMode_Range == cmdId) {
         ptr = static_cast<QComboBox*>(findUiPtrById(Remo_CmdId_Camera_Get_AeMode));
     }
     else {
@@ -156,11 +156,11 @@ void AeModeDialog::syncUiModeByAeMode()
         break;
     }
 
-    sendCmdCamera(Remo_CmdId_Camera_Get_AeMode);
-    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Aperture);
-    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Shutter);
-    sendCmdCamera(Remo_CmdId_Camera_Get_Current_ISO);
-    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Evbias);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_AeMode);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Aperture);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Shutter);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_Current_ISO);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_Current_Evbias);
 }
 
 void AeModeDialog::combox_activated(int index)

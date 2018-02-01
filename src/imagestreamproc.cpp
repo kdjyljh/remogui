@@ -11,11 +11,11 @@ static boost::mutex mtxStreamReady;
 static boost::condition_variable cvStreamReady;
 
 //rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov
+//rtsp://192.168.0.1/livestream/12
 bool ImageStreamProc::streamReady = false;
-
 ImageStreamProc::ImageStreamProc(QObject *parent) :
     QObject(parent),
-    url("rtsp://192.168.1.10/livestream/12"),
+    url("rtsp://192.168.0.1/livestream/12"),
     videoStreamIndex(-1),
     pAVFormatContext(nullptr),
     pSwsContext(nullptr),
@@ -32,7 +32,6 @@ ImageStreamProc::~ImageStreamProc()
     avformat_close_input(&pAVFormatContext);
     avformat_free_context(pAVFormatContext);
     avcodec_free_context(&pAVCodecContext);
-    av_frame_free(&picture);
     sws_freeContext(pSwsContext);
 }
 
@@ -62,7 +61,7 @@ bool ImageStreamProc::init()
         }
     }
 
-    if (videoStreamIndex==-1){
+    if (videoStreamIndex == -1){
         LOG(INFO) << "get video stream index failed!!!!!";
         goto error;
     }
@@ -72,7 +71,7 @@ bool ImageStreamProc::init()
     videoWidth = pAVCodecContext->width;
     videoHeight = pAVCodecContext->height;
 
-    avpicture_alloc(&pAVPicture,AV_PIX_FMT_RGB24,videoWidth,videoHeight);
+    avpicture_alloc(&pAVPicture, AV_PIX_FMT_RGB24, videoWidth, videoHeight);
 
     AVCodec *pAVCodec;
 
@@ -82,7 +81,7 @@ bool ImageStreamProc::init()
 
     //打开对应解码器
     result = avcodec_open2(pAVCodecContext, pAVCodec, nullptr);
-    if (result<0){
+    if (result < 0){
         LOG(INFO) << "open decoder failed!!!!!";
         goto error;
     }
@@ -112,10 +111,6 @@ bool ImageStreamProc::readStream_1S()
 
 void ImageStreamProc::play()
 {
-//    if (!init()) {
-//        return;
-//    }
-
     init();
 
     //一帧一帧读取视频
@@ -126,7 +121,7 @@ void ImageStreamProc::play()
             cvStreamReady.wait(lock);
 
         if (av_read_frame(pAVFormatContext, &pAVPacket) >= 0){
-            avcodec_decode_video2(pAVCodecContext, picture, &frameFinished, &pAVPacket);
+            avcodec_decode_video2(pAVCodecContext, pAVFrame, &frameFinished, &pAVPacket);
             if (frameFinished) {
                 sws_scale(pSwsContext, (const uint8_t* const *)pAVFrame->data, pAVFrame->linesize, 0, videoHeight, pAVPicture.data, pAVPicture.linesize);
                 //发送获取一帧图像信号

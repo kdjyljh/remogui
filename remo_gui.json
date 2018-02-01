@@ -1,6 +1,6 @@
 {
   // 通信配置
-  "COMM_CAMERA_IP": "192.168.1.10",
+  "COMM_CAMERA_IP": "192.168.0.1",
   "COMM_CAMERA_PORT": 9999,
   "COMM_SELF_PORT": 9999,
   "SelfCommDevice": "COMMDEVICE_PC"

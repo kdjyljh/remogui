@@ -104,6 +104,7 @@ private slots:
     void on_action_FocusAndZoom_triggered();
     void on_action_Gimbal_triggered();
     void on_action_deviceInfo_triggered();
+    void on_action_Aelock_triggered(bool status);
 
     //slots need connect by code
 //    void actionGroup_resolution_triggered(QAction *action);

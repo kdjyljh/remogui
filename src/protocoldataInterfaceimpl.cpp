@@ -9,32 +9,18 @@ ProtocolDataInterfaceImpl::ProtocolDataInterfaceImpl(DispatcheType type) :
 void ProtocolDataInterfaceImpl::handle()
 {
     Remo_CmdId_Camera_e cmdId = static_cast<Remo_CmdId_Camera_e>(content.cmdId);
-//    Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId & 0x1ff);
     Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(cmdId >> 9);
 
-//    LOG(INFO) << "#########################ProtocolDataInterfaceImpl::handle idValue = " << idValue
-//              << " cmdId = " << cmdId << " idType = " << idType << std::endl;
-//    LOG(INFO) << "data is ";
-//    CHAR_BUFF_TO_LOG_STDERROR(data.data);
-
     if (Remo_CmdId_Camera_Get_WorkMode == cmdId || Remo_CmdId_Camera_Set_WorkMode == cmdId) {
-        Remo_Camera_WorkMode_s workMode{0};
-        memcpy(&workMode, content.custom.data(), 2);
-        workModeGot(workMode);
-        return;
+        if (content.custom.size() == 2) {
+            Remo_Camera_WorkMode_s workMode{};
+            memcpy(&workMode, content.custom.data(), 2);
+            workModeGot(workMode);
+        }
     }
-
-    if (CmdId_Type_Get == idType) {
+    else if (CmdId_Type_Get == idType) {
         settingGot(content.custom, cmdId);
     }
-//    else if (CmdId_Type_Set == idType) {
-//        Remo_CmdId_SetCmd_ReturnValue_e ret = static_cast<Remo_CmdId_SetCmd_ReturnValue_e>(data.data.at(0));
-
-//        if (ret != Return_OK) {
-//            std::cerr << "set camera failed, exit!!!!!!!!!!!!!!!!!!!!!!!!\n";
-//            exit(-1);//设置相机失败，直接退出程序
-//        }
-//    }
     else if (CmdId_Type_GetRange == idType) {
         surportRangeGot(content.range, cmdId);
     }
@@ -44,6 +30,8 @@ void ProtocolDataInterfaceImpl::handle()
     else {
 
     }
+
+    retProcess(content);
 }
 
 void ProtocolDataInterfaceImpl::sendCmdCamera(Remo_CmdId_Camera_e cmdId, std::vector<uint8_t> data, CommProtoVariables::RequestRespond reqres)

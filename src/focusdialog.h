@@ -24,6 +24,7 @@ private:
 
 private slots:
     void on_ComboBox_AFMode_activated(int index);
+    void on_ComboBox_ZoomSpeed_activated(int index);
     void on_horizontalSlider_FocalLengthPosNo_sliderReleased();
     void on_pushButton_StopZoom_clicked();
     void on_pushButton_StartFocus_clicked();

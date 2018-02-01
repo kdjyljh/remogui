@@ -1,6 +1,7 @@
 #include "deviceinfodialog.h"
 
 DeviceInfoDialog::DeviceInfoDialog(QWidget *parent) :
+    ProtocolDataInterfaceImpl(DispatcheType_DeviceInfo),
     QDialog(parent),
     ui(new Ui::DeviceInfo)
 {

@@ -44,7 +44,6 @@ private:
     AVFormatContext *pAVFormatContext;
     AVCodecContext *pAVCodecContext;
     AVFrame *pAVFrame;
-    AVFrame *picture;
     SwsContext * pSwsContext;
     AVPacket pAVPacket;
     std::string url;

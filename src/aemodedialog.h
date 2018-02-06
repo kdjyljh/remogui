@@ -7,6 +7,7 @@
 
 class AeModeDialog : public QDialog, public ProtocolDataInterfaceImpl
 {
+Q_OBJECT
 public:
     explicit AeModeDialog(QWidget * parent);
 

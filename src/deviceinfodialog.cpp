@@ -28,7 +28,7 @@ void DeviceInfoDialog::batteryInfoHandle(std::vector<uint8_t> data)
         healthStr = QString::fromUtf8("过压");
     }
     else if (BatteryHealth_OverCurrent == bi.Health) {
-        healthStr = QString::fromUtf8("过过流");
+        healthStr = QString::fromUtf8("过流");
     }
     else if (BatteryHealth_Cold == bi.Health) {
         healthStr = QString::fromUtf8("过冷");

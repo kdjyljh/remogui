@@ -58,9 +58,11 @@ bool SharedData::popReceiveData(ProtocolStruct &data)
 
 void SharedData::pushSendData(const ProtocolStruct &data)
 {
-    LOG(INFO) << "SharedData::pushSendData seqId = " << std::hex << data.packSeq  << " cmdId = " << data.cmdID << " cmdSet = " << data.cmdSet;
+//    std::cout << FLAGS_logtostderr << std::endl;
+
     {
         boost::unique_lock<boost::mutex> lock(mtxSend);
+        LOG(INFO) << "SharedData::pushSendData seqId = " << std::hex << data.packSeq  << " cmdId = " << data.cmdID << " cmdSet = " << data.cmdSet;
         sendQueue.push_back(data);
     }
 }

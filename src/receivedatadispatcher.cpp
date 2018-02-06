@@ -57,7 +57,7 @@ void ReceiveDataDispatcher::dataDispatcher(QVariant content)
 {
     CmdContent cc = content.value<CmdContent>();
 
-    if (cc.custom.empty() && cc.range.empty()) return;
+    if (cc.custom.empty() && cc.range.empty() && cc.ret == Return_OK) return;
 
     DispatcheType type = mapToDispatcher(static_cast<Remo_CmdSet_e>(cc.cmdSet), cc.cmdId);
     for (auto it : handlerPtrList) {

@@ -1,11 +1,14 @@
 #include "imagestreamproc.h"
+#include "mainwindow.h"
 #include "../thirdparty/commlog.h"
 #include <chrono>
 #include <thread>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
+#include <boost/thread.hpp>
 #include <libavutil/error.h>
 #include <glog/logging.h>
+#include <QMessageBox>
 
 static boost::mutex mtxStreamReady;
 static boost::condition_variable cvStreamReady;
@@ -21,6 +24,7 @@ ImageStreamProc::ImageStreamProc(QObject *parent) :
     pSwsContext(nullptr),
     pAVCodecContext(nullptr)
 {
+    av_log_set_level(AV_LOG_SKIP_REPEATED);
     av_register_all();//注册库中所有可用的文件格式和解码器
     avformat_network_init();
     pAVFrame = av_frame_alloc();//仅分配AVFrame，而不分配buffer
@@ -39,20 +43,36 @@ bool ImageStreamProc::init()
 {
     boost::unique_lock<boost::mutex> lock(mtxStreamReady);
 
+    LOG(INFO) << "ImageStreamProc::init start ###########################";
+
+    LOG(INFO) << "0.free pAVFormatContext ###########################";
+    if (nullptr != pAVFormatContext) {
+        avformat_close_input(&pAVFormatContext);
+        avformat_free_context(pAVFormatContext);
+        pAVFormatContext = nullptr;
+    }
+
+    LOG(INFO) << "1.avformat_open_input ###########################";
     int result = avformat_open_input(&pAVFormatContext, url.c_str(), nullptr, nullptr);
     if (result < 0) {
-        LOG(INFO) << "open video stream failed!!!!!!";
         goto error;
     }
 
+    //优化avformat_find_stream_info速度
+    //限制avformat_find_stream_info接口内部读取的最大数据量,有些情况时，会导致这些数据不足以分析这个流的信息
+    pAVFormatContext->flags |= AVFMT_FLAG_NOBUFFER;
+    //数据包不入缓冲区,avformat_find_stream_info接口内部读取的每一帧数据只用于分析，不显示,会出现进入页面立马卡顿一下的问题
+    pAVFormatContext->probesize = 4096;
+
     //获取视频流信息
+    LOG(INFO) << "2.avformat_find_stream_info ###########################";
     result = avformat_find_stream_info(pAVFormatContext, nullptr);
     if (result < 0) {
-        LOG(INFO) << "get video stream information failed!!!!!";
         goto error;
     }
 
     //获取视频流索引
+    LOG(INFO) << "3.get videoStreamIndex ###########################";
     videoStreamIndex = -1;
     for (uint i = 0; i < pAVFormatContext->nb_streams; i++) {
         if (pAVFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
@@ -62,7 +82,6 @@ bool ImageStreamProc::init()
     }
 
     if (videoStreamIndex == -1){
-        LOG(INFO) << "get video stream index failed!!!!!";
         goto error;
     }
 
@@ -71,18 +90,20 @@ bool ImageStreamProc::init()
     videoWidth = pAVCodecContext->width;
     videoHeight = pAVCodecContext->height;
 
+    LOG(INFO) << "4.avpicture_alloc ###########################";
     avpicture_alloc(&pAVPicture, AV_PIX_FMT_RGB24, videoWidth, videoHeight);
 
     AVCodec *pAVCodec;
 
     //获取视频流解码器
+    LOG(INFO) << "5.avcodec_find_decoder ###########################";
     pAVCodec = avcodec_find_decoder(pAVCodecContext->codec_id);
     pSwsContext = sws_getContext(videoWidth, videoHeight, AV_PIX_FMT_YUV420P, videoWidth, videoHeight, AV_PIX_FMT_RGB24, SWS_BICUBIC, 0, 0, 0);
 
     //打开对应解码器
+    LOG(INFO) << "6.avcodec_open2 ###########################";
     result = avcodec_open2(pAVCodecContext, pAVCodec, nullptr);
-    if (result < 0){
-        LOG(INFO) << "open decoder failed!!!!!";
+    if (result < 0) {
         goto error;
     }
 
@@ -99,26 +120,39 @@ error:
     av_strerror(result, errorStr, 1024);
     LOG(INFO) << "ImageStreamProc::init got an error:" << result << " :" << errorStr;
     LOG(INFO) << "ImageStreamProc::init lock relase streamReady = " << streamReady;
+//    QMessageBox::warning(nullptr, "网络错误", "无视频流", QMessageBox::Ok);
     return false;
 }
 
-bool ImageStreamProc::readStream_1S()
+bool ImageStreamProc::readStream()
 {
-    LOG(INFO) << "ImageStreamProc::readStream_1S read image stream again after 1s";
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    return init();
+    LOG(INFO) << "ImageStreamProc::readStream read image stream";
+//    std::this_thread::sleep_for(std::chrono::seconds(1));
+    MainWindow::getWindInstace()->imgStreamProcThread.sleep(boost::get_system_time() + boost::posix_time::milliseconds(500));
+    //重新初始化视频流可能阻塞，开一个线程
+    //    boost::thread([&]() {std::this_thread::sleep_for(std::chrono::seconds(1));this->init();});
+    int i = 2;
+    while (!init() && i--);
+    if (!i) {
+        QMessageBox::warning(nullptr, "网络错误", "无视频流", QMessageBox::Ok);
+    }
+    emit readStreamDone(i);
+    return i;
 }
 
 void ImageStreamProc::play()
 {
-    init();
+    readStream();
 
     //一帧一帧读取视频
     int frameFinished = 0;
     while (true) {
         boost::unique_lock<boost::mutex> lock(mtxStreamReady);
-        while (!streamReady)
+        while (!streamReady) {
+            LOG(INFO) << "7.streamReady waite befor###########################";
             cvStreamReady.wait(lock);
+            LOG(INFO) << "7.streamReady waite after###########################";
+        }
 
         if (av_read_frame(pAVFormatContext, &pAVPacket) >= 0){
             avcodec_decode_video2(pAVCodecContext, pAVFrame, &frameFinished, &pAVPacket);

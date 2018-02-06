@@ -1,10 +1,12 @@
 #include "gimbaldialog.h"
 #include <QDebug>
+#include <boost/thread.hpp>
 
 GimbalDialog::GimbalDialog(QWidget *parent) :
     QDialog(parent),
     ProtocolDataInterfaceImpl(DispatcheType_Gimbal),
-    ui(new Ui::Gimbal)
+    ui(new Ui::Gimbal),
+    relaAttiAngleFineTuneStop(false)
 {
     ui->setupUi(this);
 
@@ -32,10 +34,14 @@ GimbalDialog::GimbalDialog(QWidget *parent) :
     connect(ui->LineEdit_RelaAttiAngle_Set, SIGNAL(returnPressed()), this, SLOT(lineEdit_returnPressed()));
     connect(ui->LineEdit_RollFineTuning, SIGNAL(returnPressed()), this, SLOT(lineEdit_returnPressed()));
     connect(ui->LineEdit_VeloSlope, SIGNAL(returnPressed()), this, SLOT(lineEdit_returnPressed()));
-    connect(ui->PushButton_RelaAttiAngle_Up, SIGNAL(clicked(bool)), this, SLOT(pushButton_RelaAttiAngle_FineTune()));
-    connect(ui->PushButton__RelaAttiAngle_Down, SIGNAL(clicked(bool)), this, SLOT(pushButton_RelaAttiAngle_FineTune()));
-    connect(ui->PushButton__RelaAttiAngle_Left, SIGNAL(clicked(bool)), this, SLOT(pushButton_RelaAttiAngle_FineTune()));
-    connect(ui->PushButton__RelaAttiAngle_Right, SIGNAL(clicked(bool)), this, SLOT(pushButton_RelaAttiAngle_FineTune()));
+    connect(ui->PushButton_RelaAttiAngle_Up, SIGNAL(pressed()), this, SLOT(pushButton_RelaAttiAngle_FineTune_pressed()));
+    connect(ui->PushButton__RelaAttiAngle_Down, SIGNAL(pressed()), this, SLOT(pushButton_RelaAttiAngle_FineTune_pressed()));
+    connect(ui->PushButton__RelaAttiAngle_Left, SIGNAL(pressed()), this, SLOT(pushButton_RelaAttiAngle_FineTune_pressed()));
+    connect(ui->PushButton__RelaAttiAngle_Right, SIGNAL(pressed()), this, SLOT(pushButton_RelaAttiAngle_FineTune_pressed()));
+    connect(ui->PushButton_RelaAttiAngle_Up, SIGNAL(released()), this, SLOT(pushButton_RelaAttiAngle_FineTune_released()));
+    connect(ui->PushButton__RelaAttiAngle_Down, SIGNAL(released()), this, SLOT(pushButton_RelaAttiAngle_FineTune_released()));
+    connect(ui->PushButton__RelaAttiAngle_Left, SIGNAL(released()), this, SLOT(pushButton_RelaAttiAngle_FineTune_released()));
+    connect(ui->PushButton__RelaAttiAngle_Right, SIGNAL(released()), this, SLOT(pushButton_RelaAttiAngle_FineTune_released()));
 
     ui->PushButton_RelaAttiAngle_Up->setDefault(true);
     ui->PushButton_RelaAttiAngle_Up->setDefault(false);
@@ -174,16 +180,23 @@ void GimbalDialog::on_pushButton_getGimbalInfo_clicked()
     getDeviceInfoAndCurrentValue();
 }
 
-void GimbalDialog::pushButton_RelaAttiAngle_FineTune()
+void GimbalDialog::pushButton_RelaAttiAngle_FineTune_released()
+{
+    relaAttiAngleFineTuneStop = true;
+}
+
+void GimbalDialog::pushButton_RelaAttiAngle_FineTune_pressed()
 {
     uint16_t data[3];
     int stay_value = -32768;
     for (int i = 0; i < 3; ++i) {
         memcpy(data + i, &stay_value, 2);
     }
-    int step = 32768.0 / 10;
+//    int step = 32767 / 180 * 5.0;
+    int step = 1.0 / 180 * 32767; //每次步长为5度
     QPushButton *sder = dynamic_cast<QPushButton*>(sender());
     if (ui->PushButton_RelaAttiAngle_Up == sder) {
+        //pitch
         memcpy(data + 1, &step, 2);
     }
     else if (ui->PushButton__RelaAttiAngle_Down == sder) {
@@ -191,6 +204,7 @@ void GimbalDialog::pushButton_RelaAttiAngle_FineTune()
         memcpy(data + 1, &step, 2);
     }
     else if (ui->PushButton__RelaAttiAngle_Left == sder) {
+        //yaw
         memcpy(data + 2, &step, 2);
     }
     else if (ui->PushButton__RelaAttiAngle_Right == sder) {
@@ -201,8 +215,15 @@ void GimbalDialog::pushButton_RelaAttiAngle_FineTune()
         return;
     }
 
-    sendCmdGimbal(Remo_CmdId_Gimbal_Set_RelaAttiAngle,
-                  std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + sizeof(data)));
+    relaAttiAngleFineTuneStop = false;
+
+    boost::thread([&](){
+        while (!this->relaAttiAngleFineTuneStop) {
+            sendCmdGimbal(Remo_CmdId_Gimbal_Set_RelaAttiAngle,
+                          std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + sizeof(data)));
+            usleep(100000);
+        }
+    });
 }
 
 void GimbalDialog::on_ComboBox_LockAxis_activated(int index)

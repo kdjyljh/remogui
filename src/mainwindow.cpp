@@ -7,6 +7,7 @@
 #include <QPixmap>
 #include <QHBoxLayout>
 #include <QDesktopWidget>
+#include <QtConcurrent>
 #include <QDebug>
 #include <boost/thread.hpp>
 
@@ -67,13 +68,14 @@ MainWindow::MainWindow(QWidget *parent) :
     actionGroupIntelliMode(new QActionGroup(this)),
     actionGroupCloseup(new QActionGroup(this)),
     actionGroupScene(new QActionGroup(this)),
-    actionGroupIntelligLens(new QActionGroup(this))
+    actionGroupIntelligLens(new QActionGroup(this)),
+    customWBWidget(new QWidget),
+    customWBSlider(new QSlider(customWBWidget))
 {
     if (isBigEndian()) {
         qDebug() << "System is Big Endian exit !!!!!!!!!!!!!!!!!!!!!!!!";
         exit(-1); //
     }
-    LOG(INFO) << "CTOR FOR MainWindow";
 
     ui->setupUi(this);
 
@@ -89,6 +91,11 @@ MainWindow::MainWindow(QWidget *parent) :
     centerPoint.setX(screenRect.width() / 2 - width() / 2);
     centerPoint.setY(screenRect.height() / 2 - height() / 2);
     move(centerPoint);
+    customWBWidget->setGeometry(QRect(centerPoint, QSize(400, 50)));
+    customWBSlider->setGeometry(QRect(0, 25, 400, 10));
+    customWBSlider->setOrientation(Qt::Horizontal);
+    customWBSlider->setRange(2500, 10000);
+    customWBWidget->setFixedSize(400, 50);
 
     photoAndVideoDialog->registerSelf2Handler();
     focusDialog->registerSelf2Handler();
@@ -98,18 +105,19 @@ MainWindow::MainWindow(QWidget *parent) :
 //    workModeDialog->registerSelf2Handler();
 
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
-    connect(photoAndVideoDialog.get(), SIGNAL(workModeChange()), imagProc, SLOT(readStream_1S()));
+    connect(photoAndVideoDialog.get(), SIGNAL(workModeChange()), imagProc, SLOT(readStream()));
+    connect(imagProc, SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(), SLOT(readVideoStreamDoneSlot(bool)));
 
     setupAction();
 
-    boost::thread(&ImageStreamProc::play, imagProc);
-
+    imgStreamProcThread = boost::thread(&ImageStreamProc::play, imagProc);
 
 
     receiveDataProc->start();
     ReceiveDataDispatcher::getInstance()->start();
 
     connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), viewLable, SLOT(setFocusStatus(bool)));
+    connect(customWBSlider, SIGNAL(sliderReleased()), this, SLOT(customWBSlider_triggered()));
 
     //    QActionGroup * whiteBalanceGroup = new QActionGroup(this);
     addItem2Map(ui->menu_CapStorageType, Remo_CmdId_Camera_Get_CapStorageType);
@@ -262,7 +270,7 @@ void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Came
 
 //    QMenu * menu = static_cast<QMenu*>(findUiPtrById(cmdId));
     QMenu * menu = qobject_cast<QMenu*>(static_cast<QObject*>(findUiPtrById(cmdId)));
-    qDebug() << "find menu" << menu << "sharpness " << ui->menu_Sharpness;
+//    qDebug() << "find menu" << menu << "sharpness " << ui->menu_Sharpness;
     if (nullptr != menu) {
         for (auto it : menu->actions()) menu->removeAction(it);//先删除menu的子菜单
 
@@ -941,23 +949,22 @@ void MainWindow::menu_action_triggered(QAction *action)
     QMenu *menu = dynamic_cast<QMenu*>(action->parent());
     int data =  action->data().toInt();
     if (menu == ui->menu_whiteBalance && data == WhiteBalance_Custom) {
-        QWidget *customWBWidget = new QWidget;
-        QSlider *customWBSlider = new QSlider(customWBWidget);
-//        customWBWidget->setLayout(new QVBoxLayout(customWBWidget));
-//        customWBWidget->layout()->addWidget(customWBSlider);
-        customWBWidget->setGeometry(QRect(centerPoint, QSize(200, 10)));
-//        customWBSlider->setGeometry(QRect(0, 0, 200, 10));
-        customWBSlider->setOrientation(Qt::Horizontal);
-//        customWBWidget->layout()->setGeometry(QRect(centerPoint, QSize(200, 10)));
         customWBWidget->show();
         return;
-//        whiteBalanceSlider->close();
     }
     ItemData itemData;
     if (findItemByUiPtr(menu, itemData)) {
         sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemData.CmdId_SetData),
                       std::vector<uint8_t>{data});
     }
+}
+
+void MainWindow::customWBSlider_triggered()
+{
+    LOG(INFO) << "MainWindow::customWBSlider_triggered releaseed value " << customWBSlider->value();
+    int data = customWBSlider->value();
+    std::vector<uint8_t> v(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 2);
+    sendCmdCamera(Remo_CmdId_Camera_Set_WhiteBalance, v);
 }
 
 

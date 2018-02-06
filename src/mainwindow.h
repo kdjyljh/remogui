@@ -36,6 +36,8 @@ public:
 
     void initAfterConstruct();
 
+    boost::thread imgStreamProcThread;
+
 protected:
     virtual void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId) override;
     virtual void settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId) override;
@@ -83,6 +85,9 @@ private:
     explicit MainWindow(QWidget *parent = 0);
     MainWindow(MainWindow &wind);
 
+    QWidget *customWBWidget;
+    QSlider *customWBSlider;
+
 private slots:
     void setLabelPix(const QImage & image);
 //    void updatePhotoAndVideoSetting(const PhotoAndVideoSetting & vcSetting);
@@ -128,6 +133,7 @@ private slots:
 //    void actionGroup_intelligLens_triggered(QAction *action);
 
     void menu_action_triggered(QAction *action);
+    void customWBSlider_triggered();
 };
 
 #endif // MAINWINDOW_H

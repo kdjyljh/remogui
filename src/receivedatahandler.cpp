@@ -271,7 +271,7 @@ void ReceiveDataHandler::handle()
 
     CmdContent cc;
     cc.ret = ret;
-
+    cc.isRestore = false;
     if (ret != Return_OK) {
         if (CmdId_Type_Set == idType) {
             LOG(INFO) << "set device failed, restore device status!!!!!!!!!!!!!!!!!!!!";
@@ -282,17 +282,18 @@ void ReceiveDataHandler::handle()
 
             auto it = deviceStatus.find(key);
             if (it != deviceStatus.end()) {
-                    data.data = it->second;
+                data.data = it->second;
+                cc.isRestore = true;
             }
             else {
                 LOG(INFO) << "restore device status failed, can not find device key !!!!!!!!!!!!!!!!!!!!";
             }
         }
-
         else {
-            pushData(cc);
-            return;
         }
+
+//        pushData(cc);
+//        return;
     }
 
     data.data.assign(data.data.begin() + 1, data.data.end());

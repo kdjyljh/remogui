@@ -16,6 +16,7 @@ public:
 
 private:
     Ui::Gimbal *ui;
+    bool relaAttiAngleFineTuneStop;
 
     void getDeviceInfoAndCurrentValue();
     template<class DataSizeType>
@@ -32,7 +33,8 @@ private slots:
     void on_pushButton_Reset_Gimbal_clicked();
     void on_pushButton_FactoryReset_clicked();
     void on_pushButton_getGimbalInfo_clicked();
-    void pushButton_RelaAttiAngle_FineTune();
+    void pushButton_RelaAttiAngle_FineTune_pressed();
+    void pushButton_RelaAttiAngle_FineTune_released();
 };
 
 

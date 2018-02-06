@@ -54,6 +54,7 @@ struct CmdContent
     int cmdSet;
     int cmdId;
     int ret;
+    bool isRestore;
 };
 Q_DECLARE_METATYPE(CmdContent);
 

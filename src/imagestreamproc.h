@@ -35,9 +35,10 @@ public slots:
 
 signals:
     void imageGot(const QImage &image);
+    bool readStreamDone(bool gotStream);
 
 public slots:
-    bool readStream_1S();
+    bool readStream();
 
 private:
     AVPicture  pAVPicture;

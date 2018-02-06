@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core concurrent gui
 
 greaterThan(QT_MAJOR_VERSION, 4): {
     QT += widgets
@@ -76,7 +76,8 @@ SOURCES += \
     src/deviceinfodialog.cpp \
     src/batteryinfo.cpp \
     src/deviceinfo.cpp \
-    src/receivedatadispatcher.cpp
+    src/receivedatadispatcher.cpp \
+    thirdparty/commlog.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \

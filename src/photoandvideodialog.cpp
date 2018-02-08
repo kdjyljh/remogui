@@ -162,7 +162,7 @@ void PhotoAndVideoDialog::workModeGot(const Remo_Camera_WorkMode_s &workmode)
     }
 
 //    if (Remo_CmdId_Camera_Set_WorkMode == ProtocolDataInterfaceImpl::content.cmdId)
-//        emit workModeChange();
+//        emit getVideoStreamAgain();
 }
 
 void PhotoAndVideoDialog::settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId)
@@ -334,7 +334,7 @@ void PhotoAndVideoDialog::setRecVideoByWorkMode(Remo_Camera_WorkMode_s workMode)
 #define ON_ENUMITEM_ACTION(mainEnum, enumItem, type, action, ...) \
     void PhotoAndVideoDialog::on_##type##_##enumItem##_##action()\
     {\
-        emit workModeChange();\
+        emit getVideoStreamAgain();\
         Remo_Camera_WorkMode_s workMode;\
         workMode.MainWorkMode = mainEnum;\
         workMode.SubWorkMode = enumItem;\
@@ -439,8 +439,9 @@ void PhotoAndVideoDialog::comboBox_activated(int index)
         if (findItemByUiPtr(comboBox, itemdata)) {
             sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData),
                           std::vector<uint8_t>{comboBox->itemData(index).toInt()});
-//            qDebug() << "on_ComboBox_SubWorkMode_Photo_Delay_activated send cmd" \
-//                     << index << "cmdid is " << itemdata.CmdId_SetData;
+            if (comboBox == ui->ComboBox_MainVideo_Resolution) {
+                emit getVideoStreamAgain();
+            }
         }
     }
 }

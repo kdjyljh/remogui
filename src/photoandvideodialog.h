@@ -29,7 +29,7 @@ protected:
     virtual void retProcess(CmdContent cc);
 
 signals:
-    void workModeChange();
+    void getVideoStreamAgain();
     void photoDelayTickTack(QString showStr);
 
 private:

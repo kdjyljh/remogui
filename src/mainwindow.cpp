@@ -105,7 +105,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //    workModeDialog->registerSelf2Handler();
 
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
-    connect(photoAndVideoDialog.get(), SIGNAL(workModeChange()), imagProc, SLOT(readStream()));
+    connect(photoAndVideoDialog.get(), SIGNAL(getVideoStreamAgain()), imagProc, SLOT(readStream()));
     connect(imagProc, SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(), SLOT(readVideoStreamDoneSlot(bool)));
 
     setupAction();

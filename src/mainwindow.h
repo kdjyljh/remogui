@@ -133,7 +133,7 @@ private slots:
 //    void actionGroup_intelligLens_triggered(QAction *action);
 
     void menu_action_triggered(QAction *action);
-    void customWBSlider_triggered();
+    void customWBSlider_sliderReleased();
 };
 
 #endif // MAINWINDOW_H

@@ -80,7 +80,7 @@ PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     sendCmdCamera(Remo_CmdId_Camera_Get_CapScene_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_ImageResolution_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_MainVideo_Resolution_Range);
-//    sendCmdCamera(Remo_CmdId_Camera_Get_SubVideo_Resolution_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_SubVideo_Resolution_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_Thumbnail_Resolution_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_LoopRec_Interval_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_LapseRec_Interval_Range);
@@ -161,8 +161,8 @@ void PhotoAndVideoDialog::workModeGot(const Remo_Camera_WorkMode_s &workmode)
         break;
     }
 
-    if (Remo_CmdId_Camera_Set_WorkMode == ProtocolDataInterfaceImpl::content.cmdId)
-        emit workModeChange();
+//    if (Remo_CmdId_Camera_Set_WorkMode == ProtocolDataInterfaceImpl::content.cmdId)
+//        emit workModeChange();
 }
 
 void PhotoAndVideoDialog::settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId)
@@ -334,6 +334,7 @@ void PhotoAndVideoDialog::setRecVideoByWorkMode(Remo_Camera_WorkMode_s workMode)
 #define ON_ENUMITEM_ACTION(mainEnum, enumItem, type, action, ...) \
     void PhotoAndVideoDialog::on_##type##_##enumItem##_##action()\
     {\
+        emit workModeChange();\
         Remo_Camera_WorkMode_s workMode;\
         workMode.MainWorkMode = mainEnum;\
         workMode.SubWorkMode = enumItem;\

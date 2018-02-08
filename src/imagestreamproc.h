@@ -2,6 +2,7 @@
 #define IMAGESTREAMPROC_H
 
 #include <QObject>
+#include <QThread>
 
 ////必须加以下内容,否则编译不能通过,为了兼容C和C99标准
 //#ifndef INT64_C
@@ -39,6 +40,7 @@ signals:
 
 public slots:
     bool readStream();
+    void _readStream();
 
 private:
     AVPicture  pAVPicture;
@@ -46,8 +48,10 @@ private:
     AVCodecContext *pAVCodecContext;
     AVFrame *pAVFrame;
     SwsContext * pSwsContext;
+    AVInputFormat * avInputFormat;
     AVPacket pAVPacket;
     std::string url;
+    QThread *readStreamThread;
 
 
     int videoWidth;

@@ -94,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent) :
     customWBWidget->setGeometry(QRect(centerPoint, QSize(400, 50)));
     customWBSlider->setGeometry(QRect(0, 25, 400, 10));
     customWBSlider->setOrientation(Qt::Horizontal);
-    customWBSlider->setRange(2500, 10000);
+    customWBSlider->setRange(0, 81);
     customWBWidget->setFixedSize(400, 50);
 
     photoAndVideoDialog->registerSelf2Handler();
@@ -117,7 +117,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ReceiveDataDispatcher::getInstance()->start();
 
     connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), viewLable, SLOT(setFocusStatus(bool)));
-    connect(customWBSlider, SIGNAL(sliderReleased()), this, SLOT(customWBSlider_triggered()));
+    connect(customWBSlider, SIGNAL(sliderReleased()), this, SLOT(customWBSlider_sliderReleased()));
 
     //    QActionGroup * whiteBalanceGroup = new QActionGroup(this);
     addItem2Map(ui->menu_CapStorageType, Remo_CmdId_Camera_Get_CapStorageType);
@@ -125,7 +125,7 @@ MainWindow::MainWindow(QWidget *parent) :
     addItem2Map(ui->menu_PhotoColorType, Remo_CmdId_Camera_Get_PhotoColorType);
     addItem2Map(ui->menu_VideoMuxerType, Remo_CmdId_Camera_Get_VideoMuxerType);
     addItem2Map(ui->menu_VideoFormat, Remo_CmdId_Camera_Get_VideoFormat);
-    addItem2Map(ui->menu_CustomWB_ColorTemp, Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
+//    addItem2Map(customWBSlider, Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
     addItem2Map(ui->menu_whiteBalance, Remo_CmdId_Camera_Get_WhiteBalance);
     addItem2Map(ui->menu_Sharpness, Remo_CmdId_Camera_Get_Sharpness);
     addItem2Map(ui->menu_MeterMode, Remo_CmdId_Camera_Get_MeterMode);
@@ -136,18 +136,18 @@ MainWindow::MainWindow(QWidget *parent) :
 //    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageQuality_Range);
 //    sendCmdCamera(Remo_CmdId_Camera_Get_PhotoColorType_Range);
 //    sendCmdCamera(Remo_CmdId_Camera_Get_VideoMuxerType_Range);
-//    sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_WhiteBalance_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_MeterMode_Range);
     sendCmdCamera(Remo_CmdId_Camera_Get_Antiflick_Range);
 //    sendCmdCamera(Remo_CmdId_Camera_Get_Rotation_Range);
     ItemData itemData;
     if (findItemByUiPtr(ui->menu_Sharpness, itemData))
-//        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_Sharpness);
+        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_Sharpness);
     if (findItemByUiPtr(ui->menu_VideoFormat, itemData))
         surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_VideoFormat);
 
     sendCmdCamera(Remo_CmdId_Camera_Get_AELockStatus);
+    sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
 
 //    addActionToGroupByMenu(ui->menu_whiteBalance, actionGroupWhiteBalance);
 }
@@ -312,6 +312,15 @@ void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_
         return;
     }
 
+    if (cmdId == Remo_CmdId_Camera_Get_CustomWB_ColorTemp) {
+        int d = 0;
+        memcpy(&d, data.data(), 2);
+        int value = d % 100;
+        customWBSlider->setValue(value);
+        customWBSlider->setEnabled(true);
+        return;
+    }
+
     QMenu * group = static_cast<QMenu*>(findUiPtrById(cmdId));
     if (nullptr != group) {
         ItemData itemData;
@@ -357,7 +366,6 @@ void MainWindow::setLabelPix(const QImage &image)
 void MainWindow::on_action_photoAndVideo_triggered()
 {
     photoAndVideoDialog->show();
-//    workModeDialog->show();
 }
 
 //void MainWindow::on_action_continuousAutFocusDialogs_triggered()
@@ -945,11 +953,13 @@ void MainWindow::menu_action_triggered(QAction *action)
 {
     if (nullptr == action) return;
 
-//    QMenu *menu = action->menu();
     QMenu *menu = dynamic_cast<QMenu*>(action->parent());
     int data =  action->data().toInt();
     if (menu == ui->menu_whiteBalance && data == WhiteBalance_Custom) {
+        sendCmdCamera(Remo_CmdId_Camera_Set_WhiteBalance, std::vector<uint8_t>{WhiteBalance_Custom});
+        sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
         customWBWidget->show();
+        customWBSlider->setEnabled(false);
         return;
     }
     ItemData itemData;
@@ -959,10 +969,10 @@ void MainWindow::menu_action_triggered(QAction *action)
     }
 }
 
-void MainWindow::customWBSlider_triggered()
+void MainWindow::customWBSlider_sliderReleased()
 {
-    LOG(INFO) << "MainWindow::customWBSlider_triggered releaseed value " << customWBSlider->value();
-    int data = customWBSlider->value();
+    int data = customWBSlider->value() * 100 + 2000;
+    LOG(INFO) << "MainWindow::customWBSlider_sliderReleased value = " << data;
     std::vector<uint8_t> v(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 2);
     sendCmdCamera(Remo_CmdId_Camera_Set_WhiteBalance, v);
 }

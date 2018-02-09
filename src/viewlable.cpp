@@ -21,9 +21,9 @@ void ViewLable::mouseReleaseEvent(QMouseEvent *ev)
     if (!focusStatus) return;
 
     recPos = ev->pos();
-    Remo_Camera_PosPoint_s pointNormal{static_cast<float>(recPos.x() / size().width()), static_cast<float>((recPos.y()) / size().height())};
+    Remo_Camera_PosPoint_s pointNormal{static_cast<float>(recPos.x()) / size().width(), static_cast<float>(recPos.y()) / size().height()};
     ProtocolDataInterfaceImpl::sendCmdCamera(Remo_CmdId_Camera_Set_PosArea,
-        std::vector<uint8_t>{reinterpret_cast<uint8_t*>(&pointNormal), reinterpret_cast<uint8_t*>((&pointNormal) + sizeof(pointNormal))});
+        std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&pointNormal), reinterpret_cast<uint8_t*>(&pointNormal) + sizeof(pointNormal)));
 }
 
 void ViewLable::paintEvent(QPaintEvent * ev)

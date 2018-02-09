@@ -94,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent) :
     customWBWidget->setGeometry(QRect(centerPoint, QSize(400, 50)));
     customWBSlider->setGeometry(QRect(0, 25, 400, 10));
     customWBSlider->setOrientation(Qt::Horizontal);
-    customWBSlider->setRange(0, 81);
+    customWBSlider->setRange(0, 80);
     customWBWidget->setFixedSize(400, 50);
 
     photoAndVideoDialog->registerSelf2Handler();
@@ -280,13 +280,9 @@ void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Came
         for (auto it : rangeSet) {
             QAction * action = new QAction(QString::fromUtf8(it.ShowStr.data()), menu);
             action->setData(QVariant(it.Index));//将enum值放入Action的QVariant中
-//            action->setMenu(menu);
             menu->addAction(action);
             group->addAction(action);
             action->setCheckable(true);
-//            QMenu *p = action->menu();
-//            int i = 0;
-//            i++;
         }
 
         ItemData itemData;
@@ -974,7 +970,8 @@ void MainWindow::customWBSlider_sliderReleased()
     int data = customWBSlider->value() * 100 + 2000;
     LOG(INFO) << "MainWindow::customWBSlider_sliderReleased value = " << data;
     std::vector<uint8_t> v(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 2);
-    sendCmdCamera(Remo_CmdId_Camera_Set_WhiteBalance, v);
+    sendCmdCamera(Remo_CmdId_Camera_Set_CustomWB_ColorTemp, v);
+//    sendCmdCamera(Remo_CmdId_Camera_Set_WhiteBalance, v);
 }
 
 

@@ -12,6 +12,7 @@ boost::shared_ptr<DeviceInfoDialog> DeviceInfoDialog::createInstance(QWidget *pa
 {
     boost::shared_ptr<DeviceInfoDialog> instance(boost::shared_ptr<DeviceInfoDialog>(new DeviceInfoDialog(parent)));
     instance->registerSelf2Handler();
+    return instance;
 }
 
 void DeviceInfoDialog::batteryInfoHandle(std::vector<uint8_t> data)

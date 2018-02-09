@@ -125,11 +125,6 @@
       <string>照片色彩类型</string>
      </property>
     </widget>
-    <widget class="QMenu" name="menu_CustomWB_ColorTemp">
-     <property name="title">
-      <string>色温</string>
-     </property>
-    </widget>
     <widget class="QMenu" name="menu_Rotation">
      <property name="title">
       <string>旋转</string>
@@ -148,7 +143,6 @@
     <addaction name="menu_pictureSize"/>
     <addaction name="menu_VideoMuxerType"/>
     <addaction name="menu_VideoFormat"/>
-    <addaction name="menu_CustomWB_ColorTemp"/>
     <addaction name="menu_whiteBalance"/>
     <addaction name="action_exposureCompensation"/>
     <addaction name="menu_grid"/>

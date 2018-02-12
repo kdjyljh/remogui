@@ -157,7 +157,7 @@ int ProtocolStruct::encode(char *const msg, int msglen) {
 
 bool ProtocolStruct::decode(const char *const msgconst, int msglen) {
   if (msglen < protocolHeaderLength) { // decode时,接收到的消息长度可能不够,这种情况不能由本地避免,因此返回错误而不是直接退出
-//    LOG(INFO) << "msglen = " << msglen << ", protocolHeaderLength = " << protocolHeaderLength;
+    LOG(INFO) << "ProtocolStruct::decode error msglen = " << msglen << ", protocolHeaderLength = " << protocolHeaderLength;
     return false;
   }
   char msg[msglen];
@@ -167,7 +167,7 @@ bool ProtocolStruct::decode(const char *const msgconst, int msglen) {
   uint16_t u16;
   uint8_t *ptr = (uint8_t *) msg;
   if (*ptr++ != this->sync) { // 同步头
-//    LOG(INFO) << "this->sync = " << int(this->sync) << ", sync in msg = " << msg[0];
+    LOG(INFO) << "ProtocolStruct::decode error this->sync = " << int(this->sync) << ", sync in msg = " << msg[0];
     return false;
   }
 
@@ -176,7 +176,7 @@ bool ProtocolStruct::decode(const char *const msgconst, int msglen) {
   this->ver = u16 >> 12;
   this->len = u16 & 0xFFF; // 协议版本与帧长度
   if (msglen != this->len) {
-//    LOG(INFO) << "this->len = " << int(this->len) << ", msglen = " << msglen;
+    LOG(INFO) << "ProtocolStruct::decode error this->len = " << int(this->len) << ", msglen = " << msglen;
     return false;
   }
 
@@ -213,7 +213,7 @@ bool ProtocolStruct::decode(const char *const msgconst, int msglen) {
   if (packFlags.bits.CheckSumEnable) {
     uint16_t checksum = crc16((uint8_t *) msg, msglen);
     if (checksum != this->checksum) {
-      LOG(INFO) << "this->checksum = " << int(this->checksum) << ", checksum = " << checksum;
+      LOG(INFO) << "ProtocolStruct::decode error this->checksum = " << int(this->checksum) << ", checksum = " << checksum;
       return false;
     }
   }

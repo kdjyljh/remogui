@@ -43,8 +43,12 @@ GimbalDialog::GimbalDialog(QWidget *parent) :
     connect(ui->PushButton__RelaAttiAngle_Left, SIGNAL(released()), this, SLOT(pushButton_RelaAttiAngle_FineTune_released()));
     connect(ui->PushButton__RelaAttiAngle_Right, SIGNAL(released()), this, SLOT(pushButton_RelaAttiAngle_FineTune_released()));
 
-    ui->PushButton_RelaAttiAngle_Up->setDefault(true);
-    ui->PushButton_RelaAttiAngle_Up->setDefault(false);
+//    ui->PushButton_RelaAttiAngle_Up->setDefault(true);
+//    ui->PushButton_RelaAttiAngle_Up->setDefault(false);
+
+    ui->pushButton_default_focus->setHidden(true);
+    ui->pushButton_default_focus->setDefault(true);
+    ui->pushButton_default_focus->setAutoDefault(true);
 
     getDeviceInfoAndCurrentValue();
 }
@@ -102,6 +106,10 @@ void GimbalDialog::handle()
         memcpy(&u32, valuePtr, 4);
         showStr += "出厂序列号:" + QString::number(u32) + "\n";
         ui->textEdit_DeviceInfo->setText(showStr.toLocal8Bit());
+    }
+    else if (Remo_CmdId_Gimbal_Set_AnguVelo == cmdId) {
+//        if (content.ret == Return_OK)
+            relaAttiAngleFineTuneStop = true;
     }
     else {
     }
@@ -182,33 +190,40 @@ void GimbalDialog::on_pushButton_getGimbalInfo_clicked()
 
 void GimbalDialog::pushButton_RelaAttiAngle_FineTune_released()
 {
+    if (relaAttiAngleFineTuneStop) {
+    }
+
     relaAttiAngleFineTuneStop = true;
+    uint16_t data[3];
+    memset(data, 0, sizeof(data));
+    sendCmdGimbal(Remo_CmdId_Gimbal_Set_AnguVelo,
+                  std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + sizeof(data)));
 }
 
 void GimbalDialog::pushButton_RelaAttiAngle_FineTune_pressed()
 {
     uint16_t data[3];
-    int stay_value = -32768;
+    int stay_value = 0;
     for (int i = 0; i < 3; ++i) {
         memcpy(data + i, &stay_value, 2);
     }
-//    int step = 32767 / 180 * 5.0;
-    int step = 1.0 / 180 * 32767; //每次步长为5度
+
+    int step = 20.0 / 180 * 32767; //每次步长为5度
     QPushButton *sder = dynamic_cast<QPushButton*>(sender());
     if (ui->PushButton_RelaAttiAngle_Up == sder) {
         //pitch
+        step *= -1;
         memcpy(data + 1, &step, 2);
     }
     else if (ui->PushButton__RelaAttiAngle_Down == sder) {
-        step *= -1;
         memcpy(data + 1, &step, 2);
     }
     else if (ui->PushButton__RelaAttiAngle_Left == sder) {
         //yaw
+        step *= -1;
         memcpy(data + 2, &step, 2);
     }
     else if (ui->PushButton__RelaAttiAngle_Right == sder) {
-        step *= -1;
         memcpy(data + 2, &step, 2);
     }
     else {
@@ -217,13 +232,16 @@ void GimbalDialog::pushButton_RelaAttiAngle_FineTune_pressed()
 
     relaAttiAngleFineTuneStop = false;
 
-    boost::thread([&](){
-        while (!this->relaAttiAngleFineTuneStop) {
-            sendCmdGimbal(Remo_CmdId_Gimbal_Set_RelaAttiAngle,
-                          std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + sizeof(data)));
-            usleep(100000);
-        }
-    });
+    sendCmdGimbal(Remo_CmdId_Gimbal_Set_AnguVelo,
+                  std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + sizeof(data)));
+
+//    boost::thread([&](){
+//        while (!this->relaAttiAngleFineTuneStop) {
+//            sendCmdGimbal(Remo_CmdId_Gimbal_Set_RelaAttiAngle,
+//                          std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + sizeof(data)));
+//            usleep(100000);
+//        }
+//    });
 }
 
 void GimbalDialog::on_ComboBox_LockAxis_activated(int index)

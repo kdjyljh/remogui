@@ -98,12 +98,12 @@
       <item row="4" column="0">
        <widget class="QLabel" name="Label">
         <property name="text">
-         <string>外部供电在位</string>
+         <string>适配器异常状态</string>
         </property>
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QLineEdit" name="LineEdit_Adapter_Present">
+       <widget class="QLineEdit" name="LineEdit_Adapter_Health">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -112,12 +112,12 @@
       <item row="5" column="0">
        <widget class="QLabel" name="Label_2">
         <property name="text">
-         <string>电池在位</string>
+         <string>充电类型</string>
         </property>
        </widget>
       </item>
       <item row="5" column="1">
-       <widget class="QLineEdit" name="LineEdit_Battery_Present">
+       <widget class="QLineEdit" name="LineEdit_Charge_Type">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -126,12 +126,12 @@
       <item row="6" column="0">
        <widget class="QLabel" name="Label_6">
         <property name="text">
-         <string>充电类型</string>
+         <string>充电器在位状态</string>
         </property>
        </widget>
       </item>
       <item row="6" column="1">
-       <widget class="QLineEdit" name="LineEdit_Charge_Type">
+       <widget class="QLineEdit" name="LineEdit_Charge_Present">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -145,7 +145,7 @@
        <x>310</x>
        <y>10</y>
        <width>281</width>
-       <height>213</height>
+       <height>261</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="formLayout_3">
@@ -164,84 +164,98 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="Label_3">
-        <property name="text">
-         <string>电池状态</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="LineEdit_BatteryStatus">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
        <widget class="QLabel" name="Label_4">
         <property name="text">
          <string>温度(℃)</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="1" column="1">
        <widget class="QLineEdit" name="LineEdit_BatteryTemperature">
         <property name="enabled">
          <bool>false</bool>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="mAhLabel">
         <property name="text">
          <string>满电容量(mAh)</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="2" column="1">
        <widget class="QLineEdit" name="LineEdit_BatteryChargeFull">
         <property name="enabled">
          <bool>false</bool>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="mVLabel_4">
         <property name="text">
          <string>电池电压(mV)</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="3" column="1">
        <widget class="QLineEdit" name="LineEdit_BatteryVoltage">
         <property name="enabled">
          <bool>false</bool>
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="Label_5">
-        <property name="text">
-         <string>安全状态</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QLineEdit" name="LineEdit_BatteryHealth">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="mVLabel_3">
         <property name="text">
          <string>各电池电压(mV)</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="4" column="1">
        <widget class="QLineEdit" name="LineEdit_BatteryCellVoltage">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="Label_3">
+        <property name="text">
+         <string>电池状态</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="LineEdit_BatteryStatus">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="Label_5">
+        <property name="text">
+         <string>异常状态</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QLineEdit" name="LineEdit_BatteryHealth">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="Label_7">
+        <property name="text">
+         <string>电包在位情况</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QLineEdit" name="LineEdit_BatteryPresent">
         <property name="enabled">
          <bool>false</bool>
         </property>

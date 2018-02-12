@@ -21,6 +21,8 @@ void CommAsyncUDP::send_msg(EndpointEnum endp, CommMessagePtr msg) {
 //  STR_TO_LOG_FILE("*******************send buffer*******************");
 //  CHAR_BUFF_TO_LOG_FILE(*msg);
 //  STR_TO_LOG_FILE("*******************send buffer end*******************");
+  LOG(INFO) << "*******************send buffer*******************";
+  CHAR_BUFF_TO_LOG(*msg);
 
   UDPEndpointPtr peerEndpPtr = UDPEndpoints::Get()->fetch(endp);
   sdp_->async_send_to(boost::asio::buffer(*msg), *peerEndpPtr, // 立即异步发送该msg,注意该msg在bind中被保留
@@ -62,6 +64,10 @@ void CommAsyncUDP::handle_recv(const boost::system::error_code &error, std::size
     LOG(INFO) << error.message();
   } else {
     // 现在信息有效
+      LOG(INFO) << "*******************receive buffer*******************";
+      char * char_buff = recvBuf_.data();
+      CHAR_BUFF_TO_LOG(std::vector<char>(recvBuf_.data(), recvBuf_.data() + sz));
+
     recvHandlerExternal_.lock();
     if (recvHandlerExternal_.data) {
       CommMessagePtr msgptr = boost::make_shared<CommMessage>(recvBuf_.data(), recvBuf_.data()+sz);
@@ -71,10 +77,6 @@ void CommAsyncUDP::handle_recv(const boost::system::error_code &error, std::size
     }
     recvHandlerExternal_.unlock();
   }
-
-//  STR_TO_LOG_FILE("*******************receive buffer*******************");
-//  CHAR_BUFF_TO_LOG_FILE(recvBuf_);
-//  STR_TO_LOG_FILE("*******************receive buffer end*******************");
 
   sdp_->async_receive_from(boost::asio::buffer(recvBuf_), peerEndp_,
                            boost::bind(&CommAsyncUDP::handle_recv, this, _1, _2));

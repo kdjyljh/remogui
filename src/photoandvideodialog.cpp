@@ -439,7 +439,11 @@ void PhotoAndVideoDialog::comboBox_activated(int index)
         if (findItemByUiPtr(comboBox, itemdata)) {
             sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData),
                           std::vector<uint8_t>{comboBox->itemData(index).toInt()});
-            if (comboBox == ui->ComboBox_MainVideo_Resolution) {
+            if (comboBox == ui->ComboBox_MainVideo_Resolution ||
+                    comboBox == ui->ComboBox_ImageResolution ||
+                    comboBox == ui->ComboBox_SlowMotion_Resolution ||
+                    comboBox == ui->ComboBox_SubVideo_Resolution ||
+                    comboBox == ui->ComboBox_Thumbnail_Resolution) {
                 emit getVideoStreamAgain();
             }
         }

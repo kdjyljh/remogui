@@ -53,7 +53,7 @@ void ProtocolDataInterfaceImpl::sendCmdGimbal(Remo_CmdId_Gimbal_e cmdId, std::ve
 
 void ProtocolDataInterfaceImpl::sendCmdBattery(Remo_CmdId_Battery_e cmdId, std::vector<uint8_t> data, CommProtoVariables::RequestRespond reqres)
 {
-    ProtocolDataInterface::sendCmd(COMMDEVICE_BATTERY, Remo_CmdSet_Gimbal, cmdId, true, false, reqres, data);
+    ProtocolDataInterface::sendCmd(COMMDEVICE_BATTERY, Remo_CmdSet_Battery, cmdId, true, false, reqres, data);
 }
 
 void ProtocolDataInterfaceImpl::async_setWorkMode(const Remo_Camera_WorkMode_s & workmode)

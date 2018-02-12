@@ -52,14 +52,16 @@ bool GimbalDialog::LineEdit_SendCmd(QLineEdit *lineEdite, int dataSize, int send
         DataSizeType data[dataSize]{0};
         int i = 0;
         for (auto it : strList) {
-            uint16_t value = sendDataRangeSize / showDataRangeSize * it.toInt(ok);
+//            uint16_t value = sendDataRangeSize / showDataRangeSize * it.toInt(ok);
+            int value =  it.toInt(ok) / 180.0 * 32767;
             if (!*ok) goto error;
             //设置云台角速度-时间参考值特殊处理
             if (ui->LineEdit_AnguVeloInter_Set == lineEdite && i >= 3) {
                 value = 1000 * it.toInt(ok);
             }
-            if (showNotSetValue == it.toInt()) value = sendNotSetValue; //0表示对应的值保持不变
-            data[i++] = value;
+//            if (showNotSetValue == it.toInt()) value = sendNotSetValue; //0表示对应的值保持不变
+            memcpy(data + i, &value, sizeof(DataSizeType));
+            ++i;
         }
         GimbalDialog::sendCmdGimbal(static_cast<Remo_CmdId_Gimbal_e>(cmdId),
                       std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + sizeof(data)));

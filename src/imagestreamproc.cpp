@@ -107,7 +107,7 @@ bool ImageStreamProc::init()
     //获取视频流解码器
     LOG(INFO) << "5.avcodec_find_decoder ###########################";
     pAVCodec = avcodec_find_decoder(pAVCodecContext->codec_id);
-    pSwsContext = sws_getContext(videoWidth, videoHeight, AV_PIX_FMT_YUV420P, videoWidth, videoHeight, AV_PIX_FMT_RGB24, SWS_BICUBIC, 0, 0, 0);
+    pSwsContext = sws_getContext(videoWidth, videoHeight, AV_PIX_FMT_YUVJ420P, videoWidth, videoHeight, AV_PIX_FMT_RGB24, SWS_BICUBIC, 0, 0, 0);
 
     //打开对应解码器
     LOG(INFO) << "6.avcodec_open2 ###########################";
@@ -166,6 +166,7 @@ void ImageStreamProc::play()
 
     //一帧一帧读取视频
     int frameFinished = 0;
+    int p_frame_counter = 0;
     while (true) {
         boost::unique_lock<boost::mutex> lock(mtxStreamReady);
         while (!streamReady) {
@@ -173,8 +174,25 @@ void ImageStreamProc::play()
             cvStreamReady.wait(lock);
             LOG(INFO) << "7.streamReady waite after###########################";
         }
-        if (av_read_frame(pAVFormatContext, &pAVPacket) >= 0){
+//        LOG(INFO) << "before read freame";
+        if (av_read_frame(pAVFormatContext, &pAVPacket) == 0){
+//            LOG(INFO) << "after read freame";
+//            LOG(INFO) << "AVPacket data " << static_cast<const void *>(pAVPacket.data);
+//            LOG(INFO) << "AVPacket size " << pAVPacket.size;
+//            LOG(INFO) << "AVPacket dts " << pAVPacket.dts;
+//            LOG(INFO) << "AVPacket pts " << pAVPacket.pts;
             avcodec_decode_video2(pAVCodecContext, pAVFrame, &frameFinished, &pAVPacket);
+//            if (pAVFrame->key_frame)
+//                LOG(INFO) << "key frame";
+//            else LOG(INFO) << "not key frame";
+//            if (pAVFrame->pict_type == AV_PICTURE_TYPE_I)
+//                LOG(INFO) << "I frame";
+//            else LOG(INFO) << "P frame";
+//            if (pAVFrame->pict_type == AV_PICTURE_TYPE_I) p_frame_counter = 0;
+//            else ++p_frame_counter;
+//            LOG(INFO) << "p_frame_counter = " << p_frame_counter;
+//            if (p_frame_counter > 100)
+//                LOG(INFO) << "Lost some I frame!!!!!!!!!!!";
             if (frameFinished) {
                 sws_scale(pSwsContext, (const uint8_t* const *)pAVFrame->data, pAVFrame->linesize, 0, videoHeight, pAVPicture.data, pAVPicture.linesize);                //发送获取一帧图像信号
                 QImage image(pAVPicture.data[0], videoWidth, videoHeight, QImage::Format_RGB888);

@@ -4,7 +4,7 @@
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 
-int ProtocolDataInterface::reqMaxRetry = 5;
+int ProtocolDataInterface::reqMaxRetry = 0;
 long ProtocolDataInterface::reqIntervalUS = 5000000;
 ProtocolDataInterface::ProtocolDataInterface(DispatcheType type) :
     dispatcheType(type)
@@ -58,12 +58,17 @@ void ProtocolDataInterface::sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet,
 
 //    if (cmdSet != Remo_CmdSet_Camera) return;
 
+//    if (cmdSet != Remo_CmdSet_Battery) return;
+
+//    return;
+
     Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId & 0x1ff);
     Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(cmdId >> 9);
     LOG(INFO) << "#########################ProtocolDataInterface::sendCmd" << std::hex << " cmdSet = " <<  cmdSet << " cmdId = " << cmdId
               << " idValue = " << idValue << " idType = " << idType << std::endl;
     LOG(INFO) << "data is ";
-    CHAR_BUFF_TO_LOG_STDERROR(data);
+    CHAR_BUFF_TO_LOG(data);
+//    CHAR_BUFF_TO_LOG_STDERROR(data);
 
     auto sender = CommProtoVariables::Get();
     auto msginfo = sender->gen_request_respond(

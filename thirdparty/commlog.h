@@ -27,7 +27,6 @@ do { \
     glog_flag_mtx.unlock(); \
 } while(0);
 
-
 //#define STR_TO_LOG_FILE(str) \
 //do { \
 //    google::SetLogDestination(google::INFO, "/tmp/remo_gui.test");\
@@ -41,25 +40,36 @@ do { \
 //    LOG(INFO) << str;\
 //} while(0);
 
-#define CHAR_BUFF_TO_LOG_FILE(buff) \
-do { \
-    char temp[64]{0}; \
-    std::string str; \
-    for (auto it : buff) { \
-        snprintf(temp, sizeof(temp), "0x%02hhx ", it); \
-        str += temp; \
-    } \
-    STR_TO_LOG_FILE(str); \
-} while(0);
+//#define CHAR_BUFF_TO_LOG_FILE(buff) \
+//do { \
+//    char temp[64]{0}; \
+//    std::string str; \
+//    for (auto it : buff) { \
+//        snprintf(temp, sizeof(temp), "0x%02hhx ", it); \
+//        str += temp; \
+//    } \
+//    STR_TO_LOG_FILE(str); \
+//} while(0);
 
-#define CHAR_BUFF_TO_LOG_STDERROR(buff) \
-do { \
-    char temp[64]{0}; \
-    std::string str; \
-    for (auto it : buff) { \
-        snprintf(temp, sizeof(temp), "0x%02hhx ", it); \
-        str += temp; \
-    } \
-    STR_TO_LOG_STDERROR(str); \
-} while(0);
+//#define CHAR_BUFF_TO_LOG_STDERROR(buff) \
+//do { \
+//    char temp[64]{0}; \
+//    std::string str; \
+//    for (auto it : buff) { \
+//        snprintf(temp, sizeof(temp), "0x%02hhx ", it); \
+//        str += temp; \
+//    } \
+//    STR_TO_LOG_STDERROR(str); \
+//} while(0);
+
+#define CHAR_BUFF_TO_LOG(buff) \
+    do { \
+        char temp[64]{0}; \
+        std::string str; \
+        for (auto it : buff) { \
+            snprintf(temp, sizeof(temp), "0x%02hhx ", it); \
+            str += temp; \
+        } \
+        LOG(INFO) << str; \
+    } while(0);
 #endif // COMMLOG_H

@@ -149,6 +149,20 @@ MainWindow::MainWindow(QWidget *parent) :
     sendCmdCamera(Remo_CmdId_Camera_Get_AELockStatus);
     sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
 
+    Remo_Camera_ZoomControlParam_s data ;
+    data.ZoomControlType = 0;
+    data.Speed = SpeedLevelNum_Faster;
+    data.TargetPosNo = 0;
+    int TargetPosNo = 0;
+//    while (true) {
+//        TargetPosNo += 100;
+//        if (TargetPosNo == 100000000) TargetPosNo = 0;
+//        data.TargetPosNo = TargetPosNo % 255;
+//        sendCmdCamera(Remo_CmdId_Camera_Set_ZoomControlParam,
+//                      std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 5));
+//        boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+//    }
+
 //    addActionToGroupByMenu(ui->menu_whiteBalance, actionGroupWhiteBalance);
 }
 

@@ -17,7 +17,7 @@ const std::vector<CmdGetSetRang> cmdV =
     {Remo_CmdId_Camera_Get_Current_Shutter, Remo_CmdId_Camera_PlaceHolder, Remo_CmdId_Camera_Get_Current_Shutter_Range},
     {Remo_CmdId_Camera_Get_Current_ISO, Remo_CmdId_Camera_PlaceHolder, Remo_CmdId_Camera_Get_Current_ISO_Range}
 };
-//bool findOtherCmd(CmdGetSetRang & ret, int get, int set = Remo_CmdId_Camera_PlaceHolder, int range = Remo_CmdId_Camera_PlaceHolder);
+
 static bool findOtherCmd(CmdGetSetRang & ret, int get, int set = Remo_CmdId_Camera_PlaceHolder, int range = Remo_CmdId_Camera_PlaceHolder)
 {
     for (auto it : cmdV) {
@@ -87,9 +87,6 @@ void AeModeDialog::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camer
         }
     }
 }
-
-//void setCurrentComboxActivated(int activatedData);
-//void setCurrentComboxRange(std::set<SubItemData> rangeSet);
 
 void AeModeDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId)
 {

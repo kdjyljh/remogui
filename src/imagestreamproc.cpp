@@ -62,7 +62,9 @@ bool ImageStreamProc::init()
 
     LOG(INFO) << "1.avformat_open_input ###########################";
 //    int result = avformat_open_input(&pAVFormatContext, url.c_str(), nullptr, nullptr);
-    int result = avformat_open_input(&pAVFormatContext, url.c_str(), avInputFormat, nullptr);
+    AVDictionary *options = nullptr;
+    av_dict_set(&options, "buffer_size", "102400", 0);
+    int result = avformat_open_input(&pAVFormatContext, url.c_str(), avInputFormat, &options);
     if (result < 0) {
         goto error;
     }
@@ -71,7 +73,7 @@ bool ImageStreamProc::init()
     //数据包不入缓冲区,avformat_find_stream_info接口内部读取的每一帧数据只用于分析，不显示,会出现进入页面立马卡顿一下的问题
 //    pAVFormatContext->flags |= AVFMT_FLAG_NOBUFFER;
     //限制avformat_find_stream_info接口内部读取的最大数据量,有些情况时，会导致这些数据不足以分析这个流的信息
-    pAVFormatContext->probesize = 4096;
+    pAVFormatContext->probesize = 102400;
 
     //获取视频流信息
     LOG(INFO) << "2.avformat_find_stream_info ###########################";

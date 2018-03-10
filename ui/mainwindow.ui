@@ -23,7 +23,7 @@
      <x>0</x>
      <y>0</y>
      <width>1124</width>
-     <height>23</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_camera">
@@ -137,6 +137,7 @@
     </widget>
     <addaction name="action_photoAndVideo"/>
     <addaction name="action_FocusAndZoom"/>
+    <addaction name="action_playBack"/>
     <addaction name="menu_CapStorageType"/>
     <addaction name="menu_CapStorageQuality"/>
     <addaction name="menu_PhotoColorType"/>
@@ -247,17 +248,16 @@
     <property name="title">
      <string>文件</string>
     </property>
-    <addaction name="action"/>
+    <addaction name="action_mediaView"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_camera"/>
    <addaction name="menu_normal"/>
    <addaction name="menu_intelligence"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
-  <action name="action">
+  <action name="action_mediaView">
    <property name="text">
-    <string>打开图片</string>
+    <string>浏览文件</string>
    </property>
   </action>
   <action name="action_continuousAutoFocus">
@@ -1179,6 +1179,11 @@
    </property>
    <property name="text">
     <string>AELock</string>
+   </property>
+  </action>
+  <action name="action_playBack">
+   <property name="text">
+    <string>回放</string>
    </property>
   </action>
  </widget>

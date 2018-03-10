@@ -77,7 +77,11 @@ SOURCES += \
     src/batteryinfo.cpp \
     src/deviceinfo.cpp \
     src/receivedatadispatcher.cpp \
-    thirdparty/commlog.cpp
+    thirdparty/commlog.cpp \
+    src/playbackdialog.cpp \
+    src/mediaview/waterfallscrollarea.cpp \
+    src/mediaview/waterfallwidget.cpp \
+    src/mediaview/waterfallitem.cpp
 
 HEADERS += \
     src/photoandvideodialog.h \
@@ -100,7 +104,11 @@ HEADERS += \
     src/deviceinfodialog.h \
     src/batteryinfo.h \
     src/deviceinfo.h \
-    src/receivedatadispatcher.h
+    src/receivedatadispatcher.h \
+    src/playbackdialog.h \
+    src/mediaview/waterfallscrollarea.h \
+    src/mediaview/waterfallwidget.h \
+    src/mediaview/waterfallitem.h
 
 FORMS += \
     ui/mainwindow.ui \
@@ -110,7 +118,8 @@ FORMS += \
     ui/focus.ui \
     ui/gimbal.ui \
     ui/deviceinfo.ui \
-    ui/dialog.ui
+    ui/dialog.ui \
+    ui/thumbnailviewer.ui
 
 RESOURCES += \
     resource/image.qrc

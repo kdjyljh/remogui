@@ -3,7 +3,7 @@
 
 #include <QDebug>
 #include <QButtonGroup>
-#include <QtConcurrent>
+#include <QtConcurrent/QtConcurrent>
 
 static const unsigned DEFAULT_DIALOG_WITH = 600;
 static const unsigned DEFAULT_DIALOG_HEIGHT = 550;

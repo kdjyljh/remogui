@@ -10,6 +10,7 @@
 #include "gimbaldialog.h"
 #include "deviceinfodialog.h"
 #include "viewlable.h"
+#include "playbackdialog.h"
 
 #include <QMainWindow>
 #include <QImage>
@@ -38,6 +39,9 @@ public:
 
     boost::thread imgStreamProcThread;
 
+public:
+    static QPoint centerPoint;
+
 protected:
     virtual void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId) override;
     virtual void settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId) override;
@@ -54,6 +58,7 @@ private:
     boost::shared_ptr<FocusDialog> focusDialog;
     boost::shared_ptr<GimbalDialog> gimbalDialog;
     boost::shared_ptr<DeviceInfoDialog> deviceInfoDialog;
+    boost::shared_ptr<PlayBackDialog> playBackDialog;
 
     QActionGroup *actionGroupResolution;
     QActionGroup *actionGroupVideoStandard;
@@ -98,6 +103,8 @@ private slots:
     void on_action_Gimbal_triggered();
     void on_action_deviceInfo_triggered();
     void on_action_Aelock_triggered(bool status);
+    void on_action_playBack_triggered();
+    void on_action_mediaView_triggered();
     void menu_action_triggered(QAction *action);
     void customWBSlider_sliderReleased();
 };

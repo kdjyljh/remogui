@@ -1,13 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-//#include "../thirdparty/shareddata.h"
 #include "../thirdparty/Protocol.hpp"
 #include "receivedatadispatcher.h"
+#include "mediaview/waterfallscrollarea.h"
 
 #include <QPixmap>
 #include <QHBoxLayout>
 #include <QDesktopWidget>
-#include <QtConcurrent>
+#include <QtConcurrent/QtConcurrent>
 #include <QDebug>
 #include <boost/thread.hpp>
 
@@ -17,8 +17,6 @@ const unsigned DEFAULT_WINDOW_WIDTH = 1000;
 const unsigned DEFAULT_WINDOW_HEIGHT = 500;
 const unsigned IMAGE_RESOLUTION_WIDTH = 1280;
 const unsigned IMAGE_RESOLUTION_HEIGHT = 720;
-
-QPoint centerPoint;
 
 static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
 {
@@ -34,7 +32,7 @@ static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
     return true;
 }
 
-
+QPoint MainWindow::centerPoint;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ProtocolDataInterfaceImpl(DispatcheType_CameraDefault),
@@ -47,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     focusDialog(boost::shared_ptr<FocusDialog>(new FocusDialog(this))),
     gimbalDialog(boost::shared_ptr<GimbalDialog>(new GimbalDialog(this))),
     deviceInfoDialog(DeviceInfoDialog::createInstance(this)),
+    playBackDialog(boost::shared_ptr<PlayBackDialog>(new PlayBackDialog)),
 //    workModeDialog(boost::shared_ptr<WorkModeDialog>(new WorkModeDialog)),
     actionGroupResolution(new QActionGroup(this)),
     actionGroupVideoStandard(new QActionGroup(this)),
@@ -107,7 +106,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(imagProc, SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(), SLOT(readVideoStreamDoneSlot(bool)));
 
     imgStreamProcThread = boost::thread(&ImageStreamProc::play, imagProc);
-
 
     receiveDataProc->start();
     ReceiveDataDispatcher::getInstance()->start();
@@ -306,6 +304,17 @@ void MainWindow::on_action_deviceInfo_triggered()
 void MainWindow::on_action_Aelock_triggered(bool status)
 {
     sendCmdCamera(Remo_CmdId_Camera_Set_AELockStatus, std::vector<uint8_t>{status});
+}
+
+void MainWindow::on_action_playBack_triggered()
+{
+    playBackDialog->show();
+}
+
+void MainWindow::on_action_mediaView_triggered()
+{
+    WaterFallScrollArea *sa = new WaterFallScrollArea;
+    sa->show();
 }
 
 void MainWindow::menu_action_triggered(QAction *action)

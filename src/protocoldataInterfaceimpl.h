@@ -28,6 +28,10 @@ public:
                    std::vector<uint8_t> data = std::vector<uint8_t>(),
             CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
 
+    static void sendCmdUniversal(int cmdId,
+                               std::vector<uint8_t> data = std::vector<uint8_t>(),
+                               CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
+
     void sendCmdCamera() {}
 
 protected:

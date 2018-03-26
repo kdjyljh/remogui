@@ -243,6 +243,7 @@
     <addaction name="menu_scene"/>
     <addaction name="menu_intelligLens"/>
     <addaction name="menu_intellisense"/>
+    <addaction name="action_algorithm"/>
    </widget>
    <widget class="QMenu" name="menu">
     <property name="title">
@@ -1184,6 +1185,11 @@
   <action name="action_playBack">
    <property name="text">
     <string>回放</string>
+   </property>
+  </action>
+  <action name="action_algorithm">
+   <property name="text">
+    <string>算法</string>
    </property>
   </action>
  </widget>

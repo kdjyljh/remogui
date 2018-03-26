@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 #include "../thirdparty/Protocol.hpp"
 #include "receivedatadispatcher.h"
-#include "mediaview/waterfallscrollarea.h"
 
 #include <QPixmap>
 #include <QHBoxLayout>
@@ -11,10 +10,9 @@
 #include <QDebug>
 #include <boost/thread.hpp>
 
+const unsigned DEFAULT_WINDOW_WIDTH = 1300;
+const unsigned DEFAULT_WINDOW_HEIGHT = 800;
 
-
-const unsigned DEFAULT_WINDOW_WIDTH = 1000;
-const unsigned DEFAULT_WINDOW_HEIGHT = 500;
 const unsigned IMAGE_RESOLUTION_WIDTH = 1280;
 const unsigned IMAGE_RESOLUTION_HEIGHT = 720;
 
@@ -46,6 +44,8 @@ MainWindow::MainWindow(QWidget *parent) :
     gimbalDialog(boost::shared_ptr<GimbalDialog>(new GimbalDialog(this))),
     deviceInfoDialog(DeviceInfoDialog::createInstance(this)),
     playBackDialog(boost::shared_ptr<PlayBackDialog>(new PlayBackDialog)),
+    mediaViewWidget(boost::shared_ptr<WaterFallScrollArea>(new WaterFallScrollArea)),
+    algorithmDialog(boost::shared_ptr<AlgorithmDialog>(new AlgorithmDialog)),
 //    workModeDialog(boost::shared_ptr<WorkModeDialog>(new WorkModeDialog)),
     actionGroupResolution(new QActionGroup(this)),
     actionGroupVideoStandard(new QActionGroup(this)),
@@ -76,14 +76,28 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
+    uint32_t ip;
+    uint16_t port;
+    if (getConfiguredEndpoint(ip, port)) {
+        std::vector<uint8_t> data(6);
+        memcpy(data.data(), &ip, 4);
+        memcpy(data.data() + 4, &port, 2);
+        //上报本机ip和端口
+        sendCmdUniversal(0x20, data);
+    }
+    else {
+        QMessageBox::warning(nullptr, "网络错误", "网络错误", QMessageBox::Ok);
+    }
+
 //    QWidget *cw = new QWidget(this);
 //    setCentralWidget(cw);
 //    cw->setLayout(mainLayout);
 
 //    mainLayout->addWidget(viewLable);
-    viewLable = new ViewLable(centralWidget());
+    viewLable = new ViewLable();
+    setCentralWidget(viewLable);
 
-//    setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    setFixedSize(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     QRect screenRect = QApplication::desktop()->screenGeometry();
     centerPoint.setX(screenRect.width() / 2 - width() / 2);
     centerPoint.setY(screenRect.height() / 2 - height() / 2);
@@ -104,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
     connect(photoAndVideoDialog.get(), SIGNAL(getVideoStreamAgain()), imagProc, SLOT(readStream()));
     connect(imagProc, SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(), SLOT(readVideoStreamDoneSlot(bool)));
+    connect(imagProc, SIGNAL(readStreamDone(bool)), this, SLOT(showVideoStreamResult(bool)));
 
     imgStreamProcThread = boost::thread(&ImageStreamProc::play, imagProc);
 
@@ -313,8 +328,14 @@ void MainWindow::on_action_playBack_triggered()
 
 void MainWindow::on_action_mediaView_triggered()
 {
-    WaterFallScrollArea *sa = new WaterFallScrollArea;
-    sa->show();
+//    WaterFallScrollArea *sa = new WaterFallScrollArea;
+//    sa->show();
+    if (mediaViewWidget->reloadImages()) {
+        mediaViewWidget->show();
+    } else {
+        QMessageBox::warning(nullptr, "网络错误", "网络错误", QMessageBox::Ok);
+    }
+
 }
 
 void MainWindow::menu_action_triggered(QAction *action)
@@ -343,6 +364,17 @@ void MainWindow::customWBSlider_sliderReleased()
     LOG(INFO) << "MainWindow::customWBSlider_sliderReleased value = " << data;
     std::vector<uint8_t> v(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 2);
     sendCmdCamera(Remo_CmdId_Camera_Set_CustomWB_ColorTemp, v);
+}
+
+void MainWindow::showVideoStreamResult(bool result) {
+    if (!result) {
+        QMessageBox::warning(nullptr, "网络错误", "无视频流", QMessageBox::Ok);
+    }
+}
+
+void MainWindow::on_action_algorithm_triggered() {
+    AlgorithmDialog *dialog = new AlgorithmDialog;
+    dialog->show();
 }
 
 

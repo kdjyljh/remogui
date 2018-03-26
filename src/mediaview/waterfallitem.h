@@ -2,26 +2,37 @@
 #define WATERFALLITEM_H
 
 #include <QWidget>
-
+#include <QImage>
+#include <string>
 class WaterFallItem : public QWidget
 {
     Q_OBJECT
 public:
-    explicit WaterFallItem(QString url, QWidget *parent = nullptr);
+    explicit WaterFallItem(std::string url, QWidget *parent = nullptr);
+    ~WaterFallItem();
+    QSize getPixSize();
+    bool loadImage();
+    std::string getImageUrl() { return imageUrl;}
 
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
+    virtual void enterEvent(QEvent *event) override ;
+    virtual void leaveEvent(QEvent *event) override ;
+    virtual void mousePressEvent(QMouseEvent *event) override ;
 
 signals:
 
 public slots:
 
-private:
-    void loadImage();
+private slots:
 
 private:
-    QString imageUrl;
-    QPixmap *pix;
+    std::string imageUrl;
+    QImage *image;
+    QImage *videoIcon;
+    int kDefaultWidth;
+    bool isHovering;
+    int hoveringRectLength;
 };
 
 #endif // WATERFALLITEM_H

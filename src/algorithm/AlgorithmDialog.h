@@ -1,0 +1,49 @@
+//
+// Created by jianghualuo on 18-3-20.
+//
+
+#ifndef REMO_GUI_ALGORITHMDIALOG_H
+#define REMO_GUI_ALGORITHMDIALOG_H
+
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QTabWidget>
+#include <QLabel>
+#include <QPixmap>
+#include "WorkSpaceWidget.h"
+#include "ui_algorithm.h"
+
+class AlgorithmDialog : public QDialog {
+    Q_OBJECT
+public:
+    AlgorithmDialog(QWidget *parent = nullptr);
+    ~AlgorithmDialog();
+
+protected:
+    virtual void resizeEvent(QResizeEvent *event) override;
+
+private:
+    void setupUi();
+
+private:
+    QPixmap pix;
+
+    class Ui {
+    public:
+        WorkSpaceWidget *workSpaceWidget;
+        QVBoxLayout *mainLayout;
+        QTabWidget *tabWidget;
+        QWidget *tabFeatures;
+        QWidget *tabModeSetting;
+        QWidget *tabChosePerson;
+        QWidget *tabSpecialLens;
+        QWidget *tabGimbal;
+        QWidget *tabTemplate;
+        QWidget *tabGesture;
+
+        ~Ui();
+    } *ui;
+};
+
+
+#endif //REMO_GUI_ALGORITHMDIALOG_H

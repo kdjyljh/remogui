@@ -63,3 +63,8 @@ void ProtocolDataInterfaceImpl::async_setWorkMode(const Remo_Camera_WorkMode_s &
     data.push_back(static_cast<uint8_t>(workmode.SubWorkMode));
     sendCmdCamera(Remo_CmdId_Camera_Set_WorkMode, data);
 }
+
+void ProtocolDataInterfaceImpl::sendCmdUniversal(int cmdId, vector<uint8_t> data,
+                                                 CommProtoVariables::RequestRespond reqres) {
+    ProtocolDataInterface::sendCmd(COMMDEVICE_CAMERA, Remo_CmdSet_Universal, cmdId, true, false, reqres, data);
+}

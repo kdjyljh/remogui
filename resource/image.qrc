@@ -2,4 +2,7 @@
     <qresource prefix="/image">
         <file>view.jpg</file>
     </qresource>
+    <qresource prefix="/icon">
+        <file>videoplayer.png</file>
+    </qresource>
 </RCC>

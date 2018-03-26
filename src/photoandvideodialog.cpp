@@ -19,13 +19,9 @@ PhotoAndVideoDialog::PhotoAndVideoDialog(QWidget *parent) :
     isRecording(false),
     isPhotoing(false),
     initCompleted(false),
-    stopCapRec_Reverse(true),
     waitMsgBox(new QMessageBox())
 {
-    LOG(INFO) << "PhotoAndVideoDialog::PhotoAndVideoDialog construct";
     ui->setupUi(this);
-    recordeMsgDialog->setStandardButtons(0);
-    photoMsgDialog->setStandardButtons(0);
     ui->pushButton_Photo->setEnabled(false);
     ui->pushButton_Record->setEnabled(false);
     waitMsgBox->setWindowTitle(QString::fromLocal8Bit("等待"));
@@ -101,12 +97,6 @@ PhotoAndVideoDialog::~PhotoAndVideoDialog()
     delete ui;
 }
 
-void PhotoAndVideoDialog::closeEvent(QCloseEvent *event)
-{
-    LOG(INFO) << "PhotoAndVideoDialog::closeEvent";
-    Q_UNUSED(event);
-}
-
 void PhotoAndVideoDialog::readVideoStreamDoneSlot(bool gotStream)
 {
     QString showStr =  QString::fromLocal8Bit("模式切换成功");
@@ -115,8 +105,6 @@ void PhotoAndVideoDialog::readVideoStreamDoneSlot(bool gotStream)
     }
     waitMsgBox->setText(showStr);
     waitMsgBox->setStandardButtons(QMessageBox::Ok);
-//    waitMsgBox->exec();
-//    waitMsgBox->close();
 }
 
 #ifndef IF_COND_SET_ENUMITEM_ACTION_BY_TYPE
@@ -160,9 +148,6 @@ void PhotoAndVideoDialog::workModeGot(const Remo_Camera_WorkMode_s &workmode)
     default:
         break;
     }
-
-//    if (Remo_CmdId_Camera_Set_WorkMode == ProtocolDataInterfaceImpl::content.cmdId)
-//        emit getVideoStreamAgain();
 }
 
 void PhotoAndVideoDialog::settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId)
@@ -222,88 +207,87 @@ void PhotoAndVideoDialog::surportRangeGot(std::set<SubItemData> rangeSet, Remo_C
 
 void PhotoAndVideoDialog::retProcess(CmdContent cc)
 {
+    if (cc.cmdId == Remo_CmdId_Camera_Set_WorkMode) {
+        QString showStr = QString::fromLocal8Bit("模式切换成功");
+        if (cc.ret != Return_OK) {
+            showStr = QString::fromLocal8Bit("模式切换失败");
+        }
+        waitMsgBox->setText(showStr);
+    }
+
     if (!(cc.cmdId == Remo_CmdId_Camera_Set_CapOperation ||
         cc.cmdId == Remo_CmdId_Camera_Set_RecOperation)) return;
 
-    if (stopCapRec_Reverse) {
-        return;
-    }
-
-//    QString type = QString::fromLocal8Bit("拍照");
-//    if (cc.cmdId == Remo_CmdId_Camera_Set_RecOperation) {
-//        type = QString::fromLocal8Bit("录像");
-//        if (isRecording) {
-//            type = QString::fromLocal8Bit("关闭录像");
-//        }
-//    }
-    QString ret = QString::fromLocal8Bit("成功");
+    QString retStr = QString::fromLocal8Bit("成功");
     if (cc.ret != Return_OK)
-        ret = QString::fromLocal8Bit("失败");
+        retStr = QString::fromLocal8Bit("失败");
 
-    if (cc.cmdId == Remo_CmdId_Camera_Set_RecOperation) {
-        QString type;
-        if (isRecording) {
-            button_stop_recod = recordeMsgDialog->addButton(QString::fromLocal8Bit("停止"), QMessageBox::ActionRole);
-            if (cc.ret == Return_OK)
-                connect(button_stop_recod, SIGNAL(clicked(bool)), this, SLOT(stop_recorde()));
-            type = QString::fromLocal8Bit("开始录像");
-        }
-        else {
-            type = QString::fromLocal8Bit("停止录像");
-        }
-        recordeMsgDialog->setText(type + ret);
+    int opType = cc.custom[0];
+    QString opStr;
+    if (CapOperation_Start == opType) {
+        opStr = QString::fromLocal8Bit("开始");
     }
-    else {
+    else if (CapOperation_Stop == opType) {
+        opStr = QString::fromLocal8Bit("停止");
+    }
+
+    QString typeStr;
+    if (cc.cmdId == Remo_CmdId_Camera_Set_CapOperation) {
+        photoMsgDialog->setText(QString::fromLocal8Bit("拍照") + opStr + retStr);
+
         if ((currentWorkMode.MainWorkMode == MainWorKMode_MultiPhoto &&
              currentWorkMode.SubWorkMode == SubWorkMode_MultiPhoto_Continue) ||
                 (currentWorkMode.MainWorkMode == MainWorkMode_Photo &&
                  currentWorkMode.SubWorkMode == SubWorkMode_Photo_Delay)) {
-            QString type = QString::fromLocal8Bit("拍照");
-            if (isPhotoing) {
-                type = QString::fromLocal8Bit("开始拍照");
-                button_stop_photo = photoMsgDialog->addButton(QString::fromLocal8Bit("停止"), QMessageBox::ActionRole);
-                if (cc.ret == Return_OK) {
-                    if (currentWorkMode.MainWorkMode == MainWorkMode_Photo &&
-                            currentWorkMode.SubWorkMode == SubWorkMode_Photo_Delay) {
-                        boost::thread([&](){
-                            int index = this->ui->ComboBox_SubWorkMode_Photo_Delay->currentIndex();
-                            int indexdata = this->ui->ComboBox_SubWorkMode_Photo_Delay->itemData(index).toInt();
-                            int timeSeconds = 0;
-                            if (indexdata == 0)
-                                timeSeconds = 3;
-                            else if (indexdata == 1)
-                                timeSeconds = 6;
-                            else if (indexdata == 2)
-                                timeSeconds = 10;
-                            else if (indexdata == 3)
-                                timeSeconds = 15;
-                            else if (indexdata == 4)
-                                timeSeconds = 20;
-                            else if (indexdata == 5)
-                                timeSeconds = 30;
-                            QString text = this->photoMsgDialog->text();
-                            while (isPhotoing && timeSeconds) {
-                                emit photoDelayTickTack(text + "\n" + QString::number(timeSeconds) + "S");
-                                --timeSeconds;
-                                sleep(1);
-                            }
-                            emit photoDelayTickTack(QString::fromLocal8Bit("拍照完成"));
-                        });
-                    }
-                    connect(button_stop_photo, SIGNAL(clicked(bool)), this, SLOT(stop_photo()));
+            if (cc.ret == Return_OK && CapOperation_Start == opType) {
+                isPhotoing = true;
+                ui->pushButton_Photo->setText(QString::fromLocal8Bit("停止"));
+            }
+            if (cc.ret == Return_OK && CapOperation_Stop == opType) {
+                isPhotoing = false;
+                ui->pushButton_Photo->setText(QString::fromLocal8Bit("开始"));
+            }
+
+            if (cc.ret == Return_OK) {
+                if (currentWorkMode.MainWorkMode == MainWorkMode_Photo &&
+                    currentWorkMode.SubWorkMode == SubWorkMode_Photo_Delay) {
+                    boost::thread([&]() {
+                        int index = this->ui->ComboBox_SubWorkMode_Photo_Delay->currentIndex();
+                        int indexdata = this->ui->ComboBox_SubWorkMode_Photo_Delay->itemData(index).toInt();
+                        int timeSeconds = 0;
+                        if (indexdata == 0)
+                            timeSeconds = 3;
+                        else if (indexdata == 1)
+                            timeSeconds = 6;
+                        else if (indexdata == 2)
+                            timeSeconds = 10;
+                        else if (indexdata == 3)
+                            timeSeconds = 15;
+                        else if (indexdata == 4)
+                            timeSeconds = 20;
+                        else if (indexdata == 5)
+                            timeSeconds = 30;
+                        QString text = this->photoMsgDialog->text();
+                        while (isPhotoing && timeSeconds) {
+                            emit photoDelayTickTack(text + "\n" + QString::number(timeSeconds) + "S");
+                            --timeSeconds;
+                            sleep(1);
+                        }
+                    });
                 }
             }
-            else {
-                type = QString::fromLocal8Bit("停止拍照");
-                button_stop_photo->setText(QString::fromLocal8Bit("确定"));
-                photoMsgDialog->setText(type + ret + "");
-                disconnect(button_stop_photo, SIGNAL(clicked(bool)), this, SLOT(stop_photo()));
-                photoMsgDialog->exec();
-            }
         }
-        else {
-            photoMsgDialog->setText(QString::fromLocal8Bit("拍照") + ret);
-            button_stop_photo = photoMsgDialog->addButton(QString::fromLocal8Bit("确定"), QMessageBox::ActionRole);
+    }
+    else if (cc.cmdId == Remo_CmdId_Camera_Set_RecOperation) {
+        recordeMsgDialog->setText(QString::fromLocal8Bit("录像") + opStr + retStr);
+
+        if (cc.ret == Return_OK && RecOperation_Start == opType) {
+            isRecording = true;
+            ui->pushButton_Record->setText(QString::fromLocal8Bit("停止"));
+        }
+        if (cc.ret == Return_OK && RecOperation_Stop == opType) {
+            isRecording = false;
+            ui->pushButton_Record->setText(QString::fromLocal8Bit("开始"));
         }
     }
 }
@@ -361,49 +345,16 @@ ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWcorkMode_Recode_LapseRec, radioButto
 ON_ENUMITEM_ACTION(MainWorKMode_Record, SubWcorkMode_Recode_SlowMotion, radioButton, clicked)
 #endif
 
-//void PhotoAndVideoDialog::on_pushButton_Start_clicked()
-//{
-//    if (recordOrCapture) {
-//        sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
-//    } else {
-//        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
-//    }
-//    ui->pushButton_Stop->setEnabled(true);
-//    ui->pushButton_Start->setEnabled(false);
-//}
-
-//void PhotoAndVideoDialog::on_pushButton_Stop_clicked()
-//{
-//    if (recordOrCapture) {
-//        sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation);
-//    } else {
-//        sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation);
-//    }
-//    ui->pushButton_Start->setEnabled(true);
-//    ui->pushButton_Stop->setEnabled(false);
-//}
-
 void PhotoAndVideoDialog::on_pushButton_Photo_clicked()
 {
     photoMsgDialog->setText(QString::fromLocal8Bit("正在拍照，稍等..."));
 
-    if (currentWorkMode.MainWorkMode == MainWorKMode_MultiPhoto &&
-            currentWorkMode.SubWorkMode == SubWorkMode_MultiPhoto_Continue ||
-            (currentWorkMode.MainWorkMode == MainWorkMode_Photo &&
-             currentWorkMode.SubWorkMode == SubWorkMode_Photo_Delay)) {
-        if (nullptr != button_stop_photo) {
-            disconnect(button_stop_photo, SIGNAL(clicked(bool)), this, SLOT(stop_photo()));
-        }
+    Remo_Camera_CapOperation_e data = CapOperation_Start;
+    if (isPhotoing) {
+        data = CapOperation_Stop;
     }
 
-    if (nullptr != button_stop_photo) {
-        photoMsgDialog->removeButton(button_stop_photo);
-        delete button_stop_photo;
-    }
-
-    sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation, std::vector<uint8_t>{CapOperation_Start});
-    isPhotoing = true;
-    stopCapRec_Reverse = false;
+    sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation, std::vector<uint8_t>{data});
     photoMsgDialog->exec();
 }
 
@@ -411,28 +362,17 @@ void PhotoAndVideoDialog::on_pushButton_Record_clicked()
 {
     recordeMsgDialog->setText(QString::fromLocal8Bit("正在录像，稍等..."));
 
-    sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation, std::vector<uint8_t>{RecOperation_Start});
-
-    if (nullptr != button_stop_recod) {
-        disconnect(button_stop_recod, SIGNAL(clicked(bool)), this, SLOT(stop_recorde()));
-        recordeMsgDialog->removeButton(button_stop_recod);
-        delete button_stop_recod;
+    Remo_Camera_RecOperation_e data = RecOperation_Start;
+    if (isRecording) {
+        data = RecOperation_Stop;
     }
-    isRecording = true;
-    stopCapRec_Reverse = false;
+
+    sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation, std::vector<uint8_t>{data});
     recordeMsgDialog->exec();
 }
 
 void PhotoAndVideoDialog::comboBox_activated(int index)
 {
-//    int itemIndex = ui->ComboBox_SubWorkMode_Photo_Delay->itemData(index).toInt();
-//    ItemData itemdata;
-//    if (findItemByUiPtr(ui->ComboBox_SubWorkMode_Photo_Delay, itemdata)) {
-//        sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData), std::vector<uint8_t>(itemIndex));
-//        qDebug() << "on_ComboBox_SubWorkMode_Photo_Delay_activated send cmd" \
-//                 << index << "cmdid is " << itemdata.CmdId_SetData;
-//    }
-
     QComboBox * comboBox = dynamic_cast<QComboBox*>(sender());
     if (nullptr != comboBox) {
         ItemData itemdata;
@@ -450,30 +390,8 @@ void PhotoAndVideoDialog::comboBox_activated(int index)
     }
 }
 
-void PhotoAndVideoDialog::stop_recorde()
-{
-    LOG(INFO) << "stop_recorde";
-    recordeMsgDialog->setText(QString::fromLocal8Bit("停止录像，保存中..."));
-//    recordeMsgDialog->setStandardButtons(0);
-    sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation, std::vector<uint8_t>{RecOperation_Stop});
-    recordeMsgDialog->exec();
-    isRecording = false;
-}
-
-void PhotoAndVideoDialog::stop_photo()
-{
-    photoMsgDialog->setText(QString::fromLocal8Bit("停止拍照，保存中..."));
-    sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation, std::vector<uint8_t>{CapOperation_Stop});
-    isPhotoing = false;
-    photoMsgDialog->exec();
-}
-
 void PhotoAndVideoDialog::set_photoMsgDialog_text(QString showStr)
 {
     photoMsgDialog->setText(showStr);
-    if (QString::fromLocal8Bit("拍照完成") == showStr) {
-        disconnect(button_stop_photo, SIGNAL(clicked(bool)), this, SLOT(stop_photo()));
-        button_stop_photo->setText(QString::fromLocal8Bit("确定"));
-    }
 }
 

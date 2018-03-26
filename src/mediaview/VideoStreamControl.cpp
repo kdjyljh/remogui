@@ -1,11 +1,14 @@
-#include "imagestreamproc.h"
-#include "mainwindow.h"
-#include "../thirdparty/commlog.h"
+//
+// Created by jianghualuo on 18-3-17.
+//
+
+#include "VideoStreamControl.h"
 #include <chrono>
 #include <thread>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread.hpp>
+#include <boost/bind.hpp>
 #include <libavutil/error.h>
 #include <glog/logging.h>
 #include <QMessageBox>
@@ -13,21 +16,20 @@
 
 static boost::mutex mtxStreamReady;
 static boost::condition_variable cvStreamReady;
-//boost::condition_variable_any cvStreamReady;
-
-//rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov
-//rtsp://192.168.0.1/livestream/12
-bool ImageStreamProc::streamReady = false;
-ImageStreamProc::ImageStreamProc(QObject *parent) :
-    QObject(parent),
-    url("rtsp://192.168.0.1/livestream/12"),
-    videoStreamIndex(-1),
-    pAVFormatContext(nullptr),
-    pSwsContext(nullptr),
-    pAVCodecContext(nullptr),
-    readStreamThread(new QThread)
+int64_t lastFrameTime = -1;
+bool getFrameTimeout = false;
+//bool VideoStreamControl::streamReady = false;
+VideoStreamControl::VideoStreamControl(QObject *parent) :
+        QObject(parent),
+        url(""),
+        videoStreamIndex(-1),
+        pAVFormatContext(nullptr),
+        pSwsContext(nullptr),
+        pAVCodecContext(nullptr),
+        streamReady(false),
+        readStreamThread(new QThread(this))
 {
-    av_log_set_level(AV_LOG_SKIP_REPEATED);
+//    av_log_set_level(AV_LOG_SKIP_REPEATED);
     av_register_all();//注册库中所有可用的文件格式和解码器
     avformat_network_init();
     pAVFrame = av_frame_alloc();//仅分配AVFrame，而不分配buffer
@@ -37,33 +39,39 @@ ImageStreamProc::ImageStreamProc(QObject *parent) :
     readStreamThread->start(QThread::HighestPriority);
 }
 
-ImageStreamProc::~ImageStreamProc()
+VideoStreamControl::~VideoStreamControl()
 {
     avformat_close_input(&pAVFormatContext);
-    avformat_free_context(pAVFormatContext);
-    avcodec_free_context(&pAVCodecContext);
     sws_freeContext(pSwsContext);
-    delete readStreamThread;
 }
 
 //can only be called in _readStream()
-bool ImageStreamProc::init()
+bool VideoStreamControl::init()
 {
 //    boost::unique_lock<boost::mutex> lock(mtxStreamReady);
 
-    LOG(INFO) << "ImageStreamProc::init start ###########################";
+    LOG(INFO) << "VideoStreamControl::init url:" << url;
+    LOG(INFO) << "VideoStreamControl::init start ###########################";
 
     LOG(INFO) << "0.free pAVFormatContext ###########################";
     if (nullptr != pAVFormatContext) {
         avformat_close_input(&pAVFormatContext);
-        avformat_free_context(pAVFormatContext);
         pAVFormatContext = nullptr;
+        sws_freeContext(pSwsContext);
+        pSwsContext = nullptr;
     }
+    lastFrameTime = -1;
+    getFrameTimeout = false;
 
     LOG(INFO) << "1.avformat_open_input ###########################";
 //    int result = avformat_open_input(&pAVFormatContext, url.c_str(), nullptr, nullptr);
     AVDictionary *options = nullptr;
     av_dict_set(&options, "buffer_size", "102400", 0);
+//    av_dict_set(&options, "stimeout", "1000000", 0); //1s无响应则超时
+//    av_dict_set(&options, "timeout", "1", 0);
+    pAVFormatContext = avformat_alloc_context();
+//    pAVFormatContext->interrupt_callback.opaque = this;
+//    pAVFormatContext->interrupt_callback.callback = readFrameTimeout;
     int result = avformat_open_input(&pAVFormatContext, url.c_str(), avInputFormat, &options);
     if (result < 0) {
         goto error;
@@ -124,25 +132,25 @@ bool ImageStreamProc::init()
 //    cvStreamReady.notify_all();
     return true;
 
-error:
+    error:
     streamReady = false;
-//    cvStreamReady.notify_all();
+    cvStreamReady.notify_all();
     char errorStr[1024] = {0};
     av_strerror(result, errorStr, 1024);
-    LOG(INFO) << "ImageStreamProc::init got an error:" << result << " :" << errorStr;
+    LOG(INFO) << "VideoStreamControl::init got an error:" << result << " :" << errorStr;
     return false;
 }
 
-bool ImageStreamProc::readStream()
+bool VideoStreamControl::readStream()
 {
-    LOG(INFO) << "ImageStreamProc::readStream read image stream";
+    LOG(INFO) << "VideoStreamControl::readStream read image stream";
     QTimer::singleShot(0, this, SLOT(_readStream()));
     return true;
 }
 
-void ImageStreamProc::_readStream()
+void VideoStreamControl::_readStream()
 {
-    LOG(INFO) << "ImageStreamProc::_readStream start";
+    LOG(INFO) << "VideoStreamControl::_readStream start";
     int i = 100; //如果无视频流，重复连接20次
     {
         boost::unique_lock<boost::mutex> lock(mtxStreamReady);
@@ -153,22 +161,16 @@ void ImageStreamProc::_readStream()
         }
         cvStreamReady.notify_all();
     }
-
-//    LOG(INFO) << "ImageStreamProc::_readStream try " << 20 - i + 1;
-
     emit readStreamDone(i);
-//    if (!i) {
-//        QMessageBox::warning(nullptr, "网络错误", "无视频流", QMessageBox::Ok);
-//    }
 }
 
-void ImageStreamProc::play()
-{
+void VideoStreamControl::play() {
     readStream();
 
     //一帧一帧读取视频
     int frameFinished = 0;
-    int p_frame_counter = 0;
+    int readFrameResult = 0;
+    int lastPts = 0;
     while (true) {
         boost::unique_lock<boost::mutex> lock(mtxStreamReady);
         while (!streamReady) {
@@ -176,35 +178,66 @@ void ImageStreamProc::play()
             cvStreamReady.wait(lock);
             LOG(INFO) << "7.streamReady waite after###########################";
         }
-//        LOG(INFO) << "before read freame";
-        if (av_read_frame(pAVFormatContext, &pAVPacket) == 0){
-//            LOG(INFO) << "after read freame";
-//            LOG(INFO) << "AVPacket data " << static_cast<const void *>(pAVPacket.data);
-//            LOG(INFO) << "AVPacket size " << pAVPacket.size;
-//            LOG(INFO) << "AVPacket dts " << pAVPacket.dts;
-//            LOG(INFO) << "AVPacket pts " << pAVPacket.pts;
+//        if (getFrameTimeout) {
+//            streamReady = false;
+//            emit videoFinished();
+//            QImage image;
+//            emit imageGot(image);
+//        }
+
+        boost::this_thread::interruption_point();
+
+        if ((readFrameResult = av_read_frame(pAVFormatContext, &pAVPacket)) == 0) {
+            if (lastPts == pAVPacket.pts) {
+                // 时间戳没变，说明已经暂停，不进行解码
+                continue;
+            }
+            lastPts = pAVPacket.pts;
             avcodec_decode_video2(pAVCodecContext, pAVFrame, &frameFinished, &pAVPacket);
-//            if (pAVFrame->key_frame)
-//                LOG(INFO) << "key frame";
-//            else LOG(INFO) << "not key frame";
-//            if (pAVFrame->pict_type == AV_PICTURE_TYPE_I)
-//                LOG(INFO) << "I frame";
-//            else LOG(INFO) << "P frame";
-//            if (pAVFrame->pict_type == AV_PICTURE_TYPE_I) p_frame_counter = 0;
-//            else ++p_frame_counter;
-//            LOG(INFO) << "p_frame_counter = " << p_frame_counter;
-//            if (p_frame_counter > 100)
-//                LOG(INFO) << "Lost some I frame!!!!!!!!!!!";
+            lastFrameTime = av_gettime();
             if (frameFinished) {
-                sws_scale(pSwsContext, (const uint8_t* const *)pAVFrame->data, pAVFrame->linesize, 0, videoHeight, pAVPicture.data, pAVPicture.linesize);                //发送获取一帧图像信号
+                sws_scale(pSwsContext, (const uint8_t *const *) pAVFrame->data, pAVFrame->linesize, 0, videoHeight,
+                          pAVPicture.data, pAVPicture.linesize);                //发送获取一帧图像信号
                 QImage image(pAVPicture.data[0], videoWidth, videoHeight, QImage::Format_RGB888);
                 mtxStreamReady.unlock();
                 emit imageGot(image);
+                double time = pAVPacket.pts * av_q2d(pAVFormatContext->streams[videoStreamIndex]->time_base); //秒
+                LOG(INFO) << "VideoStreamControl::play time:" << time;
+                emit videoTimestampChanged(time);
                 boost::this_thread::sleep_for(boost::chrono::milliseconds(5));
                 mtxStreamReady.lock();
             }
+            av_free_packet(&pAVPacket);//释放资源,否则内存会一直上升
+            av_init_packet(&pAVPacket);
+        } else if (readFrameResult == AVERROR_EOF) {
+            streamReady = false;
+            emit videoFinished();
+            QImage image;
+            emit imageGot(image);
+        } else {
+            char errorStr[1024] = {0};
+            av_strerror(readFrameResult, errorStr, 1024);
+            LOG(INFO) << "VideoStreamControl::play got an error:" << readFrameResult << " :" << errorStr;
         }
-        av_free_packet(&pAVPacket);//释放资源,否则内存会一直上升
-        av_init_packet(&pAVPacket);
     }
+}
+
+void VideoStreamControl::seek(int seconds) {
+}
+
+void VideoStreamControl::closeReadStreamThread() {
+    readStreamThread->quit();
+    readStreamThread->wait();
+}
+
+int VideoStreamControl::readFrameTimeout(void *ctx) {
+    if (lastFrameTime != -1) {
+        int duration = (av_gettime() - lastFrameTime) / 1000000.0;
+        if (duration > 5) {
+            LOG(INFO) << "VideoStreamControl::readFrameTimeout get frame timeout";
+            getFrameTimeout = true;
+            return 1;
+        }
+    }
+    return 0;
 }

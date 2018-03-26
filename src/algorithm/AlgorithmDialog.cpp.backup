@@ -1,0 +1,60 @@
+//
+// Created by jianghualuo on 18-3-20.
+//
+
+#include "AlgorithmDialog.h"
+#include <glog/logging.h>
+#include <QDebug>
+#include <QAction>
+#include <QPushButton>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QTabBar>
+
+AlgorithmDialog::AlgorithmDialog(QWidget *parent) :
+        QDialog(parent),
+        pix(QPixmap("/home/jianghualuo/work/data/images/cloud.jpg")),
+        mainLayout(new QVBoxLayout),
+        tabWidget(new QTabWidget),
+        workSpaceWidget(new WorkSpaceWidget),
+        tabFeatures(new QWidget),
+        tabModeSetting(new QWidget),
+        tabChosePerson(new QWidget),
+        tabSpecialLens(new QWidget),
+        tabGimbal(new QWidget),
+        tabTemplate(new QWidget),
+        ui(new Ui::Algorithm),
+        tabGesture(new QWidget) {
+    ui->setupUi(this);
+    resize(1300, 900);
+    mainLayout->addWidget(ui->tabWidget);
+    mainLayout->addWidget(workSpaceWidget);
+    setLayout(mainLayout);
+    mainLayout->setStretchFactor(ui->tabWidget, 1);
+
+    mainLayout->setStretchFactor(workSpaceWidget, 10);
+//    tabWidget->setMinimumHeight(100);
+//    tabWidget->tabBar()->setMinimumWidth(800);
+//    setContentsMargins(0, 0,0,0);
+//    mainLayout->setContentsMargins(0,0,0,0);
+//
+//    tabWidget->addTab(tabFeatures, QString::fromLocal8Bit("功能"));
+//    tabWidget->addTab(tabModeSetting, QString::fromLocal8Bit("模式"));
+//    tabWidget->addTab(tabChosePerson, QString::fromLocal8Bit("选人"));
+//    tabWidget->addTab(tabSpecialLens, QString::fromLocal8Bit("特殊镜头"));
+//    tabWidget->addTab(tabGimbal, QString::fromLocal8Bit("云台"));
+//    tabWidget->addTab(tabTemplate, QString::fromLocal8Bit("模板"));
+//    tabWidget->addTab(tabGesture, QString::fromLocal8Bit("手势"));
+
+//    QGroupBox *groupboxFaceRecognition = new QGroupBox(QString::fromLocal8Bit("人脸识别"), tabFeatures);
+//    groupboxFaceRecognition->setCheckable(true);
+//    groupboxFaceRecognition->setGeometry(QRect(0, 0, 500, 500));
+//    QCheckBox *checkboxDTGJ = new QCheckBox(QString::fromLocal8Bit("动态构建"), groupboxFaceRecognition);
+}
+
+AlgorithmDialog::~AlgorithmDialog() {
+
+}
+
+void AlgorithmDialog::resizeEvent(QResizeEvent *event) {
+}

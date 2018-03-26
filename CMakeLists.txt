@@ -9,15 +9,12 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -std=c99")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -std=c++11 -Werror=return-type")
+#不进行编译优化，方便调试
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g  -O0 -Wall -std=c++11 -Werror=return-type")
 
-find_package(
-        Qt5Widgets REQUIRED
-        Qt5Gui REQUIRED
-        Qt5Concurrent REQUIRED
-        Qt5Core REQUIRED
-        Boost REQUIRED
-)
+find_package(Qt5 COMPONENTS Core Gui Concurrent Widgets Network REQUIRED)
+find_package(Protobuf REQUIRED)
+find_package(Boost REQUIRED)
 
 set(SOURCE_FILES
         src/photoandvideodialog.cpp
@@ -55,7 +52,14 @@ set(SOURCE_FILES
         src/mediaview/waterfallscrollarea.cpp
         src/mediaview/waterfallwidget.cpp
         src/mediaview/waterfallitem.cpp
-        )
+        src/mediaview/HttpProxy.cpp
+        src/mediaview/WaterFallImageItem.cpp
+        src/mediaview/WaterFallVideoItem.cpp
+        src/mediaview/VideoStreamControl.cpp
+        src/algorithm/AlgorithmDialog.cpp
+        src/algorithm/WorkSpaceWidget.cpp
+        src/algorithm/NetImage.cpp
+        src/algorithm/TcpMsgProxy.cpp)
 
 #set(HEADERS_FILES
 #        src/photoandvideodialog.h
@@ -94,9 +98,15 @@ set(CUSTOM_LIBS
         dl pthread m
         boost_system boost_thread boost_filesystem boost_regex boost_chrono boost_date_time boost_atomic
         glog
-        Qt5::Gui Qt5Concurrent Qt5::Core Qt5::Widgets)
+        protobuf
+        Qt5::Gui Qt5::Concurrent Qt5::Core Qt5::Widgets Qt5::Network)
 
-add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES} ${RESOURCES_FILES})
+set(PROTO_FILES
+        proto/test.proto)
+
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
+
+add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES} ${RESOURCES_FILES} ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_link_libraries(${CMAKE_PROJECT_NAME} ${CUSTOM_LIBS})
 

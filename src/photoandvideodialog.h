@@ -12,12 +12,8 @@ class PhotoAndVideoDialog : public QDialog, public ProtocolDataInterfaceImpl
 {
 Q_OBJECT
 public:
-    PhotoAndVideoDialog(QWidget *parent = 0);
+    PhotoAndVideoDialog(QWidget *parent = nullptr);
     ~PhotoAndVideoDialog();
-
-    void closeEvent(QCloseEvent *event) override;
-
-//    void setPhotoAndvideoUiBySetting(const PhotoAndVideoSetting & pvSetting);
 
 public slots:
     void readVideoStreamDoneSlot(bool gotStream);
@@ -33,15 +29,13 @@ signals:
     void photoDelayTickTack(QString showStr);
 
 private:
-    Ui::PhotoAndVideoDialog *ui; // 来自uic生成的header中的类（photoandvideodialog.ui
+    Ui::PhotoAndVideoDialog *ui;
     bool isRecording; //是否正在录影
     bool isPhotoing; //是否正在拍照
     bool recordOrCapture; //目前前是拍照还算录影模式  : true为录影模式
     bool initCompleted;
-    bool stopCapRec_Reverse;
     Remo_Camera_WorkMode_s currentWorkMode;
 
-//    PhotoAndVideoSetting photoAndVideoSetting;
     void initSurportRange();
     void setRecVideoByWorkMode(Remo_Camera_WorkMode_s workMode);
 
@@ -51,9 +45,6 @@ private:
     QAbstractButton *button_stop_photo;
     QMessageBox *waitMsgBox;
 
-
-
-//    void getWorkModeFromCamera();
 private slots:
     void on_radioButton_SubWorkMode_Photo_Single_clicked();
     void on_radioButton_SubWorkMode_Photo_Delay_clicked();
@@ -74,8 +65,6 @@ private slots:
     void on_pushButton_Record_clicked();
 
     void comboBox_activated(int index);
-    void stop_recorde();
-    void stop_photo();
 
     void set_photoMsgDialog_text(QString showStr);
 };

@@ -27,6 +27,7 @@ public:
                      CommProtoVariables::RequestRespond reqres, std::vector<uint8_t> data, int maxRetry = -1, long intervalUS = -1);
 
     static bool isBigEndian();
+    static bool getConfiguredEndpoint(uint32_t &ip, uint16_t &port);
     static void endianTurn(std::vector<uint8_t> & data);
 
 protected:

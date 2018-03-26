@@ -11,6 +11,8 @@
 #include "deviceinfodialog.h"
 #include "viewlable.h"
 #include "playbackdialog.h"
+#include "mediaview/waterfallscrollarea.h"
+#include "algorithm/AlgorithmDialog.h"
 
 #include <QMainWindow>
 #include <QImage>
@@ -59,6 +61,8 @@ private:
     boost::shared_ptr<GimbalDialog> gimbalDialog;
     boost::shared_ptr<DeviceInfoDialog> deviceInfoDialog;
     boost::shared_ptr<PlayBackDialog> playBackDialog;
+    boost::shared_ptr<WaterFallScrollArea> mediaViewWidget;
+    boost::shared_ptr<AlgorithmDialog> algorithmDialog;
 
     QActionGroup *actionGroupResolution;
     QActionGroup *actionGroupVideoStandard;
@@ -81,12 +85,10 @@ private:
     QActionGroup *actionGroupIntelligLens;
 
 private:
-
     boost::shared_ptr<ReceiveDataProc> receiveDataProc;
 
 private:
     void setupAction();
-
     explicit MainWindow(QWidget *parent = 0);
     MainWindow(MainWindow &wind);
 
@@ -95,6 +97,7 @@ private:
 
 private slots:
     void setLabelPix(const QImage & image);
+    void showVideoStreamResult(bool result);
 
 private slots:
     void on_action_photoAndVideo_triggered();
@@ -105,6 +108,7 @@ private slots:
     void on_action_Aelock_triggered(bool status);
     void on_action_playBack_triggered();
     void on_action_mediaView_triggered();
+    void on_action_algorithm_triggered();
     void menu_action_triggered(QAction *action);
     void customWBSlider_sliderReleased();
 };

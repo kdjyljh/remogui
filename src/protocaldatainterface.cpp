@@ -2,6 +2,7 @@
 #include "../thirdparty/commlog.h"
 #include "receivedatadispatcher.h"
 #include <boost/lexical_cast.hpp>
+#include <boost/asio.hpp>
 #include <iostream>
 
 int ProtocolDataInterface::reqMaxRetry = 0;
@@ -60,6 +61,8 @@ void ProtocolDataInterface::sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet,
 
 //    if (cmdSet != Remo_CmdSet_Battery) return;
 
+//    if (cmdId != 0x20) return;
+
 //    return;
 
     Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId & 0x1ff);
@@ -97,5 +100,41 @@ void ProtocolDataInterface::endianTurn(std::vector<uint8_t> &data)
 //    }
 
 //    data = turnData;
+}
+
+bool ProtocolDataInterface::getConfiguredEndpoint(uint32_t &ip, uint16_t &port) {
+    bool ret = false;
+    using boost::asio::ip::udp;
+
+    try {
+        std::string remoteIp =  IPPortCfg::Get()->COMM_CAMERA_IP();
+        std::string remotePort = IPPortCfg::Get()->COMM_CAMERA_PORT();
+
+        boost::asio::io_service netService;
+        udp::resolver   resolver(netService);
+        udp::resolver::query query(udp::v4(), remoteIp, remotePort);
+        udp::resolver::iterator endpoints = resolver.resolve(query);
+        udp::socket socket(netService);
+        udp::endpoint ep = *endpoints;
+        boost::system::error_code ec;
+
+        socket.connect(ep, ec);
+        LOG(INFO) << "ProtocolDataInterface::getConfigedIp ec:" << ec.message() << ec.value();
+        int size = socket.send_to(boost::asio::buffer("Hello"), ep);
+
+//        boost::array<char, 128> recv_buffer;
+//        socket.receive_from(boost::asio::buffer(recv_buffer), ep);
+
+        ip = socket.local_endpoint().address().to_v4().to_ulong();
+        port = IPPortCfg::Get()->COMM_SELF_PORT();
+        LOG(INFO) << "ProtocolDataInterface::getConfigedIp locale endpoints:" << socket.local_endpoint();
+        LOG(INFO) << "ProtocolDataInterface::getConfigedIp remote endpoint:" << ep;
+        ret = true;
+    } catch (std::exception &e) {
+        LOG(INFO) << "ProtocolDataInterface::getConfigedIp got an error:" << e.what();
+        ret = false;
+    }
+
+    return ret;
 }
 

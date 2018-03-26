@@ -91,7 +91,11 @@
        <widget class="QComboBox" name="ComboBox_SubWorkMode_MultiPhoto_Continue"/>
       </item>
       <item row="4" column="1">
-       <widget class="QComboBox" name="ComboBox_SubWorkMode_MultiPhoto_Panorama"/>
+       <widget class="QComboBox" name="ComboBox_SubWorkMode_MultiPhoto_Panorama">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -204,6 +208,9 @@
      </property>
     </widget>
     <widget class="QRadioButton" name="radioButton_SubWorkMode_MultiPhoto_Panorama">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>10</x>

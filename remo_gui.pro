@@ -119,7 +119,8 @@ FORMS += \
     ui/gimbal.ui \
     ui/deviceinfo.ui \
     ui/dialog.ui \
-    ui/thumbnailviewer.ui
+    ui/thumbnailviewer.ui \
+    ui/algorithm.ui
 
 RESOURCES += \
     resource/image.qrc

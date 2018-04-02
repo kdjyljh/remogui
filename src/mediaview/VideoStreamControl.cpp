@@ -81,7 +81,7 @@ bool VideoStreamControl::init()
     //数据包不入缓冲区,avformat_find_stream_info接口内部读取的每一帧数据只用于分析，不显示,会出现进入页面立马卡顿一下的问题
 //    pAVFormatContext->flags |= AVFMT_FLAG_NOBUFFER;
     //限制avformat_find_stream_info接口内部读取的最大数据量,有些情况时，会导致这些数据不足以分析这个流的信息
-    pAVFormatContext->probesize = 102400;
+    pAVFormatContext->probesize = 1024;
 
     //获取视频流信息
     LOG(INFO) << "2.avformat_find_stream_info ###########################";
@@ -178,15 +178,8 @@ void VideoStreamControl::play() {
             cvStreamReady.wait(lock);
             LOG(INFO) << "7.streamReady waite after###########################";
         }
-//        if (getFrameTimeout) {
-//            streamReady = false;
-//            emit videoFinished();
-//            QImage image;
-//            emit imageGot(image);
-//        }
 
         boost::this_thread::interruption_point();
-
         if ((readFrameResult = av_read_frame(pAVFormatContext, &pAVPacket)) == 0) {
             if (lastPts == pAVPacket.pts) {
                 // 时间戳没变，说明已经暂停，不进行解码
@@ -196,20 +189,22 @@ void VideoStreamControl::play() {
             avcodec_decode_video2(pAVCodecContext, pAVFrame, &frameFinished, &pAVPacket);
             lastFrameTime = av_gettime();
             if (frameFinished) {
+//                LOG(INFO) << "VideoStreamControl::play after avcodec_decode_video2";
                 sws_scale(pSwsContext, (const uint8_t *const *) pAVFrame->data, pAVFrame->linesize, 0, videoHeight,
-                          pAVPicture.data, pAVPicture.linesize);                //发送获取一帧图像信号
+                          pAVPicture.data, pAVPicture.linesize);
+//                LOG(INFO) << "VideoStreamControl::play after sws_scale";
                 QImage image(pAVPicture.data[0], videoWidth, videoHeight, QImage::Format_RGB888);
-                mtxStreamReady.unlock();
-                emit imageGot(image);
                 double time = pAVPacket.pts * av_q2d(pAVFormatContext->streams[videoStreamIndex]->time_base); //秒
-                LOG(INFO) << "VideoStreamControl::play time:" << time;
+                lock.unlock();
+                emit imageGot(image); //发送获取一帧图像信号
                 emit videoTimestampChanged(time);
                 boost::this_thread::sleep_for(boost::chrono::milliseconds(5));
-                mtxStreamReady.lock();
+                lock.lock();
             }
             av_free_packet(&pAVPacket);//释放资源,否则内存会一直上升
             av_init_packet(&pAVPacket);
         } else if (readFrameResult == AVERROR_EOF) {
+            LOG(INFO) << "VideoStreamControl::play video finished";
             streamReady = false;
             emit videoFinished();
             QImage image;

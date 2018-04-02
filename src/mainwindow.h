@@ -13,6 +13,7 @@
 #include "playbackdialog.h"
 #include "mediaview/waterfallscrollarea.h"
 #include "algorithm/AlgorithmDialog.h"
+#include "imagewidget.h"
 
 #include <QMainWindow>
 #include <QImage>
@@ -30,7 +31,7 @@ class MainWindow : public QMainWindow, public ProtocolDataInterfaceImpl
     Q_OBJECT
 
 public:
-    ImageStreamProc *imagProc;
+//    ImageStreamProc *imagProc;
     ~MainWindow();
 
     static boost::shared_ptr<MainWindow> getWindInstace();
@@ -39,7 +40,7 @@ public:
 
     void initAfterConstruct();
 
-    boost::thread imgStreamProcThread;
+//    boost::thread imgStreamProcThread;
 
 public:
     static QPoint centerPoint;
@@ -52,7 +53,7 @@ protected:
 
 private:
     Ui::MainWindow *ui;
-    ViewLable *viewLable;
+//    ViewLable *viewLable;
     QLayout *mainLayout;
     boost::shared_ptr<PhotoAndVideoDialog> photoAndVideoDialog;
 //    boost::shared_ptr<WorkModeDialog> workModeDialog;
@@ -63,26 +64,7 @@ private:
     boost::shared_ptr<PlayBackDialog> playBackDialog;
     boost::shared_ptr<WaterFallScrollArea> mediaViewWidget;
     boost::shared_ptr<AlgorithmDialog> algorithmDialog;
-
-    QActionGroup *actionGroupResolution;
-    QActionGroup *actionGroupVideoStandard;
-    QActionGroup *actionGroupWhiteBalance;
-    QActionGroup *actionGroupExposure;
-    QActionGroup *actionGroupISO;
-    QActionGroup *actionGroupExposureGear;
-    QActionGroup *actionGroupGrid;
-    QActionGroup *actionGroupPictureSize;
-    QActionGroup *actionGroupQuality;
-    QActionGroup *actionGroupCorscatAvoidance;
-    QActionGroup *actionGroupSharpening;
-    QActionGroup *actionGroupHDR;
-    QActionGroup *actionGroupLens;
-    QActionGroup *actionGroupPTZSpeed;
-    QActionGroup *actionGroupPTZCalibration;
-    QActionGroup *actionGroupIntelliMode;
-    QActionGroup *actionGroupCloseup;
-    QActionGroup *actionGroupScene;
-    QActionGroup *actionGroupIntelligLens;
+    boost::shared_ptr<ImageWidget> imageWidget;
 
 private:
     boost::shared_ptr<ReceiveDataProc> receiveDataProc;
@@ -91,6 +73,7 @@ private:
     void setupAction();
     explicit MainWindow(QWidget *parent = 0);
     MainWindow(MainWindow &wind);
+    void init();
 
     QWidget *customWBWidget;
     QSlider *customWBSlider;

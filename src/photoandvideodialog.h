@@ -35,6 +35,7 @@ private:
     bool recordOrCapture; //目前前是拍照还算录影模式  : true为录影模式
     bool initCompleted;
     Remo_Camera_WorkMode_s currentWorkMode;
+    boost::thread delayPhotoTimerThread;
 
     void initSurportRange();
     void setRecVideoByWorkMode(Remo_Camera_WorkMode_s workMode);

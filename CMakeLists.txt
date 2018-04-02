@@ -59,7 +59,10 @@ set(SOURCE_FILES
         src/algorithm/AlgorithmDialog.cpp
         src/algorithm/WorkSpaceWidget.cpp
         src/algorithm/NetImage.cpp
-        src/algorithm/TcpMsgProxy.cpp)
+        src/algorithm/TcpMsgProxy.cpp
+        src/mediaview/ProgressBarSlider.cpp
+        src/imagewidget.cpp
+        src/vaapidecoder.cpp)
 
 #set(HEADERS_FILES
 #        src/photoandvideodialog.h
@@ -103,6 +106,10 @@ set(CUSTOM_LIBS
 
 set(PROTO_FILES
         proto/test.proto)
+
+#demo演示笔记本需要
+link_directories(/home/demo/remogui/usr/lib /home/usrlocal/lib ${link_directionies})
+include_directories(/home/demo/remogui/usr/include /home/usrlocal/include ${include_directories})
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 

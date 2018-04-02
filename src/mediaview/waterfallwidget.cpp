@@ -62,8 +62,8 @@ void WaterFallWidget::getImages(int num) {
         item->setVisible(true);
 
         itemListColumn[minHeightIndex].push_back(item);
-        LOG(INFO) << "WaterFallWidget::getImages push back (x,y):" << posX << " " << posY;
-        LOG(INFO) << "WaterFallWidget::getImages push back url:" << item->getImageUrl() << " index:" << thumbnailUrlIndex;
+//        LOG(INFO) << "WaterFallWidget::getImages push back (x,y):" << posX << " " << posY;
+//        LOG(INFO) << "WaterFallWidget::getImages push back url:" << item->getImageUrl() << " index:" << thumbnailUrlIndex;
     }
 
     int maxHeight = *std::max_element(curColumnHeights, curColumnHeights + kItemColumnSize);
@@ -112,8 +112,8 @@ void WaterFallWidget::resizeEvent(QResizeEvent *event) {
 
                 it->setGeometry(posX, posY, itemWidth, itemHeight);
                 it->setVisible(true);
-                LOG(INFO) << "WaterFallWidget::resizeEvent (x,y):" << posX << " " << posY;
-                LOG(INFO) << "WaterFallWidget::resizeEvent url:" << it->getImageUrl();
+//                LOG(INFO) << "WaterFallWidget::resizeEvent (x,y):" << posX << " " << posY;
+//                LOG(INFO) << "WaterFallWidget::resizeEvent url:" << it->getImageUrl();
                 its[i]++;
             }
             else {
@@ -140,14 +140,14 @@ void WaterFallWidget::setFixedHeightSafely() {
 
 void WaterFallWidget::getThmUrls() {
     std::vector<uint8_t> buff;
-    if (HttpProxy::getRequest("http://192.168.0.1/cgi-bin/hi3510/getfilelist.cgi?-start=0&-end=100", buff)) {
+    if (HttpProxy::getRequest("http://192.168.0.1/cgi-bin/hi3510/getfilelist.cgi?-start=0&-end=10000", buff)) {
         std::string str(buff.begin(), buff.end());
         boost::trim(str);
         boost::split(thumbnailUrlVec, str, boost::is_any_of(";"));
         std::reverse(thumbnailUrlVec.begin(), thumbnailUrlVec.end());//最新拍的放最前面
         valid = true;
         LOG(INFO) << "WaterFallWidget::getThmUrls urls:" << str;
-    }  else {
+    } else {
         valid = false;
     }
 }

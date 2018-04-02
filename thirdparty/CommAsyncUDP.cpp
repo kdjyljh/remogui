@@ -29,6 +29,16 @@ void CommAsyncUDP::send_msg(EndpointEnum endp, CommMessagePtr msg) {
                         boost::bind(&CommAsyncUDP::handle_send, this, _1, _2, endp, msg)); // 发送结束后的处理
 }
 
+bool CommAsyncUDP::sync_send_msg(EndpointEnum endp, CommMessagePtr msg, int timeout) {
+    UDPEndpointPtr peerEndpPtr = UDPEndpoints::Get()->fetch(endp);
+    sdp_->async_send_to(boost::asio::buffer(*msg), *peerEndpPtr, // 立即异步发送该msg,注意该msg在bind中被保留
+                        boost::bind(&CommAsyncUDP::handle_send, this, _1, _2, endp, msg)); // 发送结束后的处理
+    //等服务器返回，10S
+    boost::unique_lock<boost::mutex> lock(syncReqRespMtx);
+    syncSendMsg = true;
+    return boost::cv_status ::no_timeout == syncReqRespCv.wait_for(lock, boost::chrono::milliseconds(timeout));
+}
+
 void CommAsyncUDP::register_recvhandler(RecvhandlerExternal recvHandlerExternal) {
     recvHandlerExternal_.lock();
     CHECK(!recvHandlerExternal_.data) << "can only registered once";
@@ -65,6 +75,13 @@ void CommAsyncUDP::handle_recv(const boost::system::error_code &error, std::size
         LOG(INFO) << error.message();
     } else {
         // 现在信息有效
+        if(syncSendMsg) {
+            //通知同步等待的发送线程
+            LOG(INFO) << "CommAsyncUDP::handle_recv sync received a packet";
+            boost::unique_lock<boost::mutex> lock(syncReqRespMtx);
+            syncSendMsg = false;
+            syncReqRespCv.notify_one();
+        }
         LOG(INFO) << "*******************receive buffer*******************";
         char *char_buff = recvBuf_.data();
         CHAR_BUFF_TO_LOG(std::vector<char>(recvBuf_.data(), recvBuf_.data() + sz));
@@ -89,14 +106,24 @@ void CommAsyncUDP::run() {
 }
 
 CommAsyncUDP::CommAsyncUDP() {
+    syncSendMsg = false;
     try {
 //        sdp_ = boost::make_shared<udp::socket>(io_service_);
 //        sdp_->open(udp::v4());
 //        boost::asio::socket_base::reuse_address option(true);
 //        sdp_->set_option(option);
 //        sdp_->bind(udp::endpoint(udp::v4(), IPPortCfg::Get()->COMM_SELF_PORT()));
+
         udp::endpoint endpoint(udp::v4(), IPPortCfg::Get()->COMM_SELF_PORT());
         sdp_ = boost::make_shared<udp::socket>(io_service_, endpoint);
+
+        std::string remoteIp = IPPortCfg::Get()->COMM_CAMERA_IP();
+        unsigned short remotePort = boost::lexical_cast<unsigned short>(IPPortCfg::Get()->COMM_CAMERA_PORT());
+        udp::endpoint remoteEp = udp::endpoint(boost::asio::ip::address_v4::from_string(remoteIp), remotePort);
+        sdp_->connect(remoteEp);
+
+        LOG(INFO) << "CommAsyncUDP::CommAsyncUDP locale endpoints:" << sdp_->local_endpoint();
+        LOG(INFO) << "CommAsyncUDP::CommAsyncUDP remote endpoint:" << remoteEp;
 
         sdp_->async_receive_from(boost::asio::buffer(recvBuf_), peerEndp_,
                                  boost::bind(&CommAsyncUDP::handle_recv, this, _1, _2));

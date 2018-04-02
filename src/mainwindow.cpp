@@ -35,146 +35,34 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ProtocolDataInterfaceImpl(DispatcheType_CameraDefault),
     ui(new Ui::MainWindow),
-    mainLayout(new QHBoxLayout(this)),
-    imagProc(new ImageStreamProc),
-    receiveDataProc(ReceiveDataProc::getInstance()),
-    photoAndVideoDialog(boost::shared_ptr<PhotoAndVideoDialog>(new PhotoAndVideoDialog(this))),
-    aeModeDialog(boost::shared_ptr<AeModeDialog>(new AeModeDialog(this))),
-    focusDialog(boost::shared_ptr<FocusDialog>(new FocusDialog(this))),
-    gimbalDialog(boost::shared_ptr<GimbalDialog>(new GimbalDialog(this))),
-    deviceInfoDialog(DeviceInfoDialog::createInstance(this)),
-    playBackDialog(boost::shared_ptr<PlayBackDialog>(new PlayBackDialog)),
-    mediaViewWidget(boost::shared_ptr<WaterFallScrollArea>(new WaterFallScrollArea)),
-    algorithmDialog(boost::shared_ptr<AlgorithmDialog>(new AlgorithmDialog)),
-//    workModeDialog(boost::shared_ptr<WorkModeDialog>(new WorkModeDialog)),
-    actionGroupResolution(new QActionGroup(this)),
-    actionGroupVideoStandard(new QActionGroup(this)),
-    actionGroupWhiteBalance(new QActionGroup(this)),
-    actionGroupExposure(new QActionGroup(this)),
-    actionGroupISO(new QActionGroup(this)),
-    actionGroupExposureGear(new QActionGroup(this)),
-    actionGroupGrid(new QActionGroup(this)),
-    actionGroupPictureSize(new QActionGroup(this)),
-    actionGroupQuality(new QActionGroup(this)),
-    actionGroupCorscatAvoidance(new QActionGroup(this)),
-    actionGroupSharpening(new QActionGroup(this)),
-    actionGroupHDR(new QActionGroup(this)),
-    actionGroupLens(new QActionGroup(this)),
-    actionGroupPTZSpeed(new QActionGroup(this)),
-    actionGroupPTZCalibration(new QActionGroup(this)),
-    actionGroupIntelliMode(new QActionGroup(this)),
-    actionGroupCloseup(new QActionGroup(this)),
-    actionGroupScene(new QActionGroup(this)),
-    actionGroupIntelligLens(new QActionGroup(this)),
-    customWBWidget(new QWidget),
-    customWBSlider(new QSlider(customWBWidget))
+    mainLayout(new QHBoxLayout(this))
 {
-    if (isBigEndian()) {
-        qDebug() << "System is Big Endian exit !!!!!!!!!!!!!!!!!!!!!!!!";
-        exit(-1); //
-    }
-
     ui->setupUi(this);
-
-    uint32_t ip;
-    uint16_t port;
-    if (getConfiguredEndpoint(ip, port)) {
-        std::vector<uint8_t> data(6);
-        memcpy(data.data(), &ip, 4);
-        memcpy(data.data() + 4, &port, 2);
-        //上报本机ip和端口
-        sendCmdUniversal(0x20, data);
-    }
-    else {
-        QMessageBox::warning(nullptr, "网络错误", "网络错误", QMessageBox::Ok);
-    }
-
-//    QWidget *cw = new QWidget(this);
-//    setCentralWidget(cw);
-//    cw->setLayout(mainLayout);
-
-//    mainLayout->addWidget(viewLable);
-    viewLable = new ViewLable();
-    setCentralWidget(viewLable);
-
-    setFixedSize(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+    resize(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     QRect screenRect = QApplication::desktop()->screenGeometry();
     centerPoint.setX(screenRect.width() / 2 - width() / 2);
     centerPoint.setY(screenRect.height() / 2 - height() / 2);
     move(centerPoint);
-    customWBWidget->setGeometry(QRect(centerPoint, QSize(400, 50)));
-    customWBSlider->setGeometry(QRect(0, 25, 400, 10));
-    customWBSlider->setOrientation(Qt::Horizontal);
-    customWBSlider->setRange(0, 80);
-    customWBWidget->setFixedSize(400, 50);
 
-    photoAndVideoDialog->registerSelf2Handler();
-    focusDialog->registerSelf2Handler();
-    gimbalDialog->registerSelf2Handler();
-    aeModeDialog->registerSelf2Handler();
-//    deviceInfoDialog->registerSelf2Handler();
-//    workModeDialog->registerSelf2Handler();
+    if (isBigEndian()) {
+        LOG(INFO) << "System is Big Endian exit !!!!!!!!!!!!!!!!!!!!!!!!";
+        QMessageBox::warning(nullptr, "警告", "小端机器无法正常工作", QMessageBox::Ok);
+        exit(-1);
+    }
 
-    connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
-    connect(photoAndVideoDialog.get(), SIGNAL(getVideoStreamAgain()), imagProc, SLOT(readStream()));
-    connect(imagProc, SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(), SLOT(readVideoStreamDoneSlot(bool)));
-    connect(imagProc, SIGNAL(readStreamDone(bool)), this, SLOT(showVideoStreamResult(bool)));
-
-    imgStreamProcThread = boost::thread(&ImageStreamProc::play, imagProc);
-
-    receiveDataProc->start();
-    ReceiveDataDispatcher::getInstance()->start();
-
-    connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), viewLable, SLOT(setFocusStatus(bool)));
-    connect(customWBSlider, SIGNAL(sliderReleased()), this, SLOT(customWBSlider_sliderReleased()));
-
-    //    QActionGroup * whiteBalanceGroup = new QActionGroup(this);
-    addItem2Map(ui->menu_CapStorageType, Remo_CmdId_Camera_Get_CapStorageType);
-    addItem2Map(ui->menu_CapStorageQuality, Remo_CmdId_Camera_Get_CapStorageQuality);
-    addItem2Map(ui->menu_PhotoColorType, Remo_CmdId_Camera_Get_PhotoColorType);
-    addItem2Map(ui->menu_VideoMuxerType, Remo_CmdId_Camera_Get_VideoMuxerType);
-    addItem2Map(ui->menu_VideoFormat, Remo_CmdId_Camera_Get_VideoFormat);
-//    addItem2Map(customWBSlider, Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
-    addItem2Map(ui->menu_whiteBalance, Remo_CmdId_Camera_Get_WhiteBalance);
-    addItem2Map(ui->menu_Sharpness, Remo_CmdId_Camera_Get_Sharpness);
-    addItem2Map(ui->menu_MeterMode, Remo_CmdId_Camera_Get_MeterMode);
-    addItem2Map(ui->menu_Antiflick, Remo_CmdId_Camera_Get_Antiflick);
-    addItem2Map(ui->menu_Rotation, Remo_CmdId_Camera_Get_Rotation);
-
-//    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageType_Range);
-//    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageQuality_Range);
-//    sendCmdCamera(Remo_CmdId_Camera_Get_PhotoColorType_Range);
-//    sendCmdCamera(Remo_CmdId_Camera_Get_VideoMuxerType_Range);
-    sendCmdCamera(Remo_CmdId_Camera_Get_WhiteBalance_Range);
-    sendCmdCamera(Remo_CmdId_Camera_Get_MeterMode_Range);
-    sendCmdCamera(Remo_CmdId_Camera_Get_Antiflick_Range);
-//    sendCmdCamera(Remo_CmdId_Camera_Get_Rotation_Range);
-    ItemData itemData;
-    if (findItemByUiPtr(ui->menu_Sharpness, itemData))
-        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_Sharpness);
-    if (findItemByUiPtr(ui->menu_VideoFormat, itemData))
-        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_VideoFormat);
-
-    sendCmdCamera(Remo_CmdId_Camera_Get_AELockStatus);
-    sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
-
-    Remo_Camera_ZoomControlParam_s data ;
-    data.ZoomControlType = 0;
-    data.Speed = SpeedLevelNum_Faster;
-    data.TargetPosNo = 0;
-    int TargetPosNo = 0;
+    //上报IP是否成功
+    if (!isValid()) {
+        LOG(INFO) << "Initialing incorrect no internet !!!!!!!!!!!!!!!!!!!!!!!!";
+        QMessageBox::warning(nullptr, "网络错误", "网络错误", QMessageBox::Ok);
+    } else {
+        init();
+    }
 }
 
 MainWindow::~MainWindow()
 {
-//    delete imagProc;
-//    delete viewLable;
-//    delete mainLayout;
-//    delete imagProc;
-//    delete actionGroupResolution;
-//    delete cameraSetting;
-
-//    delete ui;
+    delete ui;
+    delete mainLayout;
 }
 
 boost::shared_ptr<MainWindow> MainWindow::getWindInstace()
@@ -189,7 +77,6 @@ void MainWindow::receiveDataDispatch(const std::vector<uint8_t> &data)
 {
     unsigned char d = data.at(0);
     qDebug() << "Got data respand and data is:" << d;
-
 }
 
 void MainWindow::initAfterConstruct()
@@ -271,49 +158,59 @@ void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_
 
 void MainWindow::paintEvent(QPaintEvent *ev)
 {
-    QMainWindow::paintEvent(ev);
-    const QPixmap *ptr = viewLable->pixmap();
-    if (nullptr == ptr) return;
-
-    QPixmap pix(*ptr);
-    pix = pix.scaled(size(), Qt::KeepAspectRatio);
-    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
-                           pix.width(), pix.height());
-    viewLable->setPixmap(pix);
+//    QMainWindow::paintEvent(ev);
+//    const QPixmap *ptr = viewLable->pixmap();
+//    if (nullptr == ptr) return;
+//
+//    QPixmap pix(*ptr);
+//    pix = pix.scaled(size(), Qt::KeepAspectRatio);
+//    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
+//                           pix.width(), pix.height());
+//    viewLable->setPixmap(pix);
 }
 
 void MainWindow::setLabelPix(const QImage &image)
 {
-    QPixmap pix = QPixmap::fromImage(image);
-
-    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
-                           pix.width(), pix.height());
-    viewLable->setPixmap(pix);
+//    QPixmap pix = QPixmap::fromImage(image);
+//
+//    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
+//                           pix.width(), pix.height());
+//    viewLable->setPixmap(pix);
 }
 
 void MainWindow::on_action_photoAndVideo_triggered()
 {
-    photoAndVideoDialog->show();
+    if (photoAndVideoDialog) {
+        photoAndVideoDialog->show();
+    }
 }
 
 void MainWindow::on_action_exposureCompensation_triggered()
 {
-    aeModeDialog->show();
+    if (aeModeDialog) {
+        aeModeDialog->show();
+    }
 }
 
 void MainWindow::on_action_FocusAndZoom_triggered()
 {
-    focusDialog->show();
+    if (focusDialog) {
+        focusDialog->show();
+    }
 }
 
 void MainWindow::on_action_Gimbal_triggered()
 {
-    gimbalDialog->show();
+    if (gimbalDialog) {
+        gimbalDialog->show();
+    }
 }
 
 void MainWindow::on_action_deviceInfo_triggered()
 {
-    deviceInfoDialog->show();
+    if (deviceInfoDialog) {
+        deviceInfoDialog->show();
+    }
 }
 
 void MainWindow::on_action_Aelock_triggered(bool status)
@@ -323,19 +220,20 @@ void MainWindow::on_action_Aelock_triggered(bool status)
 
 void MainWindow::on_action_playBack_triggered()
 {
-    playBackDialog->show();
+    if (playBackDialog) {
+        playBackDialog->show();
+    }
 }
 
 void MainWindow::on_action_mediaView_triggered()
 {
-//    WaterFallScrollArea *sa = new WaterFallScrollArea;
-//    sa->show();
-    if (mediaViewWidget->reloadImages()) {
-        mediaViewWidget->show();
-    } else {
-        QMessageBox::warning(nullptr, "网络错误", "网络错误", QMessageBox::Ok);
+    if (mediaViewWidget) {
+        if (mediaViewWidget->reloadImages()) {
+            mediaViewWidget->show();
+        } else {
+            QMessageBox::warning(nullptr, "网络错误", "网络错误", QMessageBox::Ok);
+        }
     }
-
 }
 
 void MainWindow::menu_action_triggered(QAction *action)
@@ -375,6 +273,105 @@ void MainWindow::showVideoStreamResult(bool result) {
 void MainWindow::on_action_algorithm_triggered() {
     AlgorithmDialog *dialog = new AlgorithmDialog;
     dialog->show();
+}
+
+void MainWindow::init() {
+    imageWidget = boost::shared_ptr<ImageWidget>(new ImageWidget);
+    if (!imageWidget->isValid()) {
+        QMessageBox::warning(nullptr, "网络错误", "无视频流", QMessageBox::Ok);
+    }
+
+    //    imagProc(new ImageStreamProc),
+    receiveDataProc = ReceiveDataProc::getInstance();
+    photoAndVideoDialog = boost::shared_ptr<PhotoAndVideoDialog>(new PhotoAndVideoDialog(this));
+    aeModeDialog = boost::shared_ptr<AeModeDialog>(new AeModeDialog(this));
+    focusDialog = boost::shared_ptr<FocusDialog>(new FocusDialog(this));
+    gimbalDialog = boost::shared_ptr<GimbalDialog>(new GimbalDialog(this));
+    deviceInfoDialog = DeviceInfoDialog::createInstance(this);
+    playBackDialog = boost::shared_ptr<PlayBackDialog>(new PlayBackDialog);
+    mediaViewWidget = boost::shared_ptr<WaterFallScrollArea>(new WaterFallScrollArea);
+    algorithmDialog = boost::shared_ptr<AlgorithmDialog>(new AlgorithmDialog);
+    customWBWidget = new QWidget;
+    customWBSlider = new QSlider(customWBWidget);
+
+
+
+//    QWidget *cw = new QWidget(this);
+//    setCentralWidget(cw);
+//    cw->setLayout(mainLayout);
+
+//    mainLayout->addWidget(viewLable);
+//    viewLable = new ViewLable();
+//    setCentralWidget(viewLable);
+
+
+    setCentralWidget(imageWidget.get());
+    customWBWidget->setGeometry(QRect(centerPoint, QSize(400, 50)));
+    customWBSlider->setGeometry(QRect(0, 25, 400, 10));
+    customWBSlider->setOrientation(Qt::Horizontal);
+    customWBSlider->setRange(0, 80);
+    customWBWidget->setFixedSize(400, 50);
+
+    photoAndVideoDialog->registerSelf2Handler();
+    focusDialog->registerSelf2Handler();
+    gimbalDialog->registerSelf2Handler();
+    aeModeDialog->registerSelf2Handler();
+//    deviceInfoDialog->registerSelf2Handler();
+//    workModeDialog->registerSelf2Handler();
+
+//    connect(imagProc, SIGNAL(imageGot(const QImage&)), this, SLOT(setLabelPix(const QImage&)));
+//    connect(photoAndVideoDialog.get(), SIGNAL(getVideoStreamAgain()), imagProc, SLOT(readStream()));
+//    connect(imagProc, SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(), SLOT(readVideoStreamDoneSlot(bool)));
+//    connect(imagProc, SIGNAL(readStreamDone(bool)), this, SLOT(showVideoStreamResult(bool)));
+
+//    imgStreamProcThread = boost::thread(&ImageStreamProc::play, imagProc);
+
+    connect(photoAndVideoDialog.get(), SIGNAL(getVideoStreamAgain()), imageWidget->getDecoder().get(), SLOT(readStream()));
+    connect(imageWidget->getDecoder().get(), SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(), SLOT(readVideoStreamDoneSlot(bool)));
+    connect(imageWidget->getDecoder().get(), SIGNAL(readStreamDone(bool)), this, SLOT(showVideoStreamResult(bool)));
+
+    receiveDataProc->start();
+    ReceiveDataDispatcher::getInstance()->start();
+
+//    connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), viewLable, SLOT(setFocusStatus(bool)));
+    connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), imageWidget.get(), SLOT(setFocusStatus(bool)));
+    connect(customWBSlider, SIGNAL(sliderReleased()), this, SLOT(customWBSlider_sliderReleased()));
+
+    //    QActionGroup * whiteBalanceGroup = new QActionGroup(this);
+    addItem2Map(ui->menu_CapStorageType, Remo_CmdId_Camera_Get_CapStorageType);
+    addItem2Map(ui->menu_CapStorageQuality, Remo_CmdId_Camera_Get_CapStorageQuality);
+    addItem2Map(ui->menu_PhotoColorType, Remo_CmdId_Camera_Get_PhotoColorType);
+    addItem2Map(ui->menu_VideoMuxerType, Remo_CmdId_Camera_Get_VideoMuxerType);
+    addItem2Map(ui->menu_VideoFormat, Remo_CmdId_Camera_Get_VideoFormat);
+//    addItem2Map(customWBSlider, Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
+    addItem2Map(ui->menu_whiteBalance, Remo_CmdId_Camera_Get_WhiteBalance);
+    addItem2Map(ui->menu_Sharpness, Remo_CmdId_Camera_Get_Sharpness);
+    addItem2Map(ui->menu_MeterMode, Remo_CmdId_Camera_Get_MeterMode);
+    addItem2Map(ui->menu_Antiflick, Remo_CmdId_Camera_Get_Antiflick);
+    addItem2Map(ui->menu_Rotation, Remo_CmdId_Camera_Get_Rotation);
+
+//    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageType_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_CapStorageQuality_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_PhotoColorType_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_VideoMuxerType_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_WhiteBalance_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_MeterMode_Range);
+    sendCmdCamera(Remo_CmdId_Camera_Get_Antiflick_Range);
+//    sendCmdCamera(Remo_CmdId_Camera_Get_Rotation_Range);
+    ItemData itemData;
+    if (findItemByUiPtr(ui->menu_Sharpness, itemData))
+        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_Sharpness);
+    if (findItemByUiPtr(ui->menu_VideoFormat, itemData))
+        surportRangeGot(itemData.subItemData, Remo_CmdId_Camera_Get_VideoFormat);
+
+    sendCmdCamera(Remo_CmdId_Camera_Get_AELockStatus);
+    sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
+
+    Remo_Camera_ZoomControlParam_s data ;
+    data.ZoomControlType = 0;
+    data.Speed = SpeedLevelNum_Faster;
+    data.TargetPosNo = 0;
+    int TargetPosNo = 0;
 }
 
 

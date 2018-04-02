@@ -21,8 +21,8 @@ WaterFallItem::WaterFallItem(std::string url, QWidget *parent) :
 void WaterFallItem::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
     QRect r = isHovering ? rect() :
-                           rect().adjusted(hoveringRectLength, hoveringRectLength,
-                                           -hoveringRectLength, -hoveringRectLength);
+              rect().adjusted(hoveringRectLength, hoveringRectLength,
+                              -hoveringRectLength, -hoveringRectLength);
     painter.drawImage(r, *image);
     if (imageUrl.find(".MP4") != std::string::npos) {
         painter.drawImage(r, *videoIcon);
@@ -72,19 +72,21 @@ void WaterFallItem::mousePressEvent(QMouseEvent *event) {
         WaterFallImageItem item(imageUrl);
         if (item.isValid()) {
             item.exec();
-        }
-        else {
+        } else {
             QMessageBox::warning(nullptr, "网络错误", "无视频流", QMessageBox::Ok);
         }
-    }
-    else {
+    } else {
         WaterFallVideoItem item(imageUrl);
         if (item.isValid()) {
+            if (item.getDuration() > 0 && item.getDuration() <= 1000) {
+                QMessageBox::warning(nullptr, "警告", "文件太短，无法播放", QMessageBox::Ok);
+                return;
+            }
             item.exec();
-        }
-        else {
+        } else {
             QMessageBox::warning(nullptr, "网络错误", "无视频流", QMessageBox::Ok);
         }
     }
 }
+
 

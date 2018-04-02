@@ -198,10 +198,10 @@ void ImageStreamProc::play()
             if (frameFinished) {
                 sws_scale(pSwsContext, (const uint8_t* const *)pAVFrame->data, pAVFrame->linesize, 0, videoHeight, pAVPicture.data, pAVPicture.linesize);                //发送获取一帧图像信号
                 QImage image(pAVPicture.data[0], videoWidth, videoHeight, QImage::Format_RGB888);
-                mtxStreamReady.unlock();
+                lock.unlock();
                 emit imageGot(image);
                 boost::this_thread::sleep_for(boost::chrono::milliseconds(5));
-                mtxStreamReady.lock();
+                lock.lock();
             }
         }
         av_free_packet(&pAVPacket);//释放资源,否则内存会一直上升

@@ -6,6 +6,8 @@
 #include "HttpProxy.h"
 #include <QMessageBox>
 #include <QDateTime>
+#include <QMouseEvent>
+#include <QDebug>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <glog/logging.h>
@@ -25,12 +27,13 @@ WaterFallVideoItem::WaterFallVideoItem(std::string url, QWidget *parent) :
         imageLabel(new QLabel),
         playButton(new QPushButton),
         replayButton(new QPushButton),
-        progressBarSlider(new QSlider(Qt::Horizontal)),
+        progressBarSlider(new ProgressBarSlider),
         progressBarLabelTime(new QLabel("00:00:00/00:00:00")),
         valid(false),
         progressBarIsDragging(false),
         videoStream(new VideoStreamControl),
         progressBarSliderRangeMax(100),
+        duration(0),
         videoUrl(url) {
     resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     setLayout(mainLayout);
@@ -46,10 +49,9 @@ WaterFallVideoItem::WaterFallVideoItem(std::string url, QWidget *parent) :
     playButton->setText(QString::fromLocal8Bit("播放/暂停"));
     replayButton->setText(QString::fromLocal8Bit("重播"));
     progressBarSlider->setRange(0, progressBarSliderRangeMax);
-//    if (!m_slider->isSliderDown())
-//        m_slider->setValue(progress / 1000);
+    progressBarSlider->setOrientation(Qt::Horizontal);
 
-    getDuration();
+    getDurationFromCamera();
 
     std::string baseUrl = "rtsp://192.168.0.1/livestream/file&path=/app/";
     int pos = videoUrl.find('.');
@@ -69,6 +71,10 @@ WaterFallVideoItem::WaterFallVideoItem(std::string url, QWidget *parent) :
     connect(videoStream, SIGNAL(videoFinished()), this, SLOT(onVideoFinished()));
 
     setWindowTitle(QString::fromStdString(videoUrl));
+
+    if (duration <= 100) {
+        valid = false;
+    }
 }
 
 WaterFallVideoItem::~WaterFallVideoItem() {
@@ -113,8 +119,6 @@ void WaterFallVideoItem::onPlayButtonClicked() {
 }
 
 void WaterFallVideoItem::onProgressBarSliderReleased() {
-    progressBarIsDragging = false;
-
     int time = ceil(progressBarSlider->value() / (float)progressBarSliderRangeMax * duration / 1000);
     std::string url = "http://192.168.0.1/cgi-bin/hi3510/t_remo.cgi?-type=Demuxer&-cmd=seek&-param=" +
             boost::lexical_cast<std::string>(time);
@@ -129,7 +133,7 @@ void WaterFallVideoItem::onProgressBarSliderReleased() {
     }
 }
 
-void WaterFallVideoItem::getDuration() {
+void WaterFallVideoItem::getDurationFromCamera() {
     std::string path = videoUrl.substr(0, videoUrl.find('.')) + ".LRV";
     std::string url = "http://192.168.0.1/cgi-bin/hi3510/t_remo.cgi?-type=GetFileDuration&-cmd=/app/" + path + "&-param=0";
     std::vector<uint8_t> buff;
@@ -172,7 +176,7 @@ void WaterFallVideoItem::onReplayButtonClicked() {
 
 void WaterFallVideoItem::onProgressBarSliderValueChanged(int value) {
     int time = ceil(value / (float)progressBarSliderRangeMax * duration / 1000);
-    LOG(INFO) << "onProgressBarSliderValueChanged:" << value << ":" << progressBarSliderRangeMax<< ":" << duration << ":" << time;
+//    LOG(INFO) << "onProgressBarSliderValueChanged:" << value << ":" << progressBarSliderRangeMax<< ":" << duration << ":" << time;
     QString timeStr = QDateTime::fromTime_t(time).toUTC().toString("h:m:s");
     QString durationStr = QDateTime::fromTime_t(durationSeconds).toUTC().toString("h:m:s");
     timeStr += QString("/") + durationStr;
@@ -180,14 +184,12 @@ void WaterFallVideoItem::onProgressBarSliderValueChanged(int value) {
 }
 
 void WaterFallVideoItem::onVideoTimestampChanged(double time) {
-    if (progressBarIsDragging) return;
-
     int value = time * 1000 / duration * progressBarSliderRangeMax;
-    progressBarSlider->setValue(value);
+//    LOG(INFO) << "WaterFallVideoItem::onVideoTimestampChanged set value" << value;
+    progressBarSlider->setValueWithDragging(value);
 }
 
 void WaterFallVideoItem::onProgressBarSliderPressed() {
-    progressBarIsDragging = true;
 }
 
 void WaterFallVideoItem::onVideoFinished() {

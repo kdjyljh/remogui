@@ -12,28 +12,6 @@ public:
 
     virtual void handle() override;
 
-    static void sendCmdCamera(Remo_CmdId_Camera_e cmdId,
-                   std::vector<uint8_t> data = std::vector<uint8_t>(),
-            CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
-
-    static void sendCmdCamera(Remo_CmdId_Camera_e cmdId, int maxRety, long intervalUS,
-                              std::vector<uint8_t> data = std::vector<uint8_t>(),
-            CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
-
-    static void sendCmdGimbal(Remo_CmdId_Gimbal_e cmdId,
-                   std::vector<uint8_t> data = std::vector<uint8_t>(),
-            CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
-
-    static void sendCmdBattery(Remo_CmdId_Battery_e cmdId,
-                   std::vector<uint8_t> data = std::vector<uint8_t>(),
-            CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
-
-    static void sendCmdUniversal(int cmdId,
-                               std::vector<uint8_t> data = std::vector<uint8_t>(),
-                               CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
-
-    void sendCmdCamera() {}
-
 protected:
     virtual void workModeGot(const Remo_Camera_WorkMode_s & workmode) {}
 //    virtual void capDelayTimeGot(const int & value){}

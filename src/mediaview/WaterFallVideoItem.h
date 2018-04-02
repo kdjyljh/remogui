@@ -9,9 +9,9 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPushButton>
-#include <QSlider>
 #include <QPixmap>
 #include "VideoStreamControl.h"
+#include "ProgressBarSlider.h"
 #include <boost/thread.hpp>
 
 class WaterFallVideoItem : public QDialog{
@@ -20,6 +20,7 @@ public:
     explicit WaterFallVideoItem(std::string url, QWidget *parent = nullptr);
     ~WaterFallVideoItem();
     bool isValid() {return valid;}
+    int getDuration() {return duration;}
 
 protected:
     virtual void closeEvent(QCloseEvent *event) override ;
@@ -36,14 +37,14 @@ private slots:
     void onVideoFinished();
 
 private:
-    void getDuration();
+    void getDurationFromCamera();
 
 private:
     QLayout *mainLayout;
     QLabel *imageLabel;
     QPushButton *playButton;
     QPushButton *replayButton;
-    QSlider *progressBarSlider;
+    ProgressBarSlider *progressBarSlider;
     QLabel *progressBarLabelTime;
     std::string videoUrl;
     bool valid;

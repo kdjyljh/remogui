@@ -36,35 +36,10 @@ void ProtocolDataInterfaceImpl::handle()
     retProcess(content);
 }
 
-void ProtocolDataInterfaceImpl::sendCmdCamera(Remo_CmdId_Camera_e cmdId, std::vector<uint8_t> data, CommProtoVariables::RequestRespond reqres)
-{
-    ProtocolDataInterface::sendCmd(COMMDEVICE_CAMERA, Remo_CmdSet_Camera, cmdId, true, false, reqres, data);
-}
-
-void ProtocolDataInterfaceImpl::sendCmdCamera(Remo_CmdId_Camera_e cmdId, int maxRety, long intervalUS, std::vector<uint8_t> data, CommProtoVariables::RequestRespond reqres)
-{
-    ProtocolDataInterface::sendCmd(COMMDEVICE_CAMERA, Remo_CmdSet_Camera, cmdId, true, false, reqres, data, maxRety, intervalUS);
-}
-
-void ProtocolDataInterfaceImpl::sendCmdGimbal(Remo_CmdId_Gimbal_e cmdId, std::vector<uint8_t> data, CommProtoVariables::RequestRespond reqres)
-{
-    ProtocolDataInterface::sendCmd(COMMDEVICE_GIMBAL, Remo_CmdSet_Gimbal, cmdId, true, false, reqres, data);
-}
-
-void ProtocolDataInterfaceImpl::sendCmdBattery(Remo_CmdId_Battery_e cmdId, std::vector<uint8_t> data, CommProtoVariables::RequestRespond reqres)
-{
-    ProtocolDataInterface::sendCmd(COMMDEVICE_BATTERY, Remo_CmdSet_Battery, cmdId, true, false, reqres, data);
-}
-
 void ProtocolDataInterfaceImpl::async_setWorkMode(const Remo_Camera_WorkMode_s & workmode)
 {
     std::vector<uint8_t> data;
     data.push_back(static_cast<uint8_t>(workmode.MainWorkMode));
     data.push_back(static_cast<uint8_t>(workmode.SubWorkMode));
     sendCmdCamera(Remo_CmdId_Camera_Set_WorkMode, data);
-}
-
-void ProtocolDataInterfaceImpl::sendCmdUniversal(int cmdId, vector<uint8_t> data,
-                                                 CommProtoVariables::RequestRespond reqres) {
-    ProtocolDataInterface::sendCmd(COMMDEVICE_CAMERA, Remo_CmdSet_Universal, cmdId, true, false, reqres, data);
 }

@@ -1,4 +1,16 @@
+enum ClassType
+{
+    TYPE1 = 0;
+    TYPE2 = 1;
+    TYPE3 = 2;
+    TEST = 4;
+}
+
 message test {
     required string name = 1;
     required int32 id = 2;
+}
+
+message ClassTypeValue {
+    required ClassType type = 1;
 }

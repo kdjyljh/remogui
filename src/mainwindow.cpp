@@ -16,13 +16,12 @@ const unsigned DEFAULT_WINDOW_HEIGHT = 800;
 const unsigned IMAGE_RESOLUTION_WIDTH = 1280;
 const unsigned IMAGE_RESOLUTION_HEIGHT = 720;
 
-static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
-{
+static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group) {
     if (!menu || !group) {
         return false;
     }
 
-    QList<QAction*> actionList = menu->actions();
+    QList<QAction *> actionList = menu->actions();
     for (int i = 0; i < actionList.size(); ++i) {
         group->addAction(actionList.at(i));
     }
@@ -32,59 +31,46 @@ static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group)
 
 QPoint MainWindow::centerPoint;
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ProtocolDataInterfaceImpl(DispatcheType_CameraDefault),
-    ui(new Ui::MainWindow),
-    mainLayout(new QHBoxLayout(this))
-{
+        QMainWindow(parent),
+        ProtocolDataInterfaceImpl(DispatcheType_CameraDefault),
+        ui(new Ui::MainWindow),
+        mainLayout(new QHBoxLayout) {
     ui->setupUi(this);
     resize(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     QRect screenRect = QApplication::desktop()->screenGeometry();
     centerPoint.setX(screenRect.width() / 2 - width() / 2);
     centerPoint.setY(screenRect.height() / 2 - height() / 2);
     move(centerPoint);
-
-    if (isBigEndian()) {
-        LOG(INFO) << "System is Big Endian exit !!!!!!!!!!!!!!!!!!!!!!!!";
-        QMessageBox::warning(nullptr, "警告", "小端机器无法正常工作", QMessageBox::Ok);
-        exit(-1);
-    }
-
-    //上报IP是否成功
-    if (!isValid()) {
-        LOG(INFO) << "Initialing incorrect no internet !!!!!!!!!!!!!!!!!!!!!!!!";
-        QMessageBox::warning(nullptr, "网络错误", "网络错误", QMessageBox::Ok);
-    } else {
-        init();
-    }
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-    delete mainLayout;
+MainWindow::~MainWindow() {
+//    delete ui;
+//    delete mainLayout;
+//    delete customWBWidget;
+//    delete customWBSlider;
 }
 
-boost::shared_ptr<MainWindow> MainWindow::getWindInstace()
-{
+boost::shared_ptr<MainWindow> MainWindow::getWindInstace() {
     //多线程不安全
     static boost::shared_ptr<MainWindow> instance(new MainWindow);
+    static bool showInfo = true;
+    if (!instance->init(showInfo, false)) {
+        return nullptr;
+    }
+    showInfo = false;
     instance->registerSelf2Handler();
     return instance;
 }
 
-void MainWindow::receiveDataDispatch(const std::vector<uint8_t> &data)
-{
+void MainWindow::receiveDataDispatch(const std::vector<uint8_t> &data) {
     unsigned char d = data.at(0);
     qDebug() << "Got data respand and data is:" << d;
 }
 
-void MainWindow::initAfterConstruct()
-{
+void MainWindow::initAfterConstruct() {
 }
 
-void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId)
-{
+void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId) {
 //    if (!((cmdId >> 3) >= 0x0 && (cmdId >> 3) < 0x60 ||
 //         (cmdId >> 3) >= 0x67 && (cmdId >> 3) < 0x78 ||
 //         (cmdId >> 3) >= 0x7b && (cmdId >> 3) < 0x85)) {
@@ -94,16 +80,16 @@ void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Came
     LOG(INFO) << "MainWindow::surportRangeGot cmdId = " << std::hex << cmdId;
 
 //    QMenu * menu = static_cast<QMenu*>(findUiPtrById(cmdId));
-    QMenu * menu = qobject_cast<QMenu*>(static_cast<QObject*>(findUiPtrById(cmdId)));
+    QMenu *menu = qobject_cast<QMenu *>(static_cast<QObject *>(findUiPtrById(cmdId)));
 //    qDebug() << "find menu" << menu << "sharpness " << ui->menu_Sharpness;
     if (nullptr != menu) {
         for (auto it : menu->actions()) menu->removeAction(it);//先删除menu的子菜单
 
-        connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(menu_action_triggered(QAction*)));
+        connect(menu, SIGNAL(triggered(QAction * )), this, SLOT(menu_action_triggered(QAction * )));
 
         QActionGroup *group = new QActionGroup(this);
         for (auto it : rangeSet) {
-            QAction * action = new QAction(QString::fromUtf8(it.ShowStr.data()), menu);
+            QAction *action = new QAction(QString::fromUtf8(it.ShowStr.data()), menu);
             action->setData(QVariant(it.Index));//将enum值放入Action的QVariant中
             menu->addAction(action);
             group->addAction(action);
@@ -117,8 +103,7 @@ void MainWindow::surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Came
     }
 }
 
-void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_e cmdId)
-{
+void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_e cmdId) {
 //    if (!((cmdId & 0x1ff) >= 0x0 && (cmdId & 0x1ff) < 0x60 ||
 //         (cmdId & 0x1ff) >= 0x67 && (cmdId & 0x1ff) < 0x78 ||
 //         (cmdId & 0x1ff) >= 0x7b && (cmdId & 0x1ff) < 0x85)) {
@@ -142,7 +127,7 @@ void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_
         return;
     }
 
-    QMenu * group = static_cast<QMenu*>(findUiPtrById(cmdId));
+    QMenu *group = static_cast<QMenu *>(findUiPtrById(cmdId));
     if (nullptr != group) {
         ItemData itemData;
         int activeIndex = static_cast<int>(data.at(0));
@@ -156,8 +141,7 @@ void MainWindow::settingGot(const std::vector<uint8_t> &data, Remo_CmdId_Camera_
     }
 }
 
-void MainWindow::paintEvent(QPaintEvent *ev)
-{
+void MainWindow::paintEvent(QPaintEvent *ev) {
 //    QMainWindow::paintEvent(ev);
 //    const QPixmap *ptr = viewLable->pixmap();
 //    if (nullptr == ptr) return;
@@ -169,8 +153,7 @@ void MainWindow::paintEvent(QPaintEvent *ev)
 //    viewLable->setPixmap(pix);
 }
 
-void MainWindow::setLabelPix(const QImage &image)
-{
+void MainWindow::setLabelPix(const QImage &image) {
 //    QPixmap pix = QPixmap::fromImage(image);
 //
 //    viewLable->setGeometry((size().width() - pix.width()) / 2, (size().height() - pix.height()) / 2,
@@ -178,55 +161,47 @@ void MainWindow::setLabelPix(const QImage &image)
 //    viewLable->setPixmap(pix);
 }
 
-void MainWindow::on_action_photoAndVideo_triggered()
-{
+void MainWindow::on_action_photoAndVideo_triggered() {
     if (photoAndVideoDialog) {
         photoAndVideoDialog->show();
     }
 }
 
-void MainWindow::on_action_exposureCompensation_triggered()
-{
+void MainWindow::on_action_exposureCompensation_triggered() {
     if (aeModeDialog) {
         aeModeDialog->show();
     }
 }
 
-void MainWindow::on_action_FocusAndZoom_triggered()
-{
+void MainWindow::on_action_FocusAndZoom_triggered() {
     if (focusDialog) {
         focusDialog->show();
     }
 }
 
-void MainWindow::on_action_Gimbal_triggered()
-{
+void MainWindow::on_action_Gimbal_triggered() {
     if (gimbalDialog) {
         gimbalDialog->show();
     }
 }
 
-void MainWindow::on_action_deviceInfo_triggered()
-{
+void MainWindow::on_action_deviceInfo_triggered() {
     if (deviceInfoDialog) {
         deviceInfoDialog->show();
     }
 }
 
-void MainWindow::on_action_Aelock_triggered(bool status)
-{
+void MainWindow::on_action_Aelock_triggered(bool status) {
     sendCmdCamera(Remo_CmdId_Camera_Set_AELockStatus, std::vector<uint8_t>{status});
 }
 
-void MainWindow::on_action_playBack_triggered()
-{
+void MainWindow::on_action_playBack_triggered() {
     if (playBackDialog) {
         playBackDialog->show();
     }
 }
 
-void MainWindow::on_action_mediaView_triggered()
-{
+void MainWindow::on_action_mediaView_triggered() {
     if (mediaViewWidget) {
         if (mediaViewWidget->reloadImages()) {
             mediaViewWidget->show();
@@ -236,12 +211,11 @@ void MainWindow::on_action_mediaView_triggered()
     }
 }
 
-void MainWindow::menu_action_triggered(QAction *action)
-{
+void MainWindow::menu_action_triggered(QAction *action) {
     if (nullptr == action) return;
 
-    QMenu *menu = dynamic_cast<QMenu*>(action->parent());
-    int data =  action->data().toInt();
+    QMenu *menu = dynamic_cast<QMenu *>(action->parent());
+    int data = action->data().toInt();
     if (menu == ui->menu_whiteBalance && data == WhiteBalance_Custom) {
         sendCmdCamera(Remo_CmdId_Camera_Set_WhiteBalance, std::vector<uint8_t>{WhiteBalance_Custom});
         sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
@@ -256,11 +230,10 @@ void MainWindow::menu_action_triggered(QAction *action)
     }
 }
 
-void MainWindow::customWBSlider_sliderReleased()
-{
+void MainWindow::customWBSlider_sliderReleased() {
     int data = customWBSlider->value() * 100 + 2000;
     LOG(INFO) << "MainWindow::customWBSlider_sliderReleased value = " << data;
-    std::vector<uint8_t> v(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 2);
+    std::vector<uint8_t> v(reinterpret_cast<uint8_t *>(&data), reinterpret_cast<uint8_t *>(&data) + 2);
     sendCmdCamera(Remo_CmdId_Camera_Set_CustomWB_ColorTemp, v);
 }
 
@@ -271,14 +244,44 @@ void MainWindow::showVideoStreamResult(bool result) {
 }
 
 void MainWindow::on_action_algorithm_triggered() {
-    AlgorithmDialog *dialog = new AlgorithmDialog;
-    dialog->show();
+    auto dialog = AlgorithmDialog::getInstance();
+    if (dialog->init()) {
+        dialog->show();
+    }
+//    if (algorithmDialog && algorithmDialog->init()) {
+//        algorithmDialog->show();
+//    }
 }
 
-void MainWindow::init() {
-    imageWidget = boost::shared_ptr<ImageWidget>(new ImageWidget);
-    if (!imageWidget->isValid()) {
+bool MainWindow::init(bool showInfo, bool initNet) {
+    if (isBigEndian()) {
+        LOG(INFO) << "System is Big Endian exit !!!!!!!!!!!!!!!!!!!!!!!!";
+        QMessageBox::warning(nullptr, "警告", "小端机器无法正常工作", QMessageBox::Ok);
+        exit(-1);
+        return false;
+    }
+
+    if (initNet) {
+        return initNetwork(showInfo);
+    }
+
+    return true;
+}
+
+bool MainWindow::initNetwork(bool showInfo) {
+    //上报IP是否成功
+    transmitLocaleIp();
+    if (!isValid() && showInfo) {
+        LOG(INFO) << "Initialing incorrect no internet !!!!!!!!!!!!!!!!!!!!!!!!";
+        if (QMessageBox::Cancel == QMessageBox::warning(nullptr, "网络错误", "网络错误", QMessageBox::Ok | QMessageBox::Cancel)) {
+            return false;
+        }
+    }
+
+    cameraImageWidget = boost::shared_ptr<CameraImageWidget>(new CameraImageWidget);
+    if (!cameraImageWidget->isValid()) {
         QMessageBox::warning(nullptr, "网络错误", "无视频流", QMessageBox::Ok);
+        return false;
     }
 
     //    imagProc(new ImageStreamProc),
@@ -290,7 +293,7 @@ void MainWindow::init() {
     deviceInfoDialog = DeviceInfoDialog::createInstance(this);
     playBackDialog = boost::shared_ptr<PlayBackDialog>(new PlayBackDialog);
     mediaViewWidget = boost::shared_ptr<WaterFallScrollArea>(new WaterFallScrollArea);
-    algorithmDialog = boost::shared_ptr<AlgorithmDialog>(new AlgorithmDialog);
+    algorithmDialog = AlgorithmDialog::getInstance();
     customWBWidget = new QWidget;
     customWBSlider = new QSlider(customWBWidget);
 
@@ -305,7 +308,7 @@ void MainWindow::init() {
 //    setCentralWidget(viewLable);
 
 
-    setCentralWidget(imageWidget.get());
+    setCentralWidget(cameraImageWidget.get());
     customWBWidget->setGeometry(QRect(centerPoint, QSize(400, 50)));
     customWBSlider->setGeometry(QRect(0, 25, 400, 10));
     customWBSlider->setOrientation(Qt::Horizontal);
@@ -326,15 +329,18 @@ void MainWindow::init() {
 
 //    imgStreamProcThread = boost::thread(&ImageStreamProc::play, imagProc);
 
-    connect(photoAndVideoDialog.get(), SIGNAL(getVideoStreamAgain()), imageWidget->getDecoder().get(), SLOT(readStream()));
-    connect(imageWidget->getDecoder().get(), SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(), SLOT(readVideoStreamDoneSlot(bool)));
-    connect(imageWidget->getDecoder().get(), SIGNAL(readStreamDone(bool)), this, SLOT(showVideoStreamResult(bool)));
+    connect(photoAndVideoDialog.get(), SIGNAL(getVideoStreamAgain()), cameraImageWidget->getDecoder().get(),
+            SLOT(readStream()));
+    connect(cameraImageWidget->getDecoder().get(), SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(),
+            SLOT(readVideoStreamDoneSlot(bool)));
+    connect(cameraImageWidget->getDecoder().get(), SIGNAL(readStreamDone(bool)), this,
+            SLOT(showVideoStreamResult(bool)));
 
     receiveDataProc->start();
     ReceiveDataDispatcher::getInstance()->start();
 
 //    connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), viewLable, SLOT(setFocusStatus(bool)));
-    connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), imageWidget.get(), SLOT(setFocusStatus(bool)));
+    connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), cameraImageWidget.get(), SLOT(setFocusStatus(bool)));
     connect(customWBSlider, SIGNAL(sliderReleased()), this, SLOT(customWBSlider_sliderReleased()));
 
     //    QActionGroup * whiteBalanceGroup = new QActionGroup(this);
@@ -369,9 +375,11 @@ void MainWindow::init() {
 
     Remo_Camera_ZoomControlParam_s data ;
     data.ZoomControlType = 0;
-    data.Speed = SpeedLevelNum_Faster;
+    data.Speed = SpeedLevelNum_Lowest;
     data.TargetPosNo = 0;
-    int TargetPosNo = 0;
+    sendCmdCamera(Remo_CmdId_Camera_Set_ZoomControlParam,
+                  std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 5));
+    return true;
 }
 
 

@@ -11,7 +11,7 @@ ProtocolDataInterface::ProtocolDataInterface(DispatcheType type) :
     dispatcheType(type),
     valid(false)
 {
-    valid = transmitLocaleIp();
+//    valid = transmitLocaleIp();
 }
 
 void ProtocolDataInterface::registerSelf2Handler()
@@ -172,7 +172,8 @@ bool ProtocolDataInterface::transmitLocaleIp() {
     memcpy(data.data(), &ip, 4);
     memcpy(data.data() + 4, &port, 2);
     //上报本机ip和端口
-    return ProtocolDataInterface::syncSendUniversal(static_cast<Remo_CmdId_Camera_e>(0x20), data);
+    valid = ProtocolDataInterface::syncSendUniversal(static_cast<Remo_CmdId_Camera_e>(0x20), data);
+    return valid;
 }
 
 bool ProtocolDataInterface::syncSendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet, int cmdId, bool needAckApp,

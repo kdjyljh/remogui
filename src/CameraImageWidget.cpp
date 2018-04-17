@@ -1,4 +1,4 @@
-#include "imagewidget.h"
+#include "CameraImageWidget.h"
 #include "cmddef.h"
 #include "protocoldataInterfaceimpl.h"
 #include "camerafielddef.h"
@@ -9,7 +9,7 @@
 #include <QMouseEvent>
 #include <glog/logging.h>
 
-ImageWidget::ImageWidget(QWidget *parent) :
+CameraImageWidget::CameraImageWidget(QWidget *parent) :
     QWidget(parent),
     focusStatus(false),
     valid(false),
@@ -21,7 +21,7 @@ ImageWidget::ImageWidget(QWidget *parent) :
     connect(decoder.get(), SIGNAL(imageGot()), this, SLOT(drawImage()), Qt::BlockingQueuedConnection);
 }
 
-void ImageWidget::paintEvent(QPaintEvent *event)
+void CameraImageWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     if (!image.isNull()) {
@@ -35,7 +35,7 @@ void ImageWidget::paintEvent(QPaintEvent *event)
     painter.drawRect(QRect(recPos - QPoint(recSize.width() / 2, recSize.height() / 2), recSize));
 }
 
-void ImageWidget::drawImage()
+void CameraImageWidget::drawImage()
 {
     AVFrame *frame = decoder->getCurFrame();
     if (NULL != frame) {
@@ -45,7 +45,7 @@ void ImageWidget::drawImage()
     }
 }
 
-void ImageWidget::mouseReleaseEvent(QMouseEvent *ev)
+void CameraImageWidget::mouseReleaseEvent(QMouseEvent *ev)
 {
     qDebug() << ev->pos();
     qDebug() << size();
@@ -57,5 +57,5 @@ void ImageWidget::mouseReleaseEvent(QMouseEvent *ev)
                                              std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&pointNormal), reinterpret_cast<uint8_t*>(&pointNormal) + sizeof(pointNormal)));
 }
 
-ImageWidget::~ImageWidget() {
+CameraImageWidget::~CameraImageWidget() {
 }

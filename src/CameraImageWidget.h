@@ -5,12 +5,12 @@
 #include <QImage>
 #include "vaapidecoder.h"
 
-class ImageWidget : public QWidget
+class CameraImageWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ImageWidget(QWidget *parent = nullptr);
-    ~ImageWidget();
+    explicit CameraImageWidget(QWidget *parent = nullptr);
+    ~CameraImageWidget();
     bool isValid() {return valid;}
 
     boost::shared_ptr<VaapiDecoder> getDecoder() {return decoder;}

@@ -12,7 +12,11 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -std=c99")
 #不进行编译优化，方便调试
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g  -O0 -Wall -std=c++11 -Werror=return-type")
 
-find_package(Qt5 COMPONENTS Core Gui Concurrent Widgets Network REQUIRED)
+set(CMAKE_PREFIX_PATH
+        $ENV{HOME}/Qt5.10.0/5.10.0/gcc_64
+        ${CMAKE_PREFIX_PATH})
+
+find_package(Qt5 COMPONENTS Core Gui Concurrent Widgets Network Multimedia REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(Boost REQUIRED)
 
@@ -59,10 +63,17 @@ set(SOURCE_FILES
         src/algorithm/AlgorithmDialog.cpp
         src/algorithm/WorkSpaceWidget.cpp
         src/algorithm/NetImage.cpp
-        src/algorithm/TcpMsgProxy.cpp
         src/mediaview/ProgressBarSlider.cpp
-        src/imagewidget.cpp
-        src/vaapidecoder.cpp)
+        src/CameraImageWidget.cpp
+        src/vaapidecoder.cpp
+        src/algorithm/AlgorithmPkt.cpp
+        src/algorithm/AlgorithmTcpMsgClient.cpp
+        src/algorithm/AlgorithmManager.cpp
+        src/algorithm/AlgorithmImageWidget.cpp
+        src/algorithm/FaceTemplateDialog.cpp
+        src/algorithm/FaceTemplateItem.cpp
+        src/algorithm/AlgorithmGimbalDialog.cpp
+        src/algorithm/AlgorithmZoomSlider.cpp)
 
 #set(HEADERS_FILES
 #        src/photoandvideodialog.h
@@ -102,10 +113,11 @@ set(CUSTOM_LIBS
         boost_system boost_thread boost_filesystem boost_regex boost_chrono boost_date_time boost_atomic
         glog
         protobuf
-        Qt5::Gui Qt5::Concurrent Qt5::Core Qt5::Widgets Qt5::Network)
+        Qt5::Gui Qt5::Concurrent Qt5::Core Qt5::Widgets Qt5::Network Qt5::Multimedia)
 
 set(PROTO_FILES
-        proto/test.proto)
+        proto/test.proto
+        proto/AlgoParam.proto)
 
 #demo演示笔记本需要
 link_directories(/home/demo/remogui/usr/lib /home/usrlocal/lib ${link_directionies})

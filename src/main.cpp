@@ -12,7 +12,11 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-    MainWindow::getWindInstace()->show();
+    if (MainWindow::getWindInstace()) {
+        MainWindow::getWindInstace()->show();
+    } else {
+        return -1;
+    }
 
     return a.exec();
 }

@@ -57,15 +57,14 @@ public:
                                int timeout = 10000, CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
 
     static bool syncSendUniversal(Remo_CmdId_Camera_e cmdId, vector<uint8_t> data = std::vector<uint8_t>(),
-                                  int timeout = 10000,
+                                  int timeout = 1000,
                                   CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
 
     static bool isBigEndian();
 
-    static bool transmitLocaleIp();
-
     static void endianTurn(std::vector<uint8_t> &data);
 
+    bool transmitLocaleIp();
     bool isValid() { return valid; }
 
 protected:

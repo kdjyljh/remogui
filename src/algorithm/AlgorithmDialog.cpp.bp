@@ -1,0 +1,133 @@
+//
+// Created by jianghualuo on 18-3-20.
+//
+
+#include "AlgorithmDialog.h"
+#include <glog/logging.h>
+#include <QDebug>
+#include <QAction>
+#include <QPushButton>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QTabBar>
+#include <QSpacerItem>
+#include <QComboBox>
+
+AlgorithmDialog::AlgorithmDialog(QWidget *parent) :
+        QDialog(parent),
+        pix(QPixmap("/home/jianghualuo/work/data/images/cloud.jpg")),
+        ui(new AlgorithmDialog::Ui) {
+    setupUi();
+    resize(1300, 900);
+}
+
+AlgorithmDialog::~AlgorithmDialog() {
+    delete ui;
+}
+
+void AlgorithmDialog::resizeEvent(QResizeEvent *event) {
+}
+
+void AlgorithmDialog::setupUi() {
+    ui->mainLayout = new QVBoxLayout;
+    ui->tabWidget = new QTabWidget;
+    ui->workSpaceWidget = new WorkSpaceWidget;
+    ui->tabFeatures = new QWidget;
+    ui->tabModeSetting = new QWidget;
+    ui->tabChosePerson = new QWidget;
+    ui->tabSpecialLens = new QWidget;
+    ui->tabGimbal = new QWidget;
+    ui->tabTemplate = new QWidget;
+    ui->tabGesture = new QWidget;
+
+    ui->mainLayout->addWidget(ui->tabWidget);
+    ui->mainLayout->addWidget(ui->workSpaceWidget);
+    setLayout(ui->mainLayout);
+    ui->mainLayout->setStretchFactor(ui->tabWidget, 1);
+    ui->mainLayout->setStretchFactor(ui->workSpaceWidget, 10);
+    ui->tabWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+
+    ui->tabWidget->tabBar()->setMinimumWidth(800);
+    setContentsMargins(0, 0,0,0);
+    ui->mainLayout->setContentsMargins(0,0,0,0);
+
+    ui->tabWidget->addTab(ui->tabFeatures, QString::fromLocal8Bit("功能"));
+    ui->tabWidget->addTab(ui->tabModeSetting, QString::fromLocal8Bit("模式"));
+    ui->tabWidget->addTab(ui->tabChosePerson, QString::fromLocal8Bit("选人"));
+    ui->tabWidget->addTab(ui->tabSpecialLens, QString::fromLocal8Bit("特殊镜头"));
+    ui->tabWidget->addTab(ui->tabGimbal, QString::fromLocal8Bit("云台"));
+    ui->tabWidget->addTab(ui->tabTemplate, QString::fromLocal8Bit("模板"));
+    ui->tabWidget->addTab(ui->tabGesture, QString::fromLocal8Bit("手势"));
+
+
+    QGroupBox *groupboxFaceRecognition = new QGroupBox(QString::fromLocal8Bit("人脸识别"));
+    groupboxFaceRecognition->setLayout(new QHBoxLayout);
+    groupboxFaceRecognition->setCheckable(true);
+    groupboxFaceRecognition->layout()->addWidget(new QCheckBox(QString::fromLocal8Bit("动态构建"), groupboxFaceRecognition));
+    groupboxFaceRecognition->layout()->addWidget(new QCheckBox(QString::fromLocal8Bit("双人ID优先"), groupboxFaceRecognition));
+    groupboxFaceRecognition->layout()->addWidget(new QCheckBox(QString::fromLocal8Bit("开机自动搜索"), groupboxFaceRecognition));
+    QGroupBox *groupboxSnapshot = new QGroupBox(QString::fromLocal8Bit("抓拍"));
+    groupboxSnapshot->setCheckable(true);
+    groupboxSnapshot->setLayout(new QHBoxLayout);
+    groupboxSnapshot->layout()->addWidget(new QCheckBox(QString::fromLocal8Bit("笑脸抓拍"), groupboxFaceRecognition));
+    groupboxSnapshot->layout()->addWidget(new QCheckBox(QString::fromLocal8Bit("动作抓拍"), groupboxFaceRecognition));
+    groupboxSnapshot->layout()->addWidget(new QCheckBox(QString::fromLocal8Bit("静态抓拍"), groupboxFaceRecognition));
+    QGroupBox *groupboxGestureRecognition = new QGroupBox(QString::fromLocal8Bit("手势识别"));
+    groupboxGestureRecognition->setCheckable(true);
+    QGroupBox *groupboxZJGZ = new QGroupBox(QString::fromLocal8Bit("增强型跟踪"));
+    groupboxZJGZ->setCheckable(true);
+    QGroupBox *groupboxZP = new QGroupBox(QString::fromLocal8Bit("斜拍"));
+    groupboxZP->setCheckable(true);
+    ui->tabFeatures->setLayout(new QHBoxLayout);
+    ui->tabFeatures->layout()->addWidget(groupboxFaceRecognition);
+    ui->tabFeatures->layout()->addWidget(groupboxSnapshot);
+    ui->tabFeatures->layout()->addWidget(groupboxGestureRecognition);
+    ui->tabFeatures->layout()->addWidget(groupboxZJGZ);
+    ui->tabFeatures->layout()->addWidget(groupboxZP);
+
+
+    ui->tabModeSetting->setLayout(new QHBoxLayout);
+    QGroupBox *groupboxZoomMode = new QGroupBox(QString::fromLocal8Bit("变焦模式"));
+    groupboxZoomMode->setLayout(new QVBoxLayout);
+    groupboxZoomMode->layout()->addWidget(new QComboBox());
+    ui->tabModeSetting->layout()->addWidget(groupboxZoomMode);
+    QGroupBox *groupboxTrackSpeed = new QGroupBox(QString::fromLocal8Bit("跟踪速度"));
+    groupboxTrackSpeed->setLayout(new QVBoxLayout);
+    groupboxTrackSpeed->layout()->addWidget(new QComboBox());
+    ui->tabModeSetting->layout()->addWidget(groupboxTrackSpeed);
+    QPushButton *pushButtonGTXPY = new QPushButton(QString::fromLocal8Bit("构图线偏移"));
+    ui->tabModeSetting->layout()->addWidget(pushButtonGTXPY);
+    QSpacerItem *item = new QSpacerItem(600, 100, QSizePolicy::Maximum, QSizePolicy::Maximum);
+    ui->tabModeSetting->layout()->addItem(item);
+
+
+    ui->tabChosePerson->setLayout(new QHBoxLayout);
+    ui->pushButton_startChosePerson = new QPushButton(QString::fromLocal8Bit("选人开始/结束"));
+    ui->tabChosePerson->layout()->addWidget(ui->pushButton_startChosePerson);
+    QGroupBox *groupboxAChosePerson = new QGroupBox(QString::fromLocal8Bit("一键选人"));
+    groupboxAChosePerson->setLayout(new QHBoxLayout);
+    groupboxAChosePerson->layout()->addWidget(new QPushButton(QString::fromLocal8Bit("AUTO选人")));
+    groupboxAChosePerson->layout()->addWidget(new QPushButton(QString::fromLocal8Bit("主人搜索")));
+    groupboxAChosePerson->layout()->addWidget(new QPushButton(QString::fromLocal8Bit("在线换人")));
+    ui->tabChosePerson->layout()->addWidget(groupboxAChosePerson);
+
+
+    connect(ui->pushButton_startChosePerson, SIGNAL(clicked(bool)), this, SLOT(onStartChosePersonClicked()));
+}
+
+void AlgorithmDialog::onStartChosePersonClicked() {
+    LOG(INFO) << "onStartChosePersonClicked";
+}
+
+AlgorithmDialog::Ui::~Ui() {
+    delete workSpaceWidget;
+    delete mainLayout;
+    delete tabWidget;
+    delete tabFeatures;
+    delete tabModeSetting;
+    delete tabChosePerson;
+    delete tabSpecialLens;
+    delete tabGimbal;
+    delete tabTemplate;
+    delete tabGesture;
+}

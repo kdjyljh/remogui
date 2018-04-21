@@ -11,6 +11,7 @@ class NetImage : public QObject {
  Q_OBJECT
  public:
   explicit NetImage(QObject *parent = 0);
+    ~NetImage();
 
  public slots:
   void accept_connection();

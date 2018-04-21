@@ -46,7 +46,9 @@ bool AlgorithmTcpMsgClient::connect(int timeout) {
 
 bool AlgorithmTcpMsgClient::asyncSendMsg_(std::vector<uint8_t> buff) {
     //如果没有connect，先connect
-    if (!socket.is_open()) {
+    boost::system::error_code ec;
+    socket.remote_endpoint(ec);
+    if (ec) {
         LOG(INFO) << "AlgorithmTcpMsgClient::asyncSendMsg_ no socket and try to connect";
         if (!connect()) {//可能阻塞
             LOG(INFO) << "AlgorithmTcpMsgClient::asyncSendMsg_ no socket and reconnect failed";
@@ -72,10 +74,12 @@ void AlgorithmTcpMsgClient::handleConnect(const boost::system::error_code &error
         deadlineTimer.expires_at(boost::posix_time::pos_infin);
     }
 
-    if (runThread.joinable()) {
-        runThread.interrupt();
-        runThread.join();
-    }
+//    if (runThread.joinable()) {
+//        runThread.interrupt();
+//        runThread.join();
+//    }
+    ioService.stop();
+    runThread.detach(); //自动释放上一个线程
     runThread = boost::thread(boost::bind(&boost::asio::io_service::run, &ioService));
 
     //读取4个字节包头，为长度
@@ -191,4 +195,9 @@ void AlgorithmTcpMsgClient::receiveMsgLoop() {
         popReceiveMsg(msg);
         receiveMsgHandler(msg);
     }
+}
+
+void AlgorithmTcpMsgClient::doClose() {
+    socket.close();
+    ioService.stop();
 }

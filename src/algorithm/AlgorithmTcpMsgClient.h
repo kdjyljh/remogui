@@ -35,7 +35,7 @@ private:
     void handleReceiveMsgHeader(const boost::system::error_code& error, std::size_t bytes_transferred);
     void handleReceiveMsgBody(const boost::system::error_code& error, std::size_t bytes_transferred);
     void checkTimer(boost::system::error_code& ec);
-    void doClose() { socket.close();}
+    void doClose();
     void pushReceiveMsg(const AlgoParamMsg &pkt);
     void popReceiveMsg(AlgoParamMsg &pkt);
     bool asyncSendMsg_(std::vector<uint8_t> buff);

@@ -26,6 +26,7 @@ AlgorithmManager::~AlgorithmManager() {
 }
 
 bool AlgorithmManager::asyncSendMsg(const AlgoParamMsg &msg) {
+    LOG(INFO) << "AlgorithmManager::asyncSendMsg send msg type:" << msg.type(0) << " id:" << msg.seq_num(0);
     return tcpMsgClient->asyncSendMsg(msg);
 }
 
@@ -49,6 +50,7 @@ void AlgorithmManager::receiveMsgDispatcher(const AlgoParamMsg &msg) {
     status.set_contain_allget(msg.contain_allget());
     for (int i = 0; i < msg.type().size(); ++i) {
         int type = msg.type(i);
+        LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher use async handler type:" << type << " id:" << msg.seq_num(i);
         if (msg.seq_num_size() > 0) {
             if (msg.seq_num_size() != msg.type_size()) {
                 //丢弃包
@@ -81,12 +83,22 @@ void AlgorithmManager::receiveMsgDispatcher(const AlgoParamMsg &msg) {
         }
 
         //使用异步接口
-        msgGot(type);
         if (type == AlgoParam::MsgUnity::SelectionSet) {
             (*status.mutable_selection_set()) = msg.selection_set();//深拷贝
         } else if (type == AlgoParam::MsgUnity::ControlSet) {
             (*status.mutable_control_set()) = msg.control_set();
+        } else if (type == AlgoParam::MsgUnity::ZoomMode) {
+            (*status.mutable_zoom_mode()) = msg.zoom_mode();
+        } else if (type == AlgoParam::MsgUnity::VersionGet) {
+            (*status.mutable_version_get()) = msg.version_get();
+        } else if (type == AlgoParam::MsgUnity::FaceTemplLibGet) {
+            (*status.mutable_face_templlib_get()) = msg.face_templlib_get();
+        } else if (type == AlgoParam::MsgUnity::SpecialShot) {
+            (*status.mutable_special_shot()) = msg.special_shot();
+        }  else {
         }
+
+        msgGot(type);
         LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher use async handler type = " << type;
     }
 }
@@ -103,6 +115,10 @@ AlgoParamMsg AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity_MsgType typ
         msg.mutable_face_templlib_set();
     } else if (AlgoParam::MsgUnity::FaceTemplLibModify == type) {
         msg.mutable_face_templlib_modify();
+    }  else if (AlgoParam::MsgUnity::ZoomMode == type) {
+        msg.mutable_zoom_mode();
+    }  else if (AlgoParam::MsgUnity::SpecialShot == type) {
+        msg.mutable_special_shot();
     } else {
         LOG(INFO) << "AlgorithmManager::generateMsgByType no such type:" << type;
     }

@@ -73,7 +73,8 @@ set(SOURCE_FILES
         src/algorithm/FaceTemplateDialog.cpp
         src/algorithm/FaceTemplateItem.cpp
         src/algorithm/AlgorithmGimbalDialog.cpp
-        src/algorithm/AlgorithmZoomSlider.cpp)
+        src/algorithm/AlgorithmZoomSlider.cpp
+        src/MainWorkSpaceWidget.cpp)
 
 #set(HEADERS_FILES
 #        src/photoandvideodialog.h

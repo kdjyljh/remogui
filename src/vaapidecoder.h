@@ -37,6 +37,9 @@ signals:
 
 public slots:
     bool readStream();
+    bool syncReadStream();
+
+private slots:
     void _readStream();
 
 private:
@@ -47,7 +50,7 @@ private:
     static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
                                      const enum AVPixelFormat *pix_fmts);
     int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type);
-    int init();
+    int init(); //返回0表示成功
     void deInit();
     void pushFrame(const AVFrame &frame);
     void popFrame(AVFrame &frame);
@@ -92,6 +95,9 @@ private:
     std::deque<AVFrame> frameQueue;
     boost::mutex mtxFrameQueue;
     boost::condition_variable cvFrameQueue;
+    boost::mutex mtxFrameQueueFull;
+    boost::condition_variable cvFrameQueueFull;
+    const int frameQueueSize;
 };
 
 #endif // VAAPIDECODER_H

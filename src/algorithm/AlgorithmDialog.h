@@ -53,6 +53,8 @@ private slots:
     void checkBox_capture_stateChanged(int state);
     void radioButton_person_chose_clicked(bool checked);
     void sendManuallyChosing(double x, double y);
+    void pushButton_zoom_clicked();
+    void pushButton_specialShot_clicked();
 
 private:
     void updateSelectionUi();
@@ -60,11 +62,14 @@ private:
     void updateCaptureUi();
     void updateControl();
     void updateFaceTemplateUi();
+    void updateZoomModeUi();
+    void updateSpecialShotUi();
     AlgorithmDialog(QWidget *parent = nullptr);
 
 private:
     Ui::Algorithm *ui;
     bool initialized;
+    bool isSpecialShotting;
     boost::shared_ptr<AlgorithmManager> manager;
     boost::shared_ptr<FaceTemplateDialog> faceTemplateDialog;
     boost::shared_ptr<AlgorithmGimbalDialog> gimbalDialog;

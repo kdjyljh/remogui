@@ -16,6 +16,7 @@
 AlgorithmDialog::AlgorithmDialog(QWidget *parent) :
         QDialog(parent),
         initialized(false),
+        isSpecialShotting(false),
         manager(boost::make_shared<AlgorithmManager>()),
         faceTemplateDialog(boost::make_shared<FaceTemplateDialog>()),
         gimbalDialog(boost::make_shared<AlgorithmGimbalDialog>()),
@@ -48,6 +49,10 @@ void AlgorithmDialog::onMsgGot(int msgType) {
         updateVersionUi();
     } else if (msgType == AlgoParam::MsgUnity::FaceTemplLibGet) {
         updateFaceTemplateUi();
+    } else if (msgType == AlgoParam::MsgUnity::ZoomMode) {
+        updateZoomModeUi();
+    }  else if (msgType == AlgoParam::MsgUnity::SpecialShot) {
+        updateSpecialShotUi();
     } else {
         LOG(INFO) << "AlgorithmDialog::onMsgGot unknown msg type";
     }
@@ -222,8 +227,49 @@ bool AlgorithmDialog::init() {
     connect(ui->checkBox_capture_action, SIGNAL(stateChanged(int)), SLOT(checkBox_capture_stateChanged(int)));
     connect(ui->checkBox_capture_static, SIGNAL(stateChanged(int)), SLOT(checkBox_capture_stateChanged(int)));
 
-    ui->lineEdit_master_time->setValidator(new QDoubleValidator(0, 100000, 5));
-    ui->lineEdit_master_speed->setValidator(new QDoubleValidator(0, 100000, 5));
+    connect(ui->pushButton_zoom_auto, SIGNAL(clicked()), this, SLOT(pushButton_zoom_clicked()));
+    connect(ui->pushButton_zoom_none, SIGNAL(clicked()), this, SLOT(pushButton_zoom_clicked()));
+    connect(ui->pushButton_zoom_gap, SIGNAL(clicked()), this, SLOT(pushButton_zoom_clicked()));
+    connect(ui->pushButton_zoom_cycle, SIGNAL(clicked()), this, SLOT(pushButton_zoom_clicked()));
+
+    connect(ui->pushButton_slowzoom, SIGNAL(clicked()), this, SLOT(pushButton_specialShot_clicked()));
+    connect(ui->pushButton_onceZoom, SIGNAL(clicked()), this, SLOT(pushButton_specialShot_clicked()));
+    connect(ui->pushButton_cycleZoom, SIGNAL(clicked()), this, SLOT(pushButton_specialShot_clicked()));
+    connect(ui->pushButton_roolSwing, SIGNAL(clicked()), this, SLOT(pushButton_specialShot_clicked()));
+    connect(ui->pushButton_scan, SIGNAL(clicked()), this, SLOT(pushButton_specialShot_clicked()));
+    connect(ui->pushButton_shot, SIGNAL(clicked()), this, SLOT(pushButton_specialShot_clicked()));
+
+    QDoubleValidator *validator = new QDoubleValidator(0, 100000, 5, this);
+
+    ui->lineEdit_master_time->setValidator(validator);
+    ui->lineEdit_master_speed->setValidator(validator);
+
+    ui->lineEdit_auto_scale->setValidator(validator);
+    ui->lineEdit_auto_zmspd->setValidator(validator);
+    ui->lineEdit_gap_lowerbound->setValidator(validator);
+    ui->lineEdit_gap_upperbound->setValidator(validator);
+    ui->lineEdit_gap_zmspd->setValidator(validator);
+    ui->lineEdit_cycle_lowerbound->setValidator(validator);
+    ui->lineEdit_cycle_upperbound->setValidator(validator);
+    ui->lineEdit_cycle_zmspd->setValidator(validator);
+
+    ui->lineEdit_slowzoom_time->setValidator(validator);
+    ui->lineEdit_slowzoom_zmspd->setValidator(validator);
+    ui->lineEdit_oncezoom_scale->setValidator(validator);
+    ui->lineEdit_oncezoom_zmspd->setValidator(validator);
+//    ui->lineEdit_cyclezoom_period->setValidator(validator);
+//    ui->lineEdit_cyclezoom_zmspd->setValidator(validator);
+//    ui->lineEdit_rollswing_period->setValidator(validator);
+//    ui->lineEdit_rollswing_speed->setValidator(validator);
+    ui->lineEdit_scan_scale->setValidator(validator);
+    ui->lineEdit_scan_speed->setValidator(validator);
+    ui->lineEdit_scan_time->setValidator(validator);
+    ui->lineEdit_scan_time_shot->setValidator(validator);
+    ui->lineEdit_scan_zmspd->setValidator(validator);
+    ui->lineEdit_shot_focus_upper->setValidator(validator);
+    ui->lineEdit_shot_scale->setValidator(validator);
+    ui->lineEdit_shot_time->setValidator(validator);
+    ui->lineEdit_shot_zmspd->setValidator(validator);
 
     initialized = true;
     LOG(INFO) << "AlgorithmDialog::init completed";
@@ -304,4 +350,316 @@ void AlgorithmDialog::on_pushButton_music_play_clicked() {
     player->setMedia(QUrl::fromLocalFile("/home/jianghualuo/work/data/audio/mariah_carey-my_all.flac"));
     player->setVolume(50);
     player->play();
+    player->position();
+}
+
+void AlgorithmDialog::pushButton_zoom_clicked() {
+    QPushButton *ptr = dynamic_cast<QPushButton*>(sender());
+    if (!ptr) {
+        return;
+    }
+
+    double  auto_scale = 0.0;
+    double  auto_zmspd = 0.0;
+    double  gap_zmspd = 0.0;
+    double  gap_upperbound = 0.0;
+    double  gap_lowerbound = 0.0;
+    double  cycle_zmspd = 0.0;
+    double  cycle_lowerbound = 0.0;
+    double  cycle_upperbound = 0.0;
+    try {
+        auto_scale = boost::lexical_cast<double>(ui->lineEdit_auto_scale->text().toStdString());
+        auto_zmspd = boost::lexical_cast<double>(ui->lineEdit_auto_zmspd->text().toStdString());
+        gap_zmspd = boost::lexical_cast<double>(ui->lineEdit_gap_zmspd->text().toStdString());
+        gap_upperbound = boost::lexical_cast<double>(ui->lineEdit_gap_upperbound->text().toStdString());
+        gap_lowerbound = boost::lexical_cast<double>(ui->lineEdit_gap_lowerbound->text().toStdString());
+        cycle_zmspd = boost::lexical_cast<double>(ui->lineEdit_cycle_zmspd->text().toStdString());
+        cycle_lowerbound = boost::lexical_cast<double>(ui->lineEdit_cycle_lowerbound->text().toStdString());
+        cycle_upperbound = boost::lexical_cast<double>(ui->lineEdit_cycle_upperbound->text().toStdString());
+    } catch (std::exception &e) {
+        LOG(INFO) << "AlgorithmDialog::pushButton_specialShot_clicked lexical_cast error";
+        return;
+    }
+
+    AlgoParamMsg msg = AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::ZoomMode);
+    if (ptr == ui->pushButton_zoom_none) {
+        msg.mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_NONE);
+    } else if (ptr == ui->pushButton_zoom_auto) {
+        msg.mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_AUTO);
+        msg.mutable_zoom_mode()->set_auto_zmspd(auto_zmspd);
+        msg.mutable_zoom_mode()->set_auto_scale(auto_scale);
+    } else if (ptr == ui->pushButton_zoom_gap) {
+        msg.mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_GAP);
+        msg.mutable_zoom_mode()->set_gap_lowerbound(gap_lowerbound);
+        msg.mutable_zoom_mode()->set_gap_upperbound(gap_upperbound);
+        msg.mutable_zoom_mode()->set_gap_zmspd(gap_zmspd);
+    } else if (ptr == ui->pushButton_zoom_cycle) {
+        msg.mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_CYCLE);
+        msg.mutable_zoom_mode()->set_cycle_lowerbound(cycle_lowerbound);
+        msg.mutable_zoom_mode()->set_cycle_upperbound(cycle_upperbound);
+        msg.mutable_zoom_mode()->set_cycle_zmspd(cycle_zmspd);
+    } else {
+    }
+
+    asyncSendMsg(msg);
+}
+
+void AlgorithmDialog::updateZoomModeUi() {
+    AlgoParam::ZoomMode_Type type = manager->status.mutable_zoom_mode()->zoom_mode();
+    ui->pushButton_zoom_none->setStyleSheet("background-color:;");
+    ui->pushButton_zoom_auto->setStyleSheet("background-color:;");
+    ui->pushButton_zoom_gap->setStyleSheet("background-color:;");
+    ui->pushButton_zoom_cycle->setStyleSheet("background-color:;");
+
+    if (AlgoParam::ZoomMode::ZOOMMODE_NONE == type) {
+        ui->pushButton_zoom_none->setStyleSheet("background-color:red;");
+    } else if (AlgoParam::ZoomMode::ZOOMMODE_AUTO == type) {
+        ui->pushButton_zoom_auto->setStyleSheet("background-color:red;");
+        double auto_scale = manager->status.mutable_zoom_mode()->auto_scale();
+        double auto_zmspd = manager->status.mutable_zoom_mode()->auto_zmspd();
+        ui->lineEdit_auto_scale->setText(QString::number(auto_scale));
+        ui->lineEdit_auto_zmspd->setText(QString::number(auto_zmspd));
+    } else if (AlgoParam::ZoomMode::ZOOMMODE_GAP == type) {
+        ui->pushButton_zoom_gap->setStyleSheet("background-color:red;");
+        double gap_lowerbound = manager->status.mutable_zoom_mode()->gap_lowerbound();
+        double gap_upperbound = manager->status.mutable_zoom_mode()->gap_upperbound();
+        double gap_zmspd = manager->status.mutable_zoom_mode()->gap_zmspd();
+        ui->lineEdit_gap_lowerbound->setText(QString::number(gap_lowerbound));
+        ui->lineEdit_gap_upperbound->setText(QString::number(gap_upperbound));
+        ui->lineEdit_gap_zmspd->setText(QString::number(gap_zmspd));
+    } else if (AlgoParam::ZoomMode::ZOOMMODE_CYCLE == type) {
+        ui->pushButton_zoom_cycle->setStyleSheet("background-color:red;");
+        double cycle_lowerbound = manager->status.mutable_zoom_mode()->cycle_lowerbound();
+        double cycle_upperbound = manager->status.mutable_zoom_mode()->cycle_upperbound();
+        double cycle_zmspd = manager->status.mutable_zoom_mode()->cycle_zmspd();
+        ui->lineEdit_cycle_lowerbound->setText(QString::number(cycle_lowerbound));
+        ui->lineEdit_cycle_upperbound->setText(QString::number(cycle_upperbound));
+        ui->lineEdit_cycle_zmspd->setText(QString::number(cycle_zmspd));
+    } else {
+    }
+
+    ui->pushButton_zoom_cycle->setEnabled(false);
+    ui->pushButton_zoom_gap->setEnabled(false);
+    ui->pushButton_zoom_auto->setEnabled(false);
+    ui->pushButton_zoom_none->setEnabled(false);
+    for (int i = 0; i < manager->status.mutable_zoom_mode()->zoom_mode_supported_size(); ++i) {
+        AlgoParam::ZoomMode_Type mode = manager->status.mutable_zoom_mode()->zoom_mode_supported(i);
+        if (AlgoParam::ZoomMode::ZOOMMODE_NONE == mode) {
+            ui->pushButton_zoom_none->setEnabled(true);
+        } else if (AlgoParam::ZoomMode::ZOOMMODE_AUTO == mode) {
+            ui->pushButton_zoom_auto->setEnabled(true);
+        } else if (AlgoParam::ZoomMode::ZOOMMODE_GAP == mode) {
+            ui->pushButton_zoom_gap->setEnabled(true);
+        } else if (AlgoParam::ZoomMode::ZOOMMODE_CYCLE == mode) {
+            ui->pushButton_zoom_cycle->setEnabled(true);
+        }
+    }
+}
+
+void AlgorithmDialog::pushButton_specialShot_clicked() {
+    QPushButton *ptr = dynamic_cast<QPushButton*>(sender());
+    if (!ptr) {
+        return;
+    }
+
+    double slowzoom_zmspd = 0.0;
+    double slowzoom_time = 0.0;
+    double oncezoom_scale = 0.0;
+    double oncezoom_zmspd = 0.0;
+    double scan_scale = 0.0;
+    double scan_zmspd = 0.0;
+    double scan_speed = 0.0;
+    double scan_time = 0.0;
+    double scan_time_shot = 0.0;
+    double shot_scale = 0.0;
+    double shot_zmspd = 0.0;
+    double shot_time = 0.0;
+    double shot_focus_upper = 0.0;
+    try {
+        slowzoom_zmspd = boost::lexical_cast<double>(ui->lineEdit_slowzoom_zmspd->text().toStdString());
+        slowzoom_time = boost::lexical_cast<double>(ui->lineEdit_slowzoom_time->text().toStdString());
+        oncezoom_scale = boost::lexical_cast<double>(ui->lineEdit_oncezoom_scale->text().toStdString());
+        oncezoom_zmspd = boost::lexical_cast<double>(ui->lineEdit_oncezoom_zmspd->text().toStdString());
+        scan_scale = boost::lexical_cast<double>(ui->lineEdit_scan_scale->text().toStdString());
+        scan_zmspd = boost::lexical_cast<double>(ui->lineEdit_scan_zmspd->text().toStdString());
+        scan_speed = boost::lexical_cast<double>(ui->lineEdit_scan_speed->text().toStdString());
+        scan_time = boost::lexical_cast<double>(ui->lineEdit_scan_time->text().toStdString());
+        scan_time_shot = boost::lexical_cast<double>(ui->lineEdit_scan_time_shot->text().toStdString());
+        shot_scale = boost::lexical_cast<double>(ui->lineEdit_shot_scale->text().toStdString());
+        shot_zmspd = boost::lexical_cast<double>(ui->lineEdit_shot_zmspd->text().toStdString());
+        shot_time = boost::lexical_cast<double>(ui->lineEdit_shot_time->text().toStdString());
+        shot_focus_upper = boost::lexical_cast<double>(ui->lineEdit_shot_focus_upper->text().toStdString());
+    } catch (std::exception &e) {
+        LOG(INFO) << "AlgorithmDialog::pushButton_specialShot_clicked lexical_cast error";
+        return;
+    }
+
+
+    //处理rollswing
+    std::vector<double> rollswing_period;
+    std::vector<double> rollswing_speed;
+    QStringList rollswing_speed_strList = ui->lineEdit_rollswing_speed->text().split(',', QString::SkipEmptyParts);
+    for (auto it : rollswing_speed_strList) {
+        it = it.trimmed();
+        try {
+            rollswing_speed.push_back(boost::lexical_cast<double>(it.toStdString()));
+         } catch (std::exception &e) {
+            LOG(INFO) << "AlgorithmDialog::pushButton_specialShot_clicked lexical_cast error";
+            continue;
+        }
+    }
+    QStringList rollswing_period_strList = ui->lineEdit_rollswing_period->text().split(',', QString::SkipEmptyParts);
+    for (auto it : rollswing_period_strList) {
+        it = it.trimmed();
+        try {
+            rollswing_period.push_back(boost::lexical_cast<double>(it.toStdString()));
+        } catch (std::exception &e) {
+            LOG(INFO) << "AlgorithmDialog::pushButton_specialShot_clicked lexical_cast error";
+            continue;
+        }
+    }
+
+    if (rollswing_period.size() != rollswing_speed.size()) {
+        LOG(INFO) << "AlgorithmDialog::pushButton_specialShot_clicked rollswing size not not equal";
+        return;
+    }
+
+    //处理cyclezoom
+    std::vector<double> cyclezoom_period;
+    std::vector<double> cyclezoom_zmspd;
+    QStringList cyclezoom_period_strList = ui->lineEdit_cyclezoom_period->text().split(',', QString::SkipEmptyParts);
+    for (auto it : cyclezoom_period_strList) {
+        it = it.trimmed();
+        try {
+            cyclezoom_period.push_back(boost::lexical_cast<double>(it.toStdString()));
+        } catch (std::exception &e) {
+            LOG(INFO) << "AlgorithmDialog::pushButton_specialShot_clicked cyclezoom lexical_cast error";
+            continue;
+        }
+    }
+    QStringList cyclezoom_zmspd_strList = ui->lineEdit_cyclezoom_zmspd->text().split(',', QString::SkipEmptyParts);
+    for (auto it : cyclezoom_zmspd_strList) {
+        it = it.trimmed();
+        try {
+            cyclezoom_zmspd.push_back(boost::lexical_cast<double>(it.toStdString()));
+        } catch (std::exception &e) {
+            LOG(INFO) << "AlgorithmDialog::pushButton_specialShot_clicked cyclezoom lexical_cast error";
+            continue;
+        }
+    }
+
+    if (cyclezoom_period.size() != cyclezoom_zmspd.size()) {
+        LOG(INFO) << "AlgorithmDialog::pushButton_specialShot_clicked cyclezoom size not not equal";
+        return;
+    }
+
+    AlgoParamMsg msg = AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::SpecialShot);
+    if (ptr == ui->pushButton_shot) {
+        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_SHOT);
+        msg.mutable_special_shot()->set_shot_focus_upper(shot_focus_upper);
+        msg.mutable_special_shot()->set_shot_scale(shot_scale);
+        msg.mutable_special_shot()->set_shot_time(shot_time);
+        msg.mutable_special_shot()->set_shot_zmspd(shot_zmspd);
+    } else if (ptr == ui->pushButton_scan) {
+        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_SCAN);
+        msg.mutable_special_shot()->set_scan_scale(scan_scale);
+        msg.mutable_special_shot()->set_scan_speed(scan_speed);
+        msg.mutable_special_shot()->set_scan_time(scan_time);
+        msg.mutable_special_shot()->set_scan_zmspd(scan_zmspd);
+        msg.mutable_special_shot()->set_scan_time_shot(scan_time_shot);
+    } else if (ptr == ui->pushButton_roolSwing) {
+        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_ROLLSWING);
+        for (int i = 0; i < rollswing_period.size(); ++i) {
+            msg.mutable_special_shot()->add_rollswing_period(rollswing_period[i]);
+            msg.mutable_special_shot()->add_rollswing_period(rollswing_speed[i]);
+        }
+    } else if (ptr == ui->pushButton_cycleZoom) {
+        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_CYCLEZOOM);
+        for (int i = 0; i < rollswing_period.size(); ++i) {
+            msg.mutable_special_shot()->add_cyclezoom_period(cyclezoom_period[i]);
+            msg.mutable_special_shot()->add_cyclezoom_zmspd(cyclezoom_zmspd[i]);
+        }
+    } else if (ptr == ui->pushButton_onceZoom) {
+        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_ONCEZOOM);
+        msg.mutable_special_shot()->set_oncezoom_scale(oncezoom_scale);
+        msg.mutable_special_shot()->set_oncezoom_zmspd(oncezoom_zmspd);
+    } else if (ptr == ui->pushButton_slowzoom) {
+        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_SLOWZOOM);
+        msg.mutable_special_shot()->set_slowzoom_time(slowzoom_time);
+        msg.mutable_special_shot()->set_slowzoom_zmspd(slowzoom_zmspd);
+    } else {
+    }
+
+    if (isSpecialShotting) {
+        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_NONE);
+    }
+    asyncSendMsg(msg);
+}
+
+void AlgorithmDialog::updateSpecialShotUi() {
+    AlgoParam::SpecialShot::SpecialShotType type = manager->status.mutable_special_shot()->special_shot();
+
+//    ui->pushButton_slowzoom->setStyleSheet("background-color:;");
+//    ui->pushButton_onceZoom->setStyleSheet("background-color:;");
+//    ui->pushButton_cycleZoom->setStyleSheet("background-color:;");
+//    ui->pushButton_roolSwing->setStyleSheet("background-color:;");
+//    ui->pushButton_scan->setStyleSheet("background-color:;");
+//    ui->pushButton_shot->setStyleSheet("background-color:;");
+
+    if (type == AlgoParam::SpecialShot::SPECIALSHOT_SLOWZOOM) {
+        ui->pushButton_slowzoom->setText(QString::fromLocal8Bit("停止"));
+        ui->pushButton_slowzoom->setStyleSheet("background-color:red;");
+    } else if (type == AlgoParam::SpecialShot::SPECIALSHOT_ONCEZOOM) {
+        ui->pushButton_onceZoom->setText(QString::fromLocal8Bit("停止"));
+        ui->pushButton_onceZoom->setStyleSheet("background-color:red;");
+    } else if (type == AlgoParam::SpecialShot::SPECIALSHOT_CYCLEZOOM) {
+        ui->pushButton_cycleZoom->setText(QString::fromLocal8Bit("停止"));
+        ui->pushButton_cycleZoom->setStyleSheet("background-color:red;");
+    } else if (type == AlgoParam::SpecialShot::SPECIALSHOT_ROLLSWING) {
+        ui->pushButton_roolSwing->setText(QString::fromLocal8Bit("停止"));
+        ui->pushButton_roolSwing->setStyleSheet("background-color:red;");
+    } else if (type == AlgoParam::SpecialShot::SPECIALSHOT_SHOT) {
+        ui->pushButton_shot->setText(QString::fromLocal8Bit("停止"));
+        ui->pushButton_shot->setStyleSheet("background-color:red;");
+    } else if (type == AlgoParam::SpecialShot::SPECIALSHOT_SCAN) {
+        ui->pushButton_scan->setText(QString::fromLocal8Bit("停止"));
+        ui->pushButton_scan->setStyleSheet("background-color:red;");
+    } else if (type == AlgoParam::SpecialShot::SPECIALSHOT_NONE) {
+        ui->pushButton_cycleZoom->setText(QString::fromLocal8Bit("开始"));
+        ui->pushButton_slowzoom->setText(QString::fromLocal8Bit("开始"));
+        ui->pushButton_roolSwing->setText(QString::fromLocal8Bit("开始"));
+        ui->pushButton_onceZoom->setText(QString::fromLocal8Bit("开始"));
+        ui->pushButton_scan->setText(QString::fromLocal8Bit("开始"));
+        ui->pushButton_shot->setText(QString::fromLocal8Bit("开始"));
+        ui->pushButton_slowzoom->setStyleSheet("background-color:;");
+        ui->pushButton_roolSwing->setStyleSheet("background-color:;");
+        ui->pushButton_onceZoom->setStyleSheet("background-color:;");
+        ui->pushButton_scan->setStyleSheet("background-color:;");
+        ui->pushButton_shot->setStyleSheet("background-color:;");
+        ui->pushButton_cycleZoom->setStyleSheet("background-color:;");
+    }
+
+    ui->pushButton_slowzoom->setEnabled(false);
+    ui->pushButton_cycleZoom->setEnabled(false);
+    ui->pushButton_roolSwing->setEnabled(false);
+    ui->pushButton_onceZoom->setEnabled(false);
+    ui->pushButton_shot->setEnabled(false);
+    ui->pushButton_scan->setEnabled(false);
+    for (int i = 0; i < manager->status.mutable_special_shot()->special_shot_supported_size(); ++i) {
+        AlgoParam::SpecialShot::SpecialShotType supportedType =
+                manager->status.mutable_special_shot()->special_shot_supported(i);
+        if (supportedType == AlgoParam::SpecialShot::SPECIALSHOT_SLOWZOOM) {
+            ui->pushButton_slowzoom->setEnabled(true);
+        } else if (supportedType == AlgoParam::SpecialShot::SPECIALSHOT_SCAN) {
+            ui->pushButton_scan->setEnabled(true);
+        } else if (supportedType == AlgoParam::SpecialShot::SPECIALSHOT_SHOT) {
+            ui->pushButton_shot->setEnabled(true);
+        } else if (supportedType == AlgoParam::SpecialShot::SPECIALSHOT_ONCEZOOM) {
+            ui->pushButton_onceZoom->setEnabled(true);
+        } else if (supportedType == AlgoParam::SpecialShot::SPECIALSHOT_ROLLSWING) {
+            ui->pushButton_roolSwing->setEnabled(true);
+        } else if (supportedType == AlgoParam::SpecialShot::SPECIALSHOT_CYCLEZOOM) {
+            ui->pushButton_cycleZoom->setEnabled(true);
+        }
+    }
 }

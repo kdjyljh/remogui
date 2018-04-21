@@ -14,6 +14,7 @@
 #include "mediaview/waterfallscrollarea.h"
 #include "algorithm/AlgorithmDialog.h"
 #include "CameraImageWidget.h"
+#include "MainWorkSpaceWidget.h"
 
 #include <QMainWindow>
 #include <QImage>
@@ -65,6 +66,10 @@ private:
     boost::shared_ptr<WaterFallScrollArea> mediaViewWidget;
     boost::shared_ptr<AlgorithmDialog> algorithmDialog;
     boost::shared_ptr<CameraImageWidget> cameraImageWidget;
+    boost::shared_ptr<MainWorkSpaceWidget> mainWorkSpace;
+    QWidget *customWBWidget;
+    QSlider *customWBSlider;
+    static bool initialized;
 
 private:
     boost::shared_ptr<ReceiveDataProc> receiveDataProc;
@@ -74,10 +79,8 @@ private:
     explicit MainWindow(QWidget *parent = 0);
     MainWindow(MainWindow &wind);
     bool init(bool showInfo = false, bool initNet = true);
+    void deInit();
     bool initNetwork(bool showInfo = false);
-
-    QWidget *customWBWidget;
-    QSlider *customWBSlider;
 
 private slots:
     void setLabelPix(const QImage & image);

@@ -29,7 +29,7 @@ enum AVPixelFormat VaapiDecoder::get_hw_format(AVCodecContext *ctx,
             return *p;
     }
 
-    fprintf(stderr, "Failed to get HW surface format.\n");
+    LOG(INFO) << "Failed to get HW surface format.";
     return AV_PIX_FMT_NONE;
 }
 
@@ -133,7 +133,10 @@ int VaapiDecoder::decode_write(AVCodecContext *avctx, AVPacket *packet)
     return ret;
 }
 
-
+//rtsp://192.168.0.1/livestream/12
+//rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov
+///home/jianghualuo/work/data/videos/bandicam.avi
+///home/jianghualuo/work/data/videos/FigureSkating.mp4
 VaapiDecoder::VaapiDecoder(QObject *parent) :
         QObject(parent),
         input_ctx(NULL),
@@ -146,31 +149,33 @@ VaapiDecoder::VaapiDecoder(QObject *parent) :
         streamDecoderReady(false),
         frame_width(-1),
         frame_height(-1),
+        frameQueueSize(30),
         url("rtsp://192.168.0.1/livestream/12"),
         deviceType("vaapi"),
-        readStreamThread(new QThread)
+        readStreamThread(new QThread(this))
 {
+    LOG(INFO) << "VaapiDecoder::VaapiDecoder constructor this:" << this;
 //    av_log_set_level(AV_LOG_SKIP_REPEATED);
 //    av_init_packet(&packet);
     curFrame.format = AV_PIX_FMT_NONE;
     moveToThread(readStreamThread);
     input_format = av_find_input_format("rtsp");
     readStreamThread->start(QThread::HighestPriority);
-    readStream();
+    readStream(); //异步读取视频流
 }
 
 VaapiDecoder::~VaapiDecoder()
 {
+    readStreamThread->quit();
+    readStreamThread->wait();
     //先关闭解码和取流线程，再释放资源
     readFrameThread.interrupt();
     readFrameThread.join();
     playThread.interrupt();
-    playThread.join();
+//    playThread.join(); //不使用jion，可能产生死锁
+    playThread.detach(); //使用detach释放线程资源
     decodeFrameThread.interrupt();
     decodeFrameThread.join();
-    readStreamThread->quit();
-    readStreamThread->wait();
-    delete readStreamThread;
     deInit();
 }
 
@@ -202,7 +207,7 @@ int VaapiDecoder::init()
 
     /* open the input file */
     LOG(INFO) << "2.avformat_open_input ###########################";
-    if ((ret = avformat_open_input(&input_ctx, input_file, input_format, NULL)) != 0) {
+    if ((ret = avformat_open_input(&input_ctx, input_file, NULL, NULL)) != 0) {
         errorMsg += "Cannot open input file "; errorMsg += input_file;
         goto error;
     }
@@ -268,11 +273,6 @@ int VaapiDecoder::init()
         goto error;
     }
 
-    LOG(INFO) << "10.VaapiDecoder::play thread start###########################";
-    readFrameThread = boost::thread(&VaapiDecoder::readFrame, this);
-    decodeFrameThread = boost::thread(&VaapiDecoder::decodeFrame, this);
-    playThread = boost::thread(&VaapiDecoder::play, this);
-
     LOG(INFO) << "VaapiDecoder::init init video stream success!!!!";
     streamDecoderReady = true;
     streamInputReady = true;
@@ -290,21 +290,11 @@ int VaapiDecoder::init()
 
 void VaapiDecoder::deInit()
 {
-    /* flush the decoder */
-//    packet.data = NULL;
-//    packet.size = 0;
-//    decode_write(decoder_ctx, &packet);
-//    av_packet_unref(&packet);
-
     avcodec_close(decoder_ctx);
     avcodec_free_context(&decoder_ctx);
+    LOG(INFO) << "VaapiDecoder::deInit end input_ctx:" << input_ctx;
     avformat_close_input(&input_ctx);
     av_buffer_unref(&hw_device_ctx);
-
-    //没有初始化decoded_frame.data[0]，不能进行free
-//    if (decoded_frame.format == AV_PIX_FMT_RGB32) {
-//        av_freep(&decoded_frame.data[0]);
-//    }
 
     input_ctx = NULL;
     video = NULL;
@@ -340,21 +330,18 @@ void VaapiDecoder::readFrame()
 
 bool VaapiDecoder::readStream()
 {
-    LOG(INFO) << "VaapiDecoder::readStream read image stream";
     QTimer::singleShot(0, this, SLOT(_readStream()));
     return true;
 }
 
 void VaapiDecoder::_readStream()
 {
-    LOG(INFO) << "VaapiDecoder::_readStream start";
     int i = 100; //如果无视频流，重复连接10次
     {
         boost::unique_lock<boost::mutex> locki(mtxStreamInputReady);
         boost::unique_lock<boost::mutex> lockd(mtxStreamDecoderReady);
-        LOG(INFO) << "0.deInit stream ###########################";
-        deInit();
         while (i && init()) {
+            deInit();
             --i;
             boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
         }
@@ -362,13 +349,35 @@ void VaapiDecoder::_readStream()
         cvStreamDecoderReady.notify_one();
     }
 
+    //一个对象只初始化线程一次，线程资源在析构函数里释放
+    static bool firstRun = true;
+    if (i && firstRun) {
+        //初始化成功，运行线程
+        LOG(INFO) << "10.VaapiDecoder::play thread start###########################";
+        readFrameThread = boost::thread(&VaapiDecoder::readFrame, this);
+        decodeFrameThread = boost::thread(&VaapiDecoder::decodeFrame, this);
+        playThread = boost::thread(&VaapiDecoder::play, this);
+    }
+    firstRun = false;
+
     emit readStreamDone(i);
 }
 
 void VaapiDecoder::pushFrame(const AVFrame &frame) {
     boost::unique_lock<boost::mutex> lock(mtxFrameQueue);
-    frameQueue.push_back(frame);
-    cvFrameQueue.notify_one();
+
+    if (frameQueue.size() >= frameQueueSize) {
+        boost::unique_lock<boost::mutex> lockFull(mtxFrameQueueFull);
+        while (frameQueue.size() >= frameQueueSize) {
+            lock.unlock();
+            cvFrameQueue.notify_one();
+            cvFrameQueueFull.wait(lockFull);
+        }
+        frameQueue.push_back(frame);
+    } else {
+        frameQueue.push_back(frame);
+        cvFrameQueue.notify_one();
+    }
 }
 
 void VaapiDecoder::popFrame(AVFrame &frame) {
@@ -379,16 +388,26 @@ void VaapiDecoder::popFrame(AVFrame &frame) {
 
     frame = frameQueue.front();
     frameQueue.pop_front();
+
+    cvFrameQueueFull.notify_one();
 }
 
 void VaapiDecoder::play() {
     while (true) {
-        boost::this_thread::interruption_point();
-        if (curFrame.format != AV_PIX_FMT_NONE) {
-            av_freep(&curFrame.data[0]);
+        //使用异常捕获interruption_point，立即停止播放线程，并释放资源
+        //因为emit imageGot();使用BlockingQueuedConnection，
+        // 为了避免和析构函数里面到join产生死锁，也必须马上跳出
+        try {
+            boost::this_thread::interruption_point();
+            if (curFrame.format != AV_PIX_FMT_NONE) {
+                av_freep(&curFrame.data[0]);
+            }
+            popFrame(curFrame);
+            emit imageGot();
+        } catch (boost::thread_interrupted &e) {
+            LOG(INFO) << "VaapiDecoder::play interrupt";
+            break;
         }
-        popFrame(curFrame);
-        emit imageGot();
     }
 }
 
@@ -416,7 +435,7 @@ void VaapiDecoder::decodeFrame() {
 
         //休眠让其他线程能拿到cpu时间片
 //        lock.unlock();
-//        boost::this_thread::sleep_for(boost::chrono::milliseconds(5));
+//        boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
 //        lock.lock();
     }
 }
@@ -434,4 +453,9 @@ void VaapiDecoder::popPacket(AVPacket &packet) {
     }
     packet = packetsQuue.front();
     packetsQuue.pop_front();
+}
+
+bool VaapiDecoder::syncReadStream() {
+    _readStream();
+    return streamInputReady && streamDecoderReady;
 }

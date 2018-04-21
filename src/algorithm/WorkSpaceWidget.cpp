@@ -30,10 +30,9 @@ void WorkSpaceWidget::updatePix(QPixmap pix) {
 }
 
 void WorkSpaceWidget::mouseReleaseEvent(QMouseEvent *ev) {
+    if (!isManuallyChosingPerson) return;
     qDebug() << ev->pos();
     qDebug() << size();
-    if (!isManuallyChosingPerson) return;
-
     QPoint recPos = ev->pos();
     double posX = static_cast<double>(recPos.x()) / size().width();
     double posY = static_cast<double>(recPos.y()) / size().height();

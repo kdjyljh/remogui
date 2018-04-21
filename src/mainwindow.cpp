@@ -29,12 +29,22 @@ static bool addActionToGroupByMenu(QMenu *menu, QActionGroup *group) {
     return true;
 }
 
+bool MainWindow::initialized = false;
 QPoint MainWindow::centerPoint;
 MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent),
         ProtocolDataInterfaceImpl(DispatcheType_CameraDefault),
         ui(new Ui::MainWindow),
         mainLayout(new QHBoxLayout) {
+    if (isBigEndian()) {
+        LOG(INFO) << "System is Big Endian exit !!!!!!!!!!!!!!!!!!!!!!!!";
+        QMessageBox::warning(nullptr, "警告", "小端机器无法正常工作", QMessageBox::Ok);
+        exit(-1);
+    }
+
+    customWBWidget = new QWidget;
+    customWBSlider = new QSlider(customWBWidget);
+
     ui->setupUi(this);
     resize(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     QRect screenRect = QApplication::desktop()->screenGeometry();
@@ -54,7 +64,8 @@ boost::shared_ptr<MainWindow> MainWindow::getWindInstace() {
     //多线程不安全
     static boost::shared_ptr<MainWindow> instance(new MainWindow);
     static bool showInfo = true;
-    if (!instance->init(showInfo, false)) {
+    if (!instance->init(showInfo, true)) {
+        LOG(INFO) << "MainWindow::getWindInstace failed";
         return nullptr;
     }
     showInfo = false;
@@ -238,6 +249,7 @@ void MainWindow::customWBSlider_sliderReleased() {
 }
 
 void MainWindow::showVideoStreamResult(bool result) {
+    LOG(INFO) << "MainWindow::showVideoStreamResult result:" << result;
     if (!result) {
         QMessageBox::warning(nullptr, "网络错误", "无视频流", QMessageBox::Ok);
     }
@@ -254,18 +266,20 @@ void MainWindow::on_action_algorithm_triggered() {
 }
 
 bool MainWindow::init(bool showInfo, bool initNet) {
-    if (isBigEndian()) {
-        LOG(INFO) << "System is Big Endian exit !!!!!!!!!!!!!!!!!!!!!!!!";
-        QMessageBox::warning(nullptr, "警告", "小端机器无法正常工作", QMessageBox::Ok);
-        exit(-1);
-        return false;
+    if (initialized) {
+        LOG(INFO) << "MainWindow::init has initialized";
+        return true;
     }
 
+    bool ret = false;
     if (initNet) {
-        return initNetwork(showInfo);
+        ret = initNetwork(showInfo);
+    } else {
+        ret = true;
     }
 
-    return true;
+    initialized = ret;
+    return ret;
 }
 
 bool MainWindow::initNetwork(bool showInfo) {
@@ -279,10 +293,7 @@ bool MainWindow::initNetwork(bool showInfo) {
     }
 
     cameraImageWidget = boost::shared_ptr<CameraImageWidget>(new CameraImageWidget);
-    if (!cameraImageWidget->isValid()) {
-        QMessageBox::warning(nullptr, "网络错误", "无视频流", QMessageBox::Ok);
-        return false;
-    }
+    mainWorkSpace = boost::make_shared<MainWorkSpaceWidget>();
 
     //    imagProc(new ImageStreamProc),
     receiveDataProc = ReceiveDataProc::getInstance();
@@ -294,9 +305,6 @@ bool MainWindow::initNetwork(bool showInfo) {
     playBackDialog = boost::shared_ptr<PlayBackDialog>(new PlayBackDialog);
     mediaViewWidget = boost::shared_ptr<WaterFallScrollArea>(new WaterFallScrollArea);
     algorithmDialog = AlgorithmDialog::getInstance();
-    customWBWidget = new QWidget;
-    customWBSlider = new QSlider(customWBWidget);
-
 
 
 //    QWidget *cw = new QWidget(this);
@@ -308,7 +316,7 @@ bool MainWindow::initNetwork(bool showInfo) {
 //    setCentralWidget(viewLable);
 
 
-    setCentralWidget(cameraImageWidget.get());
+    setCentralWidget(mainWorkSpace.get());
     customWBWidget->setGeometry(QRect(centerPoint, QSize(400, 50)));
     customWBSlider->setGeometry(QRect(0, 25, 400, 10));
     customWBSlider->setOrientation(Qt::Horizontal);
@@ -380,6 +388,18 @@ bool MainWindow::initNetwork(bool showInfo) {
     sendCmdCamera(Remo_CmdId_Camera_Set_ZoomControlParam,
                   std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 5));
     return true;
+}
+
+void MainWindow::deInit() {
+    cameraImageWidget = nullptr;
+    receiveDataProc = nullptr;
+    photoAndVideoDialog = nullptr;
+    aeModeDialog = nullptr;
+    focusDialog = nullptr;
+    gimbalDialog = nullptr;
+    playBackDialog = nullptr;
+    mediaViewWidget = nullptr;
+    algorithmDialog = nullptr;
 }
 
 

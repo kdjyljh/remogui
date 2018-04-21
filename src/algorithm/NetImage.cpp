@@ -97,3 +97,8 @@ void NetImage::read_assemble() {
 //            std::cout << "emit an image" << std::endl;
   }
 }
+
+NetImage::~NetImage() {
+  client->close();
+  server.close();
+}

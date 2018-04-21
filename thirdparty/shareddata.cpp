@@ -36,8 +36,10 @@ bool SharedData::popReceiveData(ProtocolStruct &data)
 {
     {
         boost::unique_lock<boost::mutex> lock(mtxReceive);
-        while (receiveQueue.empty())
+        while (receiveQueue.empty()) {
+            LOG(INFO) << "SharedData::popReceiveData wait";
             cvReceive.wait(lock);
+        }
         data = receiveQueue.front();
         receiveQueue.pop_front();
     }

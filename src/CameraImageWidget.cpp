@@ -17,8 +17,9 @@ CameraImageWidget::CameraImageWidget(QWidget *parent) :
     recSize(100, 100),
     decoder(boost::shared_ptr<VaapiDecoder>(new VaapiDecoder))
 {
-    valid = !decoder->isValid();
+    LOG(INFO) << "CameraImageWidget::CameraImageWidget constructor";
     connect(decoder.get(), SIGNAL(imageGot()), this, SLOT(drawImage()), Qt::BlockingQueuedConnection);
+//    connect(decoder.get(), SIGNAL(readStreamDone(bool)), this, SLOT());
 }
 
 void CameraImageWidget::paintEvent(QPaintEvent *event)

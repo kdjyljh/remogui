@@ -45,7 +45,7 @@ private slots:
     void on_radioButton_person_chose_master_toggled(bool checked);
     void on_pushButton_faceTemplate_clicked();
     void on_pushButton_gimbal_clicked();
-    void on_pushButton_zoom_clicked();
+//    void on_pushButton_zoom_clicked();
     void on_pushButton_music_play_clicked();
 
 private slots:

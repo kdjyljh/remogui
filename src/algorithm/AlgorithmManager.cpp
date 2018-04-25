@@ -6,10 +6,11 @@
 #include <boost/make_shared.hpp>
 #include <glog/logging.h>
 #include <boost/chrono.hpp>
+#include <boost/lexical_cast.hpp>
 
 uint64_t AlgorithmManager::msgSeqNum = 0;
 boost::mutex AlgorithmManager::mtxMsgSeqNum;
-uint64_t AlgorithmManager::syncWaitForMsgSeqNum = -1; //初始化为最大uint64值
+uint64_t AlgorithmManager::syncWaitForMsgSeqNum = UINT64_MAX; //初始化为最大uint64值
 boost::mutex AlgorithmManager::mtxSyncWaitForMsg;
 boost::condition_variable AlgorithmManager::cvSyncWaitForMsg;
 AlgoParamMsg AlgorithmManager::syncWaitForMsg;
@@ -31,13 +32,21 @@ bool AlgorithmManager::asyncSendMsg(const AlgoParamMsg &msg) {
 }
 
 void AlgorithmManager::receiveMsgHandler(const AlgoParamMsg &msg) {
-//    std::string strType;
-//    for (int i = 0; i < msg.type().size(); ++i) {
-//        strType += " ";
-//        strType += msg.type(i);
-//    }
-//    LOG(INFO) << "AlgorithmManager::receiveMsgHandler called pkt.type:" << strType;
     receiveMsgDispatcher(msg);
+
+    if (!msg.contain_allget()) {
+        std::string strType;
+        std::string strSeqNum;
+        for (int i = 0; i < msg.type().size(); ++i) {
+            strType += " "; strType += boost::lexical_cast<std::string>(msg.type(i));
+            if (msg.seq_num_size() > 0) {
+                strSeqNum + " "; strSeqNum += boost::lexical_cast<std::string>(msg.seq_num(i));
+            }
+        }
+        LOG(INFO) << "AlgorithmManager::receiveMsgHandler contain_allget:" << msg.contain_allget();
+        LOG(INFO) << "AlgorithmManager::receiveMsgHandler called pkt.type:" << strType;
+        LOG(INFO) << "AlgorithmManager::receiveMsgHandler called pkt.seq_num:" << strSeqNum;
+    }
 }
 
 void AlgorithmManager::receiveMsgDispatcher(const AlgoParamMsg &msg) {
@@ -47,59 +56,57 @@ void AlgorithmManager::receiveMsgDispatcher(const AlgoParamMsg &msg) {
         return;
     }
 
+    //不是主动推送包，并且seq_num_size和type_size不等
+//    if (!msg.contain_allget() && (msg.seq_num_size() != msg.type_size())) {
+//        //丢弃包
+//        LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher has seq num:"
+//                  << msg.seq_num_size() << " but is not equ to type size:" << msg.type_size();
+//        return;
+//    }
+
     status.set_contain_allget(msg.contain_allget());
     for (int i = 0; i < msg.type().size(); ++i) {
         int type = msg.type(i);
-        LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher use async handler type:" << type << " id:" << msg.seq_num(i);
-        if (msg.seq_num_size() > 0) {
-            if (msg.seq_num_size() != msg.type_size()) {
-                //丢弃包
-                LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher has seq num but is not equ to type size";
-                continue;
-            }
-
-            if (syncWaitForMsgCallBack) {
-                //使用同步非阻塞接口
-                int *ec = new int(0);
+        if (syncWaitForMsgCallBack) {
+            //使用同步非阻塞接口
+            int *ec = new int(0);
+            syncWaitForMsg = msg;
+            syncWaitForMsg.clear_type();
+            syncWaitForMsg.add_type(static_cast<AlgoParam::MsgUnity_MsgType>(type));
+            syncWaitForMsgCallBack(syncWaitForMsg, ec);
+            syncWaitForMsgCallBack.clear(); //还原
+            LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher use noblock function type = " << type;
+        } else if (syncWaitForMsgSeqNum != UINT64_MAX) {
+            //使用同步阻塞接口
+            boost::unique_lock<boost::mutex> lock(mtxSyncWaitForMsg);
+            if (msg.seq_num(i) == syncWaitForMsgSeqNum) {
+                //为同步消息
                 syncWaitForMsg = msg;
                 syncWaitForMsg.clear_type();
                 syncWaitForMsg.add_type(static_cast<AlgoParam::MsgUnity_MsgType>(type));
-                syncWaitForMsgCallBack(syncWaitForMsg, ec);
-                syncWaitForMsgCallBack.clear(); //还原
-                LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher use noblock function type = " << type;
-            } else {
-                //使用同步阻塞接口
-                boost::unique_lock<boost::mutex> lock(mtxSyncWaitForMsg);
-                if (msg.seq_num(i) == syncWaitForMsgSeqNum) {
-                    //为同步消息
-                    syncWaitForMsg = msg;
-                    syncWaitForMsg.clear_type();
-                    syncWaitForMsg.add_type(static_cast<AlgoParam::MsgUnity_MsgType>(type));
-                    cvSyncWaitForMsg.notify_one();
-                    LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher use block function type = " << type;
-                }
+                cvSyncWaitForMsg.notify_one();
+                LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher use block function type = " << type << "seq_num:" << msg.seq_num(i);
             }
-            continue;
-        }
+        } else {
+            //使用异步接口
+            if (type == AlgoParam::MsgUnity::SelectionSet) {
+                (*status.mutable_selection_set()) = msg.selection_set();//深拷贝
+            } else if (type == AlgoParam::MsgUnity::ControlSet) {
+                (*status.mutable_control_set()) = msg.control_set();
+            } else if (type == AlgoParam::MsgUnity::ZoomMode) {
+                (*status.mutable_zoom_mode()) = msg.zoom_mode();
+            } else if (type == AlgoParam::MsgUnity::VersionGet) {
+                (*status.mutable_version_get()) = msg.version_get();
+            } else if (type == AlgoParam::MsgUnity::FaceTemplLibGet) {
+                (*status.mutable_face_templlib_get()) = msg.face_templlib_get();
+            } else if (type == AlgoParam::MsgUnity::SpecialShot) {
+                (*status.mutable_special_shot()) = msg.special_shot();
+            }  else {
+            }
 
-        //使用异步接口
-        if (type == AlgoParam::MsgUnity::SelectionSet) {
-            (*status.mutable_selection_set()) = msg.selection_set();//深拷贝
-        } else if (type == AlgoParam::MsgUnity::ControlSet) {
-            (*status.mutable_control_set()) = msg.control_set();
-        } else if (type == AlgoParam::MsgUnity::ZoomMode) {
-            (*status.mutable_zoom_mode()) = msg.zoom_mode();
-        } else if (type == AlgoParam::MsgUnity::VersionGet) {
-            (*status.mutable_version_get()) = msg.version_get();
-        } else if (type == AlgoParam::MsgUnity::FaceTemplLibGet) {
-            (*status.mutable_face_templlib_get()) = msg.face_templlib_get();
-        } else if (type == AlgoParam::MsgUnity::SpecialShot) {
-            (*status.mutable_special_shot()) = msg.special_shot();
-        }  else {
+            msgGot(type);
+            LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher use async type:" << type;
         }
-
-        msgGot(type);
-        LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher use async handler type = " << type;
     }
 }
 
@@ -153,7 +160,7 @@ bool AlgorithmManager::syncSendMsg(const AlgoParamMsg &msgSend, AlgoParamMsg &ms
         syncWaitForMsgSeqNum = msgSend.seq_num(0);
         ret = boost::cv_status::no_timeout ==
                 cvSyncWaitForMsg.wait_for(lock, boost::chrono::milliseconds(timeOut));
-        syncWaitForMsgSeqNum = -1; //恢复成最大uint64值
+        syncWaitForMsgSeqNum = UINT64_MAX; //恢复成最大uint64值
         if (ret) {
             msgRet = syncWaitForMsg;
         }

@@ -16,6 +16,8 @@ set(CMAKE_PREFIX_PATH
         $ENV{HOME}/Qt5.10.0/5.10.0/gcc_64
         ${CMAKE_PREFIX_PATH})
 
+set(remoguiroot $ENV{HOME}/remogui)
+
 find_package(Qt5 COMPONENTS Core Gui Concurrent Widgets Network Multimedia REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(Boost REQUIRED)
@@ -65,7 +67,7 @@ set(SOURCE_FILES
         src/algorithm/NetImage.cpp
         src/mediaview/ProgressBarSlider.cpp
         src/CameraImageWidget.cpp
-        src/vaapidecoder.cpp
+        src/MediaStreamProc.cpp
         src/algorithm/AlgorithmPkt.cpp
         src/algorithm/AlgorithmTcpMsgClient.cpp
         src/algorithm/AlgorithmManager.cpp
@@ -121,8 +123,14 @@ set(PROTO_FILES
         proto/AlgoParam.proto)
 
 #demo演示笔记本需要
-link_directories(/home/demo/remogui/usr/lib /home/usrlocal/lib ${link_directionies})
-include_directories(/home/demo/remogui/usr/include /home/usrlocal/include ${include_directories})
+link_directories(/home/demo/remogui/usr/lib
+        /home/usrlocal/lib
+        ${remoguiroot}/usr/ffmpeg/lib/
+        ${link_directionies})
+include_directories(/home/demo/remogui/usr/include
+        /home/usrlocal/include
+        ${remoguiroot}/usr/ffmpeg/include
+        ${include_directories})
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 

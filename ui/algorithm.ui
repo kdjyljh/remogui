@@ -53,7 +53,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <property name="elideMode">
       <enum>Qt::ElideNone</enum>
@@ -115,40 +115,8 @@
            </widget>
           </item>
           <item>
-           <layout class="QFormLayout" name="formLayout">
-            <item row="0" column="0">
-             <widget class="QLabel" name="master_speedLabel">
-              <property name="text">
-               <string>master speed</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="lineEdit_master_speed">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="master_timeLabel">
-              <property name="text">
-               <string>master time</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEdit_master_time">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
            <widget class="QWidget" name="widget_15" native="true">
-            <layout class="QVBoxLayout" name="verticalLayout_12">
+            <layout class="QVBoxLayout" name="verticalLayout_5">
              <item>
               <widget class="QLabel" name="label_11">
                <property name="text">
@@ -168,6 +136,50 @@
           </item>
          </layout>
         </widget>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <property name="leftMargin">
+          <number>9</number>
+         </property>
+         <property name="rightMargin">
+          <number>9</number>
+         </property>
+         <property name="horizontalSpacing">
+          <number>6</number>
+         </property>
+         <property name="verticalSpacing">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="master_speedLabel">
+           <property name="text">
+            <string>master speed</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lineEdit_master_speed">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="master_timeLabel">
+           <property name="text">
+            <string>master time</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="lineEdit_master_time">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_faceTemplate">
@@ -478,15 +490,6 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="speedLineEdit"/>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="scan_scaleLineEdit"/>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="zmspdLineEdit"/>
-            </item>
             <item row="1" column="0">
              <widget class="QLabel" name="zmspdLabel_2">
               <property name="sizePolicy">
@@ -513,6 +516,27 @@
               </property>
              </widget>
             </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineEdit_scan_scale">
+              <property name="text">
+               <string>0</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="lineEdit_scan_zmspd">
+              <property name="text">
+               <string>0</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="lineEdit_scan_speed">
+              <property name="text">
+               <string>0</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>
@@ -530,9 +554,6 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="1">
-                <widget class="QLineEdit" name="timeLineEdit"/>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="time_shotLabel_2">
                  <property name="text">
@@ -540,13 +561,24 @@
                  </property>
                 </widget>
                </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="lineEdit_scan_time">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="time_shotLineEdit"/>
+                <widget class="QLineEdit" name="lineEdit_scan_time_shot">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_scan_2">
+              <widget class="QPushButton" name="pushButton_scan">
                <property name="text">
                 <string>开始</string>
                </property>
@@ -581,9 +613,6 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="zmspdLineEdit_2"/>
-              </item>
               <item row="1" column="0">
                <widget class="QLabel" name="scaleLabel_6">
                 <property name="text">
@@ -591,8 +620,19 @@
                 </property>
                </widget>
               </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="lineEdit_shot_zmspd">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
               <item row="1" column="1">
-               <widget class="QLineEdit" name="scaleLineEdit"/>
+               <widget class="QLineEdit" name="lineEdit_shot_scale">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
@@ -605,9 +645,6 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="timeLineEdit_3"/>
-              </item>
               <item row="1" column="0">
                <widget class="QLabel" name="focus_upperLabel_2">
                 <property name="text">
@@ -615,15 +652,26 @@
                 </property>
                </widget>
               </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="lineEdit_shot_time">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
               <item row="1" column="1">
-               <widget class="QLineEdit" name="focus_upperLineEdit"/>
+               <widget class="QLineEdit" name="lineEdit_shot_focus_upper">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
            </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_cycleZoom_2">
+           <widget class="QPushButton" name="pushButton_shot">
             <property name="text">
              <string>开始</string>
             </property>
@@ -1324,206 +1372,6 @@
        <verstretch>10</verstretch>
       </sizepolicy>
      </property>
-     <widget class="QGroupBox" name="groupBox_10">
-      <property name="geometry">
-       <rect>
-        <x>530</x>
-        <y>50</y>
-        <width>203</width>
-        <height>205</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="title">
-       <string>SHOT</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_17">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_10">
-         <item>
-          <layout class="QFormLayout" name="formLayout_10">
-           <item row="0" column="0">
-            <widget class="QLabel" name="zmspdLabel">
-             <property name="text">
-              <string>zmspd</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit_shot_zmspd">
-             <property name="text">
-              <string>0</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="scaleLabel_7">
-             <property name="text">
-              <string>scale</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEdit_shot_scale">
-             <property name="text">
-              <string>0</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="timeLabel">
-             <property name="text">
-              <string>time</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="lineEdit_shot_time">
-             <property name="text">
-              <string>0</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="focus_upperLabel">
-             <property name="text">
-              <string>focus_upper</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="lineEdit_shot_focus_upper">
-             <property name="text">
-              <string>0</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_shot">
-         <property name="text">
-          <string>开始</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_7">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>50</y>
-        <width>246</width>
-        <height>200</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>200</height>
-       </size>
-      </property>
-      <property name="title">
-       <string>SCAN</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_14">
-       <item>
-        <layout class="QFormLayout" name="formLayout_4">
-         <item row="1" column="0">
-          <widget class="QLabel" name="scaleLabel_3">
-           <property name="text">
-            <string>zmspd</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="lineEdit_scan_zmspd">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="speedLabel_3">
-           <property name="text">
-            <string>speed</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="lineEdit_scan_speed">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="timeLabel_2">
-           <property name="text">
-            <string>time</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="time_shotLabel">
-           <property name="text">
-            <string>time_shot</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QLineEdit" name="lineEdit_scan_time_shot">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="scan_scaleLabel">
-           <property name="text">
-            <string>scan_scale</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="lineEdit_scan_scale">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QLineEdit" name="lineEdit_scan_time">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_scan">
-         <property name="text">
-          <string>开始</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
   </layout>

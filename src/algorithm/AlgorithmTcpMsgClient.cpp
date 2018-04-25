@@ -78,14 +78,16 @@ void AlgorithmTcpMsgClient::handleConnect(const boost::system::error_code &error
 //        runThread.interrupt();
 //        runThread.join();
 //    }
-    ioService.stop();
-    runThread.detach(); //自动释放上一个线程
+    if (runThread.joinable()) {
+        ioService.stop();
+        runThread.detach(); //自动释放上一个线程
+    }
     runThread = boost::thread(boost::bind(&boost::asio::io_service::run, &ioService));
 
     //读取4个字节包头，为长度
     boost::asio::async_read(socket, boost::asio::buffer(curPkt.dataHead(), AlgorithmPkt::HEADER_LENGTH),
                             boost::bind(&AlgorithmTcpMsgClient::handleReceiveMsgHeader, this, _1, _2));
-    LOG(INFO) << "AlgorithmTcpMsgClient::handleConnect end bind async_read done";
+//    LOG(INFO) << "AlgorithmTcpMsgClient::handleConnect end bind async_read done";
 }
 
 void AlgorithmTcpMsgClient::handleSendMsg(const boost::system::error_code &error, std::size_t bytes_transferred,

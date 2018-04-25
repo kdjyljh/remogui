@@ -1,11 +1,54 @@
-sudo apt-get install qt5-default
-sudo apt-get install libavdevice-dev libavfilter-dev libavformat-dev libavcodec-dev libswresample-dev libswscale-dev libavutil-dev --install-recommends
-sudo apt-get install libvdpau-dev libva-dev libx11-dev --install-recommends
-sudo apt-get install libboost-all-dev libgoogle-glog-dev libprotobuf-dev protobuf-compiler
-mkdir build
+以下所有操作均在${remoguiroot}目录下操作，一般建在/home/username/下。username为用户名
+以下操作是在$HOME//remogui/下进行的，也就是我的remoguiroot为$HOME//remogui/
+${remoguiroot}默认目录是$ENV{HOME}/remogui,如果需要改变${remoguiroot}，则需要在CMakeLists.txt里面修改到具体目录
+
+cd ~
+mkdir remogui;cd remogui
+新建目录
+mkdir usr build
+cp -r /your/source/code/dir . //复制源代码目录到${remoguiroot}，(源代码目录名称为remogui)
+
+1.编译ffmpeg
+！！！！由于ffmpeg各个版本api差异比较大，目前代码使用最新版本到ffmpeg。使用apt-get安装较老版本可能编译失败或者运行异常！！！！
+sudo apt-get -y install git autoconf automake build-essential libass-dev libtool pkg-config texinfo zlib1g-dev \
+    libva-dev vainfo nasm libx264-dev libx264-dev libfdk-aac-dev libvpx-dev libvorbis-dev freeglut3-dev libsdl2-dev pulseaudio
+sudo apt-get install libopenal-dev libpulse-dev libva-dev libxv-dev libass-dev libegl1-mesa-dev
+
+git clone https://github.com/FFmpeg/FFmpeg.git
+如果网速太慢可以直接到github上下载zip包，解压
+wget https://github.com/FFmpeg/FFmpeg/archive/master.zip;unzip master.zip;mv FFmpeg-master FFmpeg;
+
+cd FFmpeg
+如果需要使用硬件加速解码，使用:
+./configure --prefix=$HOME/remogui/usr/ffmpeg --enable-shared --enable-pic --enable-debug=3 --enable-vaapi --enable-libvorbis \
+ --enable-libvpx --enable-gpl --cpu=native --enable-opengl --enable-libfdk-aac --enable-libx264 --extra-libs=-lpthread --enable-nonfree --enable-libass
+ 目前的硬件加速解码只支持intel到vaapi接口，如果不是intel的cpu或者你的intel cpu不支持硬件解码则需要使用下面
+./configure --prefix=$HOME/remogui/usr/ffmpeg --enable-shared --enable-pic
+make -j8
+make install
+cd ..
+
+2.编译remogui
+sudo apt-get install libvdpau-dev libva-dev libx11-dev libboost-all-dev libgoogle-glog-dev --install-recommends
+sudo apt-get install libprotobuf-dev protobuf-compiler
+
+安装qt，为了能让cmake找到qt，需要安装较新版本到qt，本次安装Qt5.10.0，安装目录为$ENV{HOME}/Qt5.10.0(即默认的qt安装目录)
+如果修改了目录，需要修改CMakeLists.txt里面的CMAKE_PREFIX_PATH，指向安装目录下的Qt5.10.0/5.10.0/gcc_64
+wget http://download.qt.io/archive/qt/5.10/5.10.0/qt-opensource-linux-x64-5.10.0.run
+chmod +x qt-opensource-linux-x64-5.10.0.run
+./qt-opensource-linux-x64-5.10.0.run
+
+安装cmake(3.9.6以上)
+wget https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.tar.gz
+tar -zxvf cmake-3.11.1-Linux-x86_64.tar.gz -C usr
+
+编译源代码
 cd build
-cmake ../
-make
+../usr/cmake-3.11.1-Linux-x86_64/bin/cmake ../remogui
+make -j8
+
+运行程序
+./remo_gui
 
 
 

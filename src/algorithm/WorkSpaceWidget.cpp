@@ -6,6 +6,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include "AlgorithmManager.h"
+#include "AlgorithmDialog.h"
 
 WorkSpaceWidget::~WorkSpaceWidget() {
 
@@ -37,5 +38,20 @@ void WorkSpaceWidget::mouseReleaseEvent(QMouseEvent *ev) {
     double posX = static_cast<double>(recPos.x()) / size().width();
     double posY = static_cast<double>(recPos.y()) / size().height();
 
-    chosingPersonMouseReleased(posX, posY);
+    AlgoParamMsg msg =  AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::SelectionSet);
+    msg.mutable_selection_set()->set_select_mode(AlgoParam::SelectionSet::SELECTION_USERPICK);
+    msg.mutable_selection_set()->add_userpick_point(posX);
+    msg.mutable_selection_set()->add_userpick_point(posY);
+    msg.mutable_selection_set()->set_is_selecting(true);
+    AlgorithmDialog::getInstance()->asyncSendMsg(msg);
+//    chosingPersonMouseReleased(posX, posY);
+}
+
+void WorkSpaceWidget::setManuallyChosingPerson(bool status) {
+    isManuallyChosingPerson = status;
+    if (isManuallyChosingPerson) {
+        setCursor(Qt::CrossCursor);
+    } else {
+        setCursor(Qt::ArrowCursor);
+    }
 }

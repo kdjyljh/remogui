@@ -1,5 +1,5 @@
-#ifndef VAAPIDECODER_H
-#define VAAPIDECODER_H
+#ifndef MediaStreamProc_H
+#define MediaStreamProc_H
 
 #include <QObject>
 #include <QImage>
@@ -20,12 +20,12 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
-class VaapiDecoder : public QObject
+class MediaStreamProc : public QObject
 {
     Q_OBJECT
 public:
-    VaapiDecoder(QObject *parent = nullptr);
-    ~VaapiDecoder();
+    MediaStreamProc(QObject *parent = nullptr);
+    ~MediaStreamProc();
 //    AVFrame *getDecodedFrame() {return &decoded_frame;}
     AVFrame *getCurFrame();
     bool isValid() {return streamDecoderReady && streamInputReady;}
@@ -46,11 +46,14 @@ private:
     void readFrame();
     void decodeFrame();
     void play();
-    int decode_write(AVCodecContext *avctx, AVPacket *packet);
+    int decode_write_vaapi(AVCodecContext *avctx, AVPacket *packet);
+    int decode_write_normal(AVCodecContext *avctx, AVPacket *packet);
     static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
                                      const enum AVPixelFormat *pix_fmts);
     int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type);
     int init(); //返回0表示成功
+    int vaapiInit(); //返回0表示成功
+    int normalInit(); //返回0表示成功
     void deInit();
     void pushFrame(const AVFrame &frame);
     void popFrame(AVFrame &frame);
@@ -73,6 +76,12 @@ private:
     int frame_width;
     int frame_height;
     AVFrame curFrame;
+
+    enum DecoderType {
+        DecoderType_None    = 0,
+        DecoderType_Normal    = 1,
+        DecoderType_Vaapi   = 2,
+    } decoderType;
 
 private:
     boost::mutex mtxStreamInputReady;
@@ -100,4 +109,4 @@ private:
     const int frameQueueSize;
 };
 
-#endif // VAAPIDECODER_H
+#endif // MediaStreamProc_H

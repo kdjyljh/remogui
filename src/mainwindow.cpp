@@ -293,7 +293,7 @@ bool MainWindow::initNetwork(bool showInfo) {
     }
 
     cameraImageWidget = boost::shared_ptr<CameraImageWidget>(new CameraImageWidget);
-    mainWorkSpace = boost::make_shared<MainWorkSpaceWidget>();
+//    mainWorkSpace = boost::make_shared<MainWorkSpaceWidget>();
 
     //    imagProc(new ImageStreamProc),
     receiveDataProc = ReceiveDataProc::getInstance();
@@ -306,17 +306,8 @@ bool MainWindow::initNetwork(bool showInfo) {
     mediaViewWidget = boost::shared_ptr<WaterFallScrollArea>(new WaterFallScrollArea);
     algorithmDialog = AlgorithmDialog::getInstance();
 
-
-//    QWidget *cw = new QWidget(this);
-//    setCentralWidget(cw);
-//    cw->setLayout(mainLayout);
-
-//    mainLayout->addWidget(viewLable);
-//    viewLable = new ViewLable();
-//    setCentralWidget(viewLable);
-
-
-    setCentralWidget(mainWorkSpace.get());
+//    setCentralWidget(mainWorkSpace.get());
+    setCentralWidget(cameraImageWidget.get());
     customWBWidget->setGeometry(QRect(centerPoint, QSize(400, 50)));
     customWBSlider->setGeometry(QRect(0, 25, 400, 10));
     customWBSlider->setOrientation(Qt::Horizontal);

@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QImage>
-#include "vaapidecoder.h"
+#include "MediaStreamProc.h"
 
 class CameraImageWidget : public QWidget
 {
@@ -13,7 +13,7 @@ public:
     ~CameraImageWidget();
     bool isValid() {return valid;}
 
-    boost::shared_ptr<VaapiDecoder> getDecoder() {return decoder;}
+    boost::shared_ptr<MediaStreamProc> getDecoder() {return decoder;}
 
 signals:
 
@@ -29,7 +29,7 @@ private slots:
 
 private:
     QImage image;
-    boost::shared_ptr<VaapiDecoder> decoder;
+    boost::shared_ptr<MediaStreamProc> decoder;
     bool focusStatus;
     QPoint recPos;
     const QSize recSize;

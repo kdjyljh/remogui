@@ -59,10 +59,12 @@ void AlgorithmDialog::onMsgGot(int msgType) {
 }
 
 void AlgorithmDialog::updateSelectionUi() {
-//    ui->groupBox_person_chose->setChecked(manager->status.mutable_selection_set()->selecting());
-
-    AlgoParam::SelectionSet::SelectMode mode = manager->status.mutable_selection_set()->select_mode();
-    if (AlgoParam::SelectionSet::SELECTION_USERPICK == mode) {
+    LOG(INFO) << "AlgorithmDialog::updateSelectionUi error:"
+              << manager->status.mutable_selection_set()->error_code()
+              << " mode:" << manager->status.mutable_selection_set()->select_mode()
+              << " is_selection:" << manager->status.mutable_selection_set()->is_selecting();
+    //如果有错误消息，则输出到界面
+    if (manager->status.mutable_selection_set()->has_error_code()) {
         QString str;
         if (manager->status.mutable_selection_set()->error_code() == AlgoParam::ERR_WRONG_POINT) {
             str = QString::fromLocal8Bit("点错误");
@@ -74,26 +76,52 @@ void AlgorithmDialog::updateSelectionUi() {
             str = QString::fromLocal8Bit("未知错误");
         }
         ui->lineEdit_error_info->setText(str);
-        ui->radioButton_person_chose_master->setChecked(false);
-        ui->radioButton_person_chose_multiple->setChecked(false);
-        ui->radioButton_person_chose_auto->setChecked(false);
+    }
+
+    //设置当前的选人模式
+    AlgoParam::SelectionSet::SelectMode mode = manager->status.mutable_selection_set()->select_mode();
+    QRadioButton *curRadioButton = nullptr;
+    if (AlgoParam::SelectionSet::SELECTION_USERPICK == mode) {
+        curRadioButton = nullptr;
     } else if (AlgoParam::SelectionSet::SELECTION_AUTO == mode) {
-        ui->radioButton_person_chose_auto->setChecked(true);
+        curRadioButton = ui->radioButton_person_chose_auto;
     } else if (AlgoParam::SelectionSet::SELECTION_MASTER == mode) {
-        ui->radioButton_person_chose_master->setChecked(true);
+        curRadioButton = ui->radioButton_person_chose_master;
         ui->lineEdit_master_speed->setText(QString::number(manager->status.mutable_selection_set()->master_speed()));
         ui->lineEdit_master_time->setText(QString::number(manager->status.mutable_selection_set()->master_time()));
     } else if (AlgoParam::SelectionSet::SELECTION_MULTIPLE == mode) {
-        ui->radioButton_person_chose_multiple->setChecked(true);
+        curRadioButton = ui->radioButton_person_chose_multiple;
     }
 
-    if (!manager->status.mutable_selection_set()->is_selecting()) {
-        ui->radioButton_person_chose_auto->setStyleSheet("background-color:;");
-        ui->radioButton_person_chose_master->setStyleSheet("background-color:;");
-        ui->radioButton_person_chose_multiple->setStyleSheet("background-color:;");
+    static QRadioButton *lastRadioButton = nullptr;
+    //当前选人模式为非user_pick
+    if (curRadioButton) {
+        if (lastRadioButton) lastRadioButton->setAutoExclusive(false);
+        curRadioButton->setChecked(true);
+        if (lastRadioButton) lastRadioButton->setAutoExclusive(true);
+
+        if (manager->status.mutable_selection_set()->is_selecting()) {
+            //如果正在选人，则设置为红色
+            if (lastRadioButton) {
+                lastRadioButton->setStyleSheet("background-color:;");
+            }
+            curRadioButton->setStyleSheet("background-color:red;");
+        } else {
+            //选人结束恢复颜色
+            curRadioButton->setStyleSheet("background-color:;");
+        }
+    } else {
+        //当前选人模式为user_pick,将上次的选人状态结束，设置为正常颜色
+        if (lastRadioButton) {
+            lastRadioButton->setAutoExclusive(false);
+            lastRadioButton->setChecked(false);
+            lastRadioButton->setAutoExclusive(true);
+            lastRadioButton->setStyleSheet("background-color:;");
+        }
     }
+    lastRadioButton = curRadioButton;
 
-
+    //设置当前人脸模板
     for (int i = 0; i < manager->status.mutable_selection_set()->face_templ().size(); ++i) {
         QPixmap pix;
         pix.loadFromData((uchar*)manager->status.mutable_selection_set()->face_templ(i).face_image().data(),
@@ -141,11 +169,24 @@ void AlgorithmDialog::updateCaptureUi() {
 }
 
 void AlgorithmDialog::on_groupBox_person_chose_clicked(bool checked) {
-    AlgoParamMsg msg =  AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::SelectionSet);
-    msg.mutable_selection_set()->set_is_selecting(checked);
-    asyncSendMsg(msg);
-
     ui->workSpaceWidget->setManuallyChosingPerson(checked);
+
+
+    //当处于正在选人状态时才需要结束选人
+    if (!checked && manager->status.selection_set().is_selecting()) {
+        AlgoParamMsg msg =  AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::SelectionSet);
+        msg.mutable_selection_set()->set_is_selecting(false);
+        //user_pick需要用户点击确认结束。
+        if (manager->status.selection_set().select_mode() == AlgoParam::SelectionSet::SELECTION_USERPICK) {
+            msg.mutable_selection_set()->set_select_mode(AlgoParam::SelectionSet::SELECTION_USERPICK);
+        } else {
+            //剩下的mutil，master和auto选人会自动结束
+            // 但是用户在还未结束时点击结束选人,则会取消当前选人并且进入auto选人
+            msg.mutable_selection_set()->set_select_mode(AlgoParam::SelectionSet::SELECTION_AUTO);
+            msg.mutable_selection_set()->set_is_selecting(true);
+        }
+        asyncSendMsg(msg);
+    }
 }
 
 void AlgorithmDialog::radioButton_person_chose_clicked(bool checked) {
@@ -154,8 +195,6 @@ void AlgorithmDialog::radioButton_person_chose_clicked(bool checked) {
         AlgoParam::SelectionSet::SelectMode mode;
         AlgoParamMsg msg =  AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::SelectionSet);
         if (ptr == ui->radioButton_person_chose_multiple) {
-            ui->radioButton_person_chose_auto->setStyleSheet("background-color:;");
-            ui->radioButton_person_chose_master->setStyleSheet("background-color:;");
             mode = AlgoParam::SelectionSet::SELECTION_MULTIPLE;
             double masterTime = 0.0;
             double masterSpeed = 0.0;
@@ -168,18 +207,12 @@ void AlgorithmDialog::radioButton_person_chose_clicked(bool checked) {
             msg.mutable_selection_set()->set_master_time(masterTime);
         } else if (ptr == ui->radioButton_person_chose_auto) {
             mode = AlgoParam::SelectionSet::SELECTION_AUTO;
-            ui->radioButton_person_chose_master->setStyleSheet("background-color:;");
-            ui->radioButton_person_chose_multiple->setStyleSheet("background-color:;");
         } else if (ptr == ui->radioButton_person_chose_master) {
             mode = AlgoParam::SelectionSet::SELECTION_MASTER;
-            ui->radioButton_person_chose_auto->setStyleSheet("background-color:;");
-            ui->radioButton_person_chose_multiple->setStyleSheet("background-color:;");
         }
 
-        ptr->setStyleSheet("background-color:red;");
-
         msg.mutable_selection_set()->set_select_mode(mode);
-        msg.mutable_selection_set()->set_is_selecting(ui->groupBox_person_chose->isChecked());
+        msg.mutable_selection_set()->set_is_selecting(true);
         asyncSendMsg(msg);
     }
 }
@@ -194,22 +227,22 @@ bool AlgorithmDialog::init() {
     }
 
     //检查网络是否通畅
-//    if (!manager->tcpClientConnect()) {
-//        QMessageBox::warning(nullptr, "警告", "网络错误", QMessageBox::Ok);
-//        return false;
-//    }
-//
-//    //检查是否初始化
-//    int checkTimes = 1000;
-//    bool algorithmInitialized = false;
-//    while (!algorithmInitialized && checkTimes--) {
-//        algorithmInitialized = manager->status.contain_allget();
-//        boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
-//    }
-//    if (!algorithmInitialized) {
-//        QMessageBox::warning(nullptr, "警告", "算法未初始化", QMessageBox::Ok);
-//        return false;
-//    }
+    if (!manager->tcpClientConnect()) {
+        QMessageBox::warning(nullptr, "警告", "网络错误", QMessageBox::Ok);
+        return false;
+    }
+
+    //检查是否初始化
+    int checkTimes = 1000;
+    bool algorithmInitialized = false;
+    while (!algorithmInitialized && checkTimes--) {
+        algorithmInitialized = manager->status.contain_allget();
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
+    }
+    if (!algorithmInitialized) {
+        QMessageBox::warning(nullptr, "警告", "算法未初始化", QMessageBox::Ok);
+        return false;
+    }
 
     ui->setupUi(this);
     resize(1300, 900);
@@ -257,10 +290,6 @@ bool AlgorithmDialog::init() {
     ui->lineEdit_slowzoom_zmspd->setValidator(validator);
     ui->lineEdit_oncezoom_scale->setValidator(validator);
     ui->lineEdit_oncezoom_zmspd->setValidator(validator);
-//    ui->lineEdit_cyclezoom_period->setValidator(validator);
-//    ui->lineEdit_cyclezoom_zmspd->setValidator(validator);
-//    ui->lineEdit_rollswing_period->setValidator(validator);
-//    ui->lineEdit_rollswing_speed->setValidator(validator);
     ui->lineEdit_scan_scale->setValidator(validator);
     ui->lineEdit_scan_speed->setValidator(validator);
     ui->lineEdit_scan_time->setValidator(validator);
@@ -277,16 +306,11 @@ bool AlgorithmDialog::init() {
 }
 
 void AlgorithmDialog::on_radioButton_person_chose_master_toggled(bool checked) {
-    ui->lineEdit_master_time->setEnabled(checked);
-    ui->lineEdit_master_speed->setEnabled(checked);
+//    ui->lineEdit_master_time->setEnabled(checked);
+//    ui->lineEdit_master_speed->setEnabled(checked);
 }
 
 void AlgorithmDialog::sendManuallyChosing(double x, double y) {
-    AlgoParamMsg msg =  AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::SelectionSet);
-    msg.mutable_selection_set()->set_select_mode(AlgoParam::SelectionSet::SELECTION_USERPICK);
-    msg.mutable_selection_set()->add_userpick_point(x);
-    msg.mutable_selection_set()->add_userpick_point(y);
-    manager->asyncSendMsg(msg);
 }
 
 void AlgorithmDialog::on_pushButton_faceTemplate_clicked() {
@@ -341,10 +365,10 @@ void AlgorithmDialog::on_pushButton_gimbal_clicked() {
     }
 }
 
-void AlgorithmDialog::on_pushButton_zoom_clicked() {
-    if (zoomSlider) {}
-    zoomSlider->show();
-}
+//void AlgorithmDialog::on_pushButton_zoom_clicked() {
+//    if (zoomSlider) {}
+//    zoomSlider->show();
+//}
 
 void AlgorithmDialog::on_pushButton_music_play_clicked() {
     player->setMedia(QUrl::fromLocalFile("/home/jianghualuo/work/data/audio/mariah_carey-my_all.flac"));
@@ -598,13 +622,6 @@ void AlgorithmDialog::pushButton_specialShot_clicked() {
 
 void AlgorithmDialog::updateSpecialShotUi() {
     AlgoParam::SpecialShot::SpecialShotType type = manager->status.mutable_special_shot()->special_shot();
-
-//    ui->pushButton_slowzoom->setStyleSheet("background-color:;");
-//    ui->pushButton_onceZoom->setStyleSheet("background-color:;");
-//    ui->pushButton_cycleZoom->setStyleSheet("background-color:;");
-//    ui->pushButton_roolSwing->setStyleSheet("background-color:;");
-//    ui->pushButton_scan->setStyleSheet("background-color:;");
-//    ui->pushButton_shot->setStyleSheet("background-color:;");
 
     if (type == AlgoParam::SpecialShot::SPECIALSHOT_SLOWZOOM) {
         ui->pushButton_slowzoom->setText(QString::fromLocal8Bit("停止"));

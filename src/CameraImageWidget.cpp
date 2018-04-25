@@ -15,7 +15,7 @@ CameraImageWidget::CameraImageWidget(QWidget *parent) :
     valid(false),
     recPos(-1000, -1000),
     recSize(100, 100),
-    decoder(boost::shared_ptr<VaapiDecoder>(new VaapiDecoder))
+    decoder(boost::shared_ptr<MediaStreamProc>(new MediaStreamProc))
 {
     LOG(INFO) << "CameraImageWidget::CameraImageWidget constructor";
     connect(decoder.get(), SIGNAL(imageGot()), this, SLOT(drawImage()), Qt::BlockingQueuedConnection);
@@ -48,8 +48,6 @@ void CameraImageWidget::drawImage()
 
 void CameraImageWidget::mouseReleaseEvent(QMouseEvent *ev)
 {
-    qDebug() << ev->pos();
-    qDebug() << size();
     if (!focusStatus) return;
 
     recPos = ev->pos();

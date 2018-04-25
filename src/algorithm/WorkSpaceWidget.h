@@ -16,7 +16,7 @@ class WorkSpaceWidget : public QWidget {
 public:
     explicit WorkSpaceWidget(QWidget *parent = nullptr);
     ~WorkSpaceWidget();
-    void setManuallyChosingPerson(bool status) {isManuallyChosingPerson = status;}
+    void setManuallyChosingPerson(bool status);
 
 signals:
     void chosingPersonMouseReleased(double x, double y);

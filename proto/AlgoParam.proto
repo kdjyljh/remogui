@@ -50,7 +50,8 @@ enum Command {
 // 错误码
 enum ErrorCode {
     SUCCEED = 0;
-    ERROR   = 1;
+//    ERROR   = 1;
+    ERROR_ErrorCode = 1;
     
 	// 非应用层错误
 	ERR_TYPE_SEQNUM_NOTEQUAL = 2; // type和seq_num的长度不一致

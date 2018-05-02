@@ -2,9 +2,9 @@
 #include <glog/logging.h>
 #include <QTimer>
 
-
+#ifdef linux
 static enum AVPixelFormat hw_pix_fmt;
-
+enum AVHWDeviceType type;
 int MediaStreamProc::hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
 {
     int err = 0;
@@ -132,6 +132,125 @@ int MediaStreamProc::decode_write_vaapi(AVCodecContext *avctx, AVPacket *packet)
     return ret;
 }
 
+int MediaStreamProc::vaapiInit() {
+    int i;
+    int ret;
+    std::string errorMsg;
+
+//    char *device_type = "vdpau";
+    const char *device_type = deviceType.c_str();
+    const char *input_file = url.c_str();
+    int setResult = -1;
+    char errorStr[1024] = {0};
+
+    LOG(INFO) << "1.av_hwdevice_find_type_by_name ###########################";
+    type = av_hwdevice_find_type_by_name(device_type);
+    if (type == AV_HWDEVICE_TYPE_NONE) {
+        char msg[1024];
+        int size = 0;
+        size = snprintf(msg, sizeof(msg), "Device type %s is not supported.\n", device_type);
+        size += snprintf(msg + size, sizeof(msg), "Available device types:");
+        while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)
+            snprintf(msg + size, sizeof(msg), " %s", av_hwdevice_get_type_name(type));
+
+        errorMsg = msg;
+        ret = -1;
+        goto error;
+    }
+
+    /* open the input file */
+    LOG(INFO) << "2.avformat_open_input ###########################";
+    if ((ret = avformat_open_input(&input_ctx, input_file, nullptr, nullptr)) != 0) {
+        errorMsg += "Cannot open input file "; errorMsg += input_file;
+        goto error;
+    }
+    input_ctx->probesize = 1024;
+
+    LOG(INFO) << "3.avformat_find_stream_info ###########################";
+    if ((ret = avformat_find_stream_info(input_ctx, nullptr)) < 0) {
+        errorMsg += "Cannot find input stream information";
+        goto error;
+    }
+
+    /* find the video stream information */
+    LOG(INFO) << "4.av_find_best_stream ###########################";
+    ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
+    if (ret < 0) {
+        errorMsg += "Cannot find a video stream in the input file";
+        goto error;
+    }
+    video_stream = ret;
+
+    LOG(INFO) << "5.avcodec_get_hw_config ###########################";
+    for (i = 0;; i++) {
+        const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
+        if (!config) {
+            fprintf(stderr, "Decoder %s does not support device type %s.\n",
+                    decoder->name, av_hwdevice_get_type_name(type));
+            errorMsg += "Decoder "; errorMsg += decoder->name;
+            errorMsg += " does not support device type "; errorMsg += av_hwdevice_get_type_name(type);
+            goto error;
+        }
+        if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
+            config->device_type == type) {
+            hw_pix_fmt = config->pix_fmt;
+            break;
+        }
+    }
+
+    LOG(INFO) << "6.avcodec_alloc_context3 ###########################";
+    if (!(decoder_ctx = avcodec_alloc_context3(decoder))) {
+        ret = AVERROR(ENOMEM);
+        errorMsg += "avcodec_alloc_context3 failed";
+        goto error;
+    }
+
+    LOG(INFO) << "7.avcodec_parameters_to_context ###########################";
+    video = input_ctx->streams[video_stream];
+    if ((ret = avcodec_parameters_to_context(decoder_ctx, video->codecpar)) < 0) {
+        errorMsg += "avcodec_parameters_to_context failed";
+        goto error;
+    }
+
+    decoder_ctx->get_format  = get_hw_format;
+    av_opt_set_int(decoder_ctx, "refcounted_frames", 1, 0);
+
+    LOG(INFO) << "8.hw_decoder_init ###########################";
+    if (hw_decoder_init(decoder_ctx, type) < 0) {
+        return -1;
+    }
+
+    LOG(INFO) << "9.avcodec_open2 ###########################";
+    if ((ret = avcodec_open2(decoder_ctx, decoder, nullptr)) < 0) {
+        errorMsg += "Failed to open codec for stream #"; errorMsg += video_stream;
+        goto error;
+    }
+
+    setResult = av_opt_set(decoder_ctx->priv_data, "preset", "slow", AV_OPT_SEARCH_CHILDREN);
+    setResult = av_opt_set_int(decoder_ctx, "crf", 2, 0);
+//    setResult = av_opt_set(decoder_ctx->codec, "preset", "slow", 0);
+    av_strerror(setResult, errorStr, 1024);
+    LOG(INFO) << "set error" << errorStr;
+    setResult = av_opt_set(decoder_ctx->priv_data, "tune", "zerolatency", 0);
+    setResult = av_opt_set(decoder_ctx->priv_data, "crf", "51", 0);
+
+    LOG(INFO) << "MediaStreamProc::vaapiInit init video stream success!!!!";
+    LOG(INFO) << "MediaStreamProc::vaapiInit decoder name:" << decoder_ctx->codec->name;
+
+    streamDecoderReady = true;
+    streamInputReady = true;
+    return 0;
+
+    error:
+    LOG(INFO) << "MediaStreamProc::vaapiInit failed error:" << errorMsg;
+    streamInputReady = false;
+    streamDecoderReady = false;
+    av_strerror(ret, errorStr, 1024);
+    LOG(INFO) << "MediaStreamProc::vaapiInit got an error:" << ret << " :" << errorStr;
+    return ret;
+}
+#endif
+
 //rtsp://192.168.0.1/livestream/12
 //rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov
 ///home/jianghualuo/work/data/videos/bandicam.avi
@@ -183,6 +302,7 @@ MediaStreamProc::~MediaStreamProc()
 int MediaStreamProc::init()
 {
     int ret = -1;
+#ifdef linux
     if (ret = vaapiInit()) {
         LOG(INFO) << "MediaStreamProc::init vaapiInit failed try normal!!!!!!!!!!!!!";
         deInit();
@@ -194,9 +314,10 @@ int MediaStreamProc::init()
     } else {
         decoderType = DecoderType_Vaapi;
     }
-
-//    ret = normalInit();
-//    decoderType = DecoderType_Normal;
+#else
+    ret = normalInit();
+    decoderType = DecoderType_Normal;
+#endif
 
     return ret;
 }
@@ -215,7 +336,9 @@ void MediaStreamProc::deInit()
     decoder = nullptr;
     hw_device_ctx = nullptr;
     video_stream = -1;
+#ifdef linux
     type = AV_HWDEVICE_TYPE_NONE;
+#endif
     streamInputReady = false;
     streamDecoderReady = false;
 }
@@ -342,11 +465,15 @@ void MediaStreamProc::decodeFrame() {
                 cvStreamDecoderReady.wait(lock);
             }
             if (video_stream == packet.stream_index) {
+#ifdef linux
                 if (decoderType == DecoderType_Normal) {
                     decode_write_normal(decoder_ctx, &packet);
                 } else if (decoderType == DecoderType_Vaapi) {
                     ret = decode_write_vaapi(decoder_ctx, &packet);
                 }
+#else
+                decode_write_normal(decoder_ctx, &packet);
+#endif
             }
         }
         av_packet_unref(&packet);
@@ -376,124 +503,6 @@ void MediaStreamProc::popPacket(AVPacket &packet) {
 bool MediaStreamProc::syncReadStream() {
     _readStream();
     return streamInputReady && streamDecoderReady;
-}
-
-int MediaStreamProc::vaapiInit() {
-    int i;
-    int ret;
-    std::string errorMsg;
-
-//    char *device_type = "vdpau";
-    const char *device_type = deviceType.c_str();
-    const char *input_file = url.c_str();
-    int setResult = -1;
-    char errorStr[1024] = {0};
-
-    LOG(INFO) << "1.av_hwdevice_find_type_by_name ###########################";
-    type = av_hwdevice_find_type_by_name(device_type);
-    if (type == AV_HWDEVICE_TYPE_NONE) {
-        char msg[1024];
-        int size = 0;
-        size = snprintf(msg, sizeof(msg), "Device type %s is not supported.\n", device_type);
-        size += snprintf(msg + size, sizeof(msg), "Available device types:");
-        while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)
-            snprintf(msg + size, sizeof(msg), " %s", av_hwdevice_get_type_name(type));
-
-        errorMsg = msg;
-        ret = -1;
-        goto error;
-    }
-
-    /* open the input file */
-    LOG(INFO) << "2.avformat_open_input ###########################";
-    if ((ret = avformat_open_input(&input_ctx, input_file, nullptr, nullptr)) != 0) {
-        errorMsg += "Cannot open input file "; errorMsg += input_file;
-        goto error;
-    }
-    input_ctx->probesize = 1024;
-
-    LOG(INFO) << "3.avformat_find_stream_info ###########################";
-    if ((ret = avformat_find_stream_info(input_ctx, nullptr)) < 0) {
-        errorMsg += "Cannot find input stream information";
-        goto error;
-    }
-
-    /* find the video stream information */
-    LOG(INFO) << "4.av_find_best_stream ###########################";
-    ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
-    if (ret < 0) {
-        errorMsg += "Cannot find a video stream in the input file";
-        goto error;
-    }
-    video_stream = ret;
-
-    LOG(INFO) << "5.avcodec_get_hw_config ###########################";
-    for (i = 0;; i++) {
-        const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
-        if (!config) {
-            fprintf(stderr, "Decoder %s does not support device type %s.\n",
-                    decoder->name, av_hwdevice_get_type_name(type));
-            errorMsg += "Decoder "; errorMsg += decoder->name;
-            errorMsg += " does not support device type "; errorMsg += av_hwdevice_get_type_name(type);
-            goto error;
-        }
-        if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
-            config->device_type == type) {
-            hw_pix_fmt = config->pix_fmt;
-            break;
-        }
-    }
-
-    LOG(INFO) << "6.avcodec_alloc_context3 ###########################";
-    if (!(decoder_ctx = avcodec_alloc_context3(decoder))) {
-        ret = AVERROR(ENOMEM);
-        errorMsg += "avcodec_alloc_context3 failed";
-        goto error;
-    }
-
-    LOG(INFO) << "7.avcodec_parameters_to_context ###########################";
-    video = input_ctx->streams[video_stream];
-    if ((ret = avcodec_parameters_to_context(decoder_ctx, video->codecpar)) < 0) {
-        errorMsg += "avcodec_parameters_to_context failed";
-        goto error;
-    }
-
-    decoder_ctx->get_format  = get_hw_format;
-    av_opt_set_int(decoder_ctx, "refcounted_frames", 1, 0);
-
-    LOG(INFO) << "8.hw_decoder_init ###########################";
-    if (hw_decoder_init(decoder_ctx, type) < 0) {
-        return -1;
-    }
-
-    LOG(INFO) << "9.avcodec_open2 ###########################";
-    if ((ret = avcodec_open2(decoder_ctx, decoder, nullptr)) < 0) {
-        errorMsg += "Failed to open codec for stream #"; errorMsg += video_stream;
-        goto error;
-    }
-
-    setResult = av_opt_set(decoder_ctx->priv_data, "preset", "slow", AV_OPT_SEARCH_CHILDREN);
-    setResult = av_opt_set_int(decoder_ctx, "crf", 2, 0);
-//    setResult = av_opt_set(decoder_ctx->codec, "preset", "slow", 0);
-    av_strerror(setResult, errorStr, 1024);
-    LOG(INFO) << "set error" << errorStr;
-    setResult = av_opt_set(decoder_ctx->priv_data, "tune", "zerolatency", 0);
-    setResult = av_opt_set(decoder_ctx->priv_data, "crf", "51", 0);
-
-    LOG(INFO) << "MediaStreamProc::vaapiInit init video stream success!!!!";
-    LOG(INFO) << "MediaStreamProc::vaapiInit decoder name:" << decoder_ctx->codec->name;
-
-    streamDecoderReady = true;
-    streamInputReady = true;
-    return 0;
-
-    error:
-    LOG(INFO) << "MediaStreamProc::vaapiInit failed error:" << errorMsg;
-    streamInputReady = false;
-    streamDecoderReady = false;
-    av_strerror(ret, errorStr, 1024);
-    LOG(INFO) << "MediaStreamProc::vaapiInit got an error:" << ret << " :" << errorStr;
-    return ret;
 }
 
 int MediaStreamProc::normalInit() {

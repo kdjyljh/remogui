@@ -237,7 +237,7 @@ void MainWindow::menu_action_triggered(QAction *action) {
     ItemData itemData;
     if (findItemByUiPtr(menu, itemData)) {
         sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemData.CmdId_SetData),
-                      std::vector<uint8_t>{data});
+                      std::vector<uint8_t>{static_cast<uint8_t>(data)});
     }
 }
 

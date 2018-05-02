@@ -166,7 +166,8 @@ void AeModeDialog::combox_activated(int index)
     if (nullptr != comboBox) {
         ItemData itemdata;
         if (findItemByUiPtr(comboBox, itemdata)) {
-            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData), std::vector<uint8_t>{comboBox->itemData(index).toInt()});
+            sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData),
+                          std::vector<uint8_t>{static_cast<uint8_t>(comboBox->itemData(index).toInt())});
             qDebug() << "AeModeDialog::combox_activated send cmd" \
                      << index << "cmdid is " << itemdata.CmdId_SetData;
         }

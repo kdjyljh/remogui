@@ -6,12 +6,12 @@ ItemData constructItemData(int cmdSet, int cmdid_get, int cmdid_set, int cmdid_g
 {
     return ItemData
     {
-        CmdSet : cmdSet,
-        CmdId_GetData : cmdid_get,
-        CmdId_SetData : cmdid_set,
-        CmdId_GetRange : cmdid_getRange,
-        ShowStr : mainShowStr,
-        subItemData: subData
+        cmdSet,
+        cmdid_get,
+        cmdid_set,
+        cmdid_getRange,
+        mainShowStr,
+        subData
     };
 }
 
@@ -51,8 +51,8 @@ void init_itemData()
     itemData.insert(constructItemData_Camera_CmdId_Set_Required_(Remo_CmdId_Camera_Set_RecOperation));
     itemData.insert(constructItemData_Camera_(
                            Remo_CmdId_Camera_Get_ImageResolution, Remo_CmdId_Camera_Set_ImageResolution, Remo_CmdId_Camera_Get_ImageResolution_Range, "图片分辨率",
-                           {{Index : ImageResolution_3840_2160 , ShowStr : "3840x2160"},
-                            {Index : ImageResolution_4000_3000 , ShowStr : "4000x3000"},}));
+                           {{ImageResolution_3840_2160 , "3840x2160"},
+                            {ImageResolution_4000_3000 , "4000x3000"},}));
     itemData.insert(constructItemData_Camera_(
                            Remo_CmdId_Camera_Get_CapDelayTime, Remo_CmdId_Camera_Set_CapDelayTime, Remo_CmdId_Camera_Get_CapDelayTime_Range, "延时时间",
                             {{CapDelayTime_3S , "3秒"}, {CapDelayTime_6S , "6秒"},{CapDelayTime_10S, "10秒"},

@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.9.6 FATAL_ERROR)
 project(remo_gui)
 
-set(CMAKE_CXX_STANDARD 17)
-
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_SOURCE_DIR}/ui)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -10,35 +8,19 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-if(UNIX)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -std=c99")
-	#不进行编译优化，方便调试
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g  -O0 -Wall -std=c++11 -Werror=return-type")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -std=c99")
+#不进行编译优化，方便调试
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g  -O0 -Wall -std=c++11 -Werror=return-type")
 
-	set(CMAKE_PREFIX_PATH
-			$ENV{HOME}/Qt5.10.0/5.10.0/gcc_64
-			${CMAKE_PREFIX_PATH})
+set(CMAKE_PREFIX_PATH
+        $ENV{HOME}/Qt5.10.0/5.10.0/gcc_64
+        ${CMAKE_PREFIX_PATH})
 
-	set(remoguiroot $ENV{HOME}/remogui)
-endif()
+set(remoguiroot $ENV{HOME}/remogui)
 
-if(WIN32)
-	find_package(glog REQUIRED) 
-	find_package(protobuf REQUIRED)
-	find_package(Qt5 COMPONENTS Core Gui Concurrent Widgets Network Multimedia REQUIRED)
-	find_package(Boost COMPONENTS system thread chrono date_time REQUIRED )
-	find_package(BZip2)
-	link_directories(
-			C:/remogui/usr/ffmpeg/lib
-			${link_directionies})
-	include_directories(
-			C:/remogui/usr/ffmpeg/include
-			${include_directories})
-elseif(UNIX)
-	find_package(Qt5 COMPONENTS Core Gui Concurrent Widgets Network Multimedia REQUIRED)
-	find_package(Protobuf REQUIRED)
-	find_package(Boost REQUIRED)
-endif()
+find_package(Qt5 COMPONENTS Core Gui Concurrent Widgets Network Multimedia REQUIRED)
+find_package(Protobuf REQUIRED)
+find_package(Boost REQUIRED)
 
 set(SOURCE_FILES
         src/photoandvideodialog.cpp
@@ -127,29 +109,19 @@ set(SOURCE_FILES
 set(RESOURCES_FILES
         resource/image.qrc)
 
-if(WIN32)
-	set(CUSTOM_LIBS
-			avdevice avfilter avformat avcodec swresample swscale avutil
-			BZip2::BZip2
-			glog::glog
-			protobuf::libprotobuf Boost::system Boost::thread
-			Qt5::Gui Qt5::Concurrent Qt5::Core Qt5::Widgets Qt5::Network Qt5::Multimedia)
-elseif(UNIX)
-	set(CUSTOM_LIBS
-			avdevice avfilter avformat avcodec swresample swscale avutil
-			vdpau va X11 va-drm va-x11
-			dl pthread m
-			boost_system boost_thread boost_filesystem boost_regex boost_chrono boost_date_time boost_atomic
-			glog
-			protobuf
-			Qt5::Gui Qt5::Concurrent Qt5::Core Qt5::Widgets Qt5::Network Qt5::Multimedia)
-endif()
+set(CUSTOM_LIBS
+        avdevice avfilter avformat avcodec swresample swscale avutil
+        vdpau va X11 va-drm va-x11
+        dl pthread m
+        boost_system boost_thread boost_filesystem boost_regex boost_chrono boost_date_time boost_atomic
+        glog
+        protobuf
+        Qt5::Gui Qt5::Concurrent Qt5::Core Qt5::Widgets Qt5::Network Qt5::Multimedia)
 
 set(PROTO_FILES
         proto/test.proto
         proto/AlgoParam.proto)
 
-if(UNIX)
 #demo演示笔记本需要
 link_directories(/home/demo/remogui/usr/lib
         /home/usrlocal/lib
@@ -159,7 +131,6 @@ include_directories(/home/demo/remogui/usr/include
         /home/usrlocal/include
         ${remoguiroot}/usr/ffmpeg/include
         ${include_directories})
-endif()
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 

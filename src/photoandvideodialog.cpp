@@ -284,7 +284,7 @@ void PhotoAndVideoDialog::retProcess(CmdContent cc) {
                         boost::this_thread::interruption_point();
                         emit photoDelayTickTack(text + "\n" + QString::number(timeSeconds) + "S");
                         --timeSeconds;
-                        sleep(1);
+						boost::this_thread::sleep_for(boost::chrono::seconds(1));
                     }
                     boost::this_thread::interruption_point();
                     emit photoDelayTickTack(QString::fromLocal8Bit("拍照完成") + "\n" + QString::number(timeSeconds) + "S");
@@ -375,7 +375,7 @@ void PhotoAndVideoDialog::on_pushButton_Photo_clicked() {
         data = CapOperation_Stop;
     }
 
-    sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation, std::vector<uint8_t>{data});
+    sendCmdCamera(Remo_CmdId_Camera_Set_CapOperation, std::vector<uint8_t>{static_cast<uint8_t>(data)});
     photoMsgDialog->exec();
 }
 
@@ -387,7 +387,7 @@ void PhotoAndVideoDialog::on_pushButton_Record_clicked() {
         data = RecOperation_Stop;
     }
 
-    sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation, std::vector<uint8_t>{data});
+    sendCmdCamera(Remo_CmdId_Camera_Set_RecOperation, std::vector<uint8_t>{static_cast<uint8_t>(data)});
     recordeMsgDialog->exec();
 }
 
@@ -397,7 +397,7 @@ void PhotoAndVideoDialog::comboBox_activated(int index) {
         ItemData itemdata;
         if (findItemByUiPtr(comboBox, itemdata)) {
             sendCmdCamera(static_cast<Remo_CmdId_Camera_e>(itemdata.CmdId_SetData),
-                          std::vector<uint8_t>{comboBox->itemData(index).toInt()});
+                          std::vector<uint8_t>{static_cast<uint8_t>(comboBox->itemData(index).toInt())});
             if (comboBox == ui->ComboBox_MainVideo_Resolution ||
                 comboBox == ui->ComboBox_ImageResolution ||
                 comboBox == ui->ComboBox_SlowMotion_Resolution ||

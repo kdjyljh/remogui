@@ -49,7 +49,8 @@ bool GimbalDialog::LineEdit_SendCmd(QLineEdit *lineEdite, int dataSize, int send
     }
     bool * ok = new bool(false);
     if (strList.size() == dataSize) {
-        DataSizeType data[dataSize]{0};
+        std::vector<DataSizeType> dataBuf(dataSize, 0);
+        DataSizeType *data = dataBuf.data();
         int i = 0;
         for (auto it : strList) {
 //            uint16_t value = sendDataRangeSize / showDataRangeSize * it.toInt(ok);

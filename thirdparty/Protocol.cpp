@@ -105,10 +105,11 @@ bool ProtocolStruct::decode(CommMessagePtr msgptr) {
     if (msgptr->empty())
         return false;
 
-    char buf[msgptr->size()], *ptr = buf;
+    std::vector<char> buf(msgptr->size());
+    char *ptr = buf.data();
     for (auto &&byte : *msgptr)
         *ptr++ = byte;
-    return decode(buf, sizeof(buf));
+    return decode(buf.data(), sizeof(buf));
 }
 
 int ProtocolStruct::encode(char *const msg, int msglen) {
@@ -161,12 +162,13 @@ bool ProtocolStruct::decode(const char *const msgconst, int msglen) {
                   << protocolHeaderLength;
         return false;
     }
-    char msg[msglen];
-    memcpy(msg, msgconst, msglen); // 为了能够生成checksum
+
+    std::vector<char> msg(msglen);
+    memcpy(msg.data(), msgconst, msglen); // 为了能够生成checksum
 
     uint8_t u8;
     uint16_t u16;
-    uint8_t *ptr = (uint8_t *) msg;
+    uint8_t *ptr = (uint8_t *) msg.data();
     if (*ptr++ != this->sync) { // 同步头
         LOG(INFO) << "ProtocolStruct::decode error this->sync = " << int(this->sync) << ", sync in msg = " << msg[0];
         return false;
@@ -205,14 +207,14 @@ bool ProtocolStruct::decode(const char *const msgconst, int msglen) {
     this->cmdSet = u16 >> 12;
     this->cmdID = u16 & 0xFFF;
 
-    CHECK_EQ(ptr - (const uint8_t *) msg, protocolHeaderLength);
+    CHECK_EQ(ptr - (const uint8_t *) msg.data(), protocolHeaderLength);
     int datalen = this->len - protocolHeaderLength;
     data.resize(datalen);
     for (int idx = 0; idx < datalen; ++idx)
         data[idx] = (*ptr++);
 
     if (packFlags.bits.CheckSumEnable) {
-        uint16_t checksum = crc16((uint8_t *) msg, msglen);
+        uint16_t checksum = crc16((uint8_t *) msg.data(), msglen);
         if (checksum != this->checksum) {
             LOG(INFO) << "ProtocolStruct::decode error this->checksum = " << int(this->checksum) << ", checksum = "
                       << checksum;
@@ -358,8 +360,8 @@ CommProtoVariables::MSGinfo CommProtoVariables::gen_request_respond(
         proto.data.clear();
 
     MSGinfo res = {
-            .msgptr = proto.encode(),
-            .taskidForward = proto.idForward(),
+            proto.encode(),
+            proto.idForward(),
     };
     return res;
 }
@@ -442,16 +444,16 @@ static void do_recved_others(UDPEndpoint &endpoint, const char *const msg, int m
 
 void do_recved_protocol(UDPEndpoint endp, CommMessagePtr msgptr) {
     int buflen = msgptr->size();
-    char buffer[buflen];
-    std::copy(msgptr->begin(), msgptr->end(), buffer);
+    std::vector<char> buffer(buflen);
+    std::copy(msgptr->begin(), msgptr->end(), buffer.data());
 //  LOG(INFO) << convert_fromVector(buffer, buflen);
 
     ProtocolStruct protocolStruct;
-    bool valid = protocolStruct.decode(buffer, buflen);
+    bool valid = protocolStruct.decode(buffer.data(), buflen);
     if (valid) {
         do_recved_general(endp, protocolStruct);
     } else {
-        do_recved_others(endp, buffer, buflen);
+        do_recved_others(endp, buffer.data(), buflen);
     }
 }
 

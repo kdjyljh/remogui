@@ -5,47 +5,47 @@
 extern "C" {
 #endif
 
-#include    <limits.h>      /* PIPE_BUF */
-#include    <float.h>
-#include    <getopt.h>
-#include    <errno.h>
-#include    <unistd.h>
-#include    <pthread.h>
-#include    <signal.h>
-#include    <time.h>        /* timespec{} for pselect() */
-#include    <fcntl.h>       /* for nonblocking */
-#include    <netdb.h>
+// #include    <limits.h>      /* PIPE_BUF */
+// #include    <float.h>
+// #include    <getopt.h>
+// #include    <errno.h>
+// #include    <unistd.h>
+// #include    <pthread.h>
+// #include    <signal.h>
+// #include    <time.h>        /* timespec{} for pselect() */
+// #include    <fcntl.h>       /* for nonblocking */
+// #include    <netdb.h>
 
-#include    <arpa/inet.h>   /* inet(3) functions */
-#include    <net/if.h>
-#include    <net/if_arp.h>
-#include    <netinet/in.h>  /* sockaddr_in{} and other Internet defns */
-#include    <netinet/ip6.h>
-#include    <netipx/ipx.h>
+// #include    <arpa/inet.h>   /* inet(3) functions */
+// #include    <net/if.h>
+// #include    <net/if_arp.h>
+// #include    <netinet/in.h>  /* sockaddr_in{} and other Internet defns */
+// #include    <netinet/ip6.h>
+// #include    <netipx/ipx.h>
 
-#include    <sys/types.h>   /* basic system data types */
-#include    <sys/time.h>    /* timeval{} for select() */
-#include    <sys/uio.h>     /* for iovec{} and readv/writev */
-#include    <sys/wait.h>
-#include    <sys/stat.h>    /* for S_xxx file mode constants */
-#include    <sys/socket.h>  /* basic socket definitions */
-#include    <sys/un.h>      /* for Unix domain sockets */
-#include    <sys/ioctl.h>
-#include    <sys/select.h>  /* for convenience */
-#include    <sys/param.h>   /* OpenBSD prereq for sysctl.h */
-#include    <sys/sysctl.h>
-#include    <sys/sem.h>     /* System V semaphores */
-#include    <sys/shm.h>     /* System V shared memory */
-#include    <sys/ipc.h>     /* System V IPC */
-#include    <sys/msg.h>     /* System V message queues */
-#include    <sys/mman.h>    /* Posix shared memory */
-#include    <mqueue.h>      /* Posix message queues */
-#include    <semaphore.h>   /* Posix semaphores */
-#include    <rpc/rpc.h>     /* Sun RPC */
-#include    <syslog.h>
-#include    <poll.h>        /* for convenience */
-#include    <stropts.h>     /* for convenience */
-#include    <strings.h>     /* for convenience */
+// #include    <sys/types.h>   /* basic system data types */
+// #include    <sys/time.h>    /* timeval{} for select() */
+// #include    <sys/uio.h>     /* for iovec{} and readv/writev */
+// #include    <sys/wait.h>
+// #include    <sys/stat.h>    /* for S_xxx file mode constants */
+// #include    <sys/socket.h>  /* basic socket definitions */
+// #include    <sys/un.h>      /* for Unix domain sockets */
+// #include    <sys/ioctl.h>
+// #include    <sys/select.h>  /* for convenience */
+// #include    <sys/param.h>   /* OpenBSD prereq for sysctl.h */
+// #include    <sys/sysctl.h>
+// #include    <sys/sem.h>     /* System V semaphores */
+// #include    <sys/shm.h>     /* System V shared memory */
+// #include    <sys/ipc.h>     /* System V IPC */
+// #include    <sys/msg.h>     /* System V message queues */
+// #include    <sys/mman.h>    /* Posix shared memory */
+// #include    <mqueue.h>      /* Posix message queues */
+// #include    <semaphore.h>   /* Posix semaphores */
+// #include    <rpc/rpc.h>     /* Sun RPC */
+// #include    <syslog.h>
+// #include    <poll.h>        /* for convenience */
+// #include    <stropts.h>     /* for convenience */
+// #include    <strings.h>     /* for convenience */
 
 #ifdef __cplusplus
 }

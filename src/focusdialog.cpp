@@ -85,7 +85,7 @@ void FocusDialog::on_ComboBox_AFMode_activated(int index)
 {
     QComboBox * ptr = dynamic_cast<QComboBox*>(sender());
     if (nullptr != ptr) {
-        sendCmdCamera(Remo_CmdId_Camera_Set_AFMode, std::vector<uint8_t>{ptr->itemData(index).toInt()});
+        sendCmdCamera(Remo_CmdId_Camera_Set_AFMode, std::vector<uint8_t>{static_cast<uint8_t>(ptr->itemData(index).toInt())});
     }
 }
 
@@ -93,7 +93,7 @@ void FocusDialog::on_ComboBox_ZoomSpeed_activated(int index)
 {
     QComboBox * ptr = dynamic_cast<QComboBox*>(sender());
     if (nullptr != ptr) {
-        sendCmdCamera(Remo_CmdId_Camera_Set_AFMode, std::vector<uint8_t>{ptr->itemData(index).toInt()});
+        sendCmdCamera(Remo_CmdId_Camera_Set_AFMode, std::vector<uint8_t>{static_cast<uint8_t>(ptr->itemData(index).toInt())});
     }
 }
 

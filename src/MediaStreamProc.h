@@ -13,7 +13,9 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/pixdesc.h>
+#ifdef linux
 #include <libavutil/hwcontext.h>
+#endif
 #include <libavutil/opt.h>
 #include <libavutil/avassert.h>
 #include <libavutil/imgutils.h>
@@ -46,13 +48,16 @@ private:
     void readFrame();
     void decodeFrame();
     void play();
-    int decode_write_vaapi(AVCodecContext *avctx, AVPacket *packet);
     int decode_write_normal(AVCodecContext *avctx, AVPacket *packet);
+
+#ifdef linux
+    int decode_write_vaapi(AVCodecContext *avctx, AVPacket *packet);
     static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
                                      const enum AVPixelFormat *pix_fmts);
     int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type);
-    int init(); //返回0表示成功
     int vaapiInit(); //返回0表示成功
+#endif
+    int init(); //返回0表示成功
     int normalInit(); //返回0表示成功
     void deInit();
     void pushFrame(const AVFrame &frame);
@@ -70,7 +75,6 @@ private:
     int video_stream;
 //    AVPacket packet;
 //    AVFrame decoded_frame;
-    enum AVHWDeviceType type;
     std::string url;
     std::string deviceType;
     int frame_width;

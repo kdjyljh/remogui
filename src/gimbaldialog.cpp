@@ -163,13 +163,13 @@ void GimbalDialog::on_ComboBox_Calibrate_activated(int index)
 void GimbalDialog::on_ComboBox_InterPolation_activated(int index)
 {
     int value = ui->ComboBox_InterPolation->itemData(index).toInt();
-    sendCmdGimbal(Remo_CmdId_Gimbal_Set_InterPolation, std::vector<uint8_t>{value});
+    sendCmdGimbal(Remo_CmdId_Gimbal_Set_InterPolation, std::vector<uint8_t>{static_cast<uint8_t>(value)});
 }
 
 void GimbalDialog::on_ComboBox_Roll_WorkMode_activated(int index)
 {
     int value = ui->ComboBox_LockAxis->itemData(index).toInt();
-    sendCmdGimbal(Remo_CmdId_Gimbal_Set_Roll_WorkMode, std::vector<uint8_t>{value});
+    sendCmdGimbal(Remo_CmdId_Gimbal_Set_Roll_WorkMode, std::vector<uint8_t>{static_cast<uint8_t>(value)});
 }
 
 void GimbalDialog::on_pushButton_Reset_Gimbal_clicked()

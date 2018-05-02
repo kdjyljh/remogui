@@ -63,10 +63,11 @@ void CommAsyncUDP::handle_send(const boost::system::error_code &error, std::size
     }
 
     int buflen = msg->size();
-    char buffer[buflen]{0};
-    std::copy(msg->begin(), msg->end(), buffer);
+//    char buffer[buflen]{0};
+    std::vector<char> buffer(buflen);
+    std::copy(msg->begin(), msg->end(), buffer.data());
     ProtocolStruct protocolStruct;
-    if (protocolStruct.decode(buffer, buflen) && CommProtoVariables::REQUEST == protocolStruct.packFlags.bits.ReqResp)
+    if (protocolStruct.decode(buffer.data(), buflen) && CommProtoVariables::REQUEST == protocolStruct.packFlags.bits.ReqResp)
         SharedData::Get()->pushSendData(protocolStruct);
 }
 

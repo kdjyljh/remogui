@@ -39,5 +39,4 @@ void AlgorithmZoomSlider::mouseReleaseEvent(QMouseEvent *ev) {
     if (ev->button() == Qt::LeftButton) {
         ev->accept();
     }
-    qDebug() << value();
 }

@@ -5,16 +5,24 @@
 #include "AlgorithmTcpMsgClient.h"
 
 #include <glog/logging.h>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 AlgorithmTcpMsgClient::AlgorithmTcpMsgClient() :
         socket(ioService),
-        remoteIp("192.168.61.164"),
-        remotePort("24680"),
         errorOccurs(false),
         deadlineTimer(ioService) {
     deadlineTimer.expires_at(boost::posix_time::pos_infin);
     boost::system::error_code ec;
     checkTimer(ec);
+    try {
+        boost::property_tree::ptree root;
+        boost::property_tree::read_json("remo_gui.json", root);
+        remoteIp = root.get<std::string>("Algorithm_IP");
+        remotePort = root.get<std::string>("Algorithm_Port");
+    } catch (boost::property_tree::ptree_error &e) {
+        LOG(INFO) << "AlgorithmTcpMsgClient::AlgorithmTcpMsgClient json parse error:" << e.what();
+    }
     receiveMsgThread = boost::thread(&AlgorithmTcpMsgClient::receiveMsgLoop, this);
 }
 

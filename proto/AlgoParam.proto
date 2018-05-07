@@ -1,237 +1,244 @@
 syntax = "proto2";
 
-option optimize_for = LITE_RUNTIME; // use libprotobuf-lite instead of libprotobuf
+// option optimize_for = LITE_RUNTIME; // use libprotobuf-lite instead of libprotobuf
 
 // 本协议的Get和Set均站在GUI的角度
 // 设计原则：1个完整的操作不能拆分成2个或者2个以上的数据包
 package AlgoParam;
 
 enum MsgMaxLen {
-  MSG_MAX_LENGTH = 20480;
+    MSG_MAX_LENGTH = 20480;
 };
 
 message MsgUnity { // 统一体
-  enum MsgType { // msg类型
-	TypeInvalid = 0;
-	ControlSet = 1;
-	VersionGet = 2;
-	SelectionSet = 3;
-	FaceTemplLibGet = 4;
-	FaceTemplLibSet = 5;
-	FaceTemplLibModify = 6;
-	SpecialShot = 7;
-	ZoomMode = 8;
-	GeneralPara = 9;
-  };
-  // MsgUnity中可以含有多个数据包
-  repeated MsgType type = 1;
-  // 来自界面的消息有两种合法情况：1. 仅仅具有type的列表，但不填充seq_num；2. 同时具有type和seq_num的列表，并且两者长度一致。对于上述两种合法情况，算法会获取数据并返回（seq_num保留原样）；对于之外的非法情况（即type和seq_num的长度不一致），那么算法会将原始数据包加上错误码ERR_TYPE_SEQNUM_NOTEQUAL返回
-  repeated uint64 seq_num = 2;
-  // 在算法的响应包中用于指示请求数据包是否能够通过基本测试，界面收到非空非SUCCEED的数据包，就说明下发的命令有错误
-  optional ErrorCode error_code = 3 [default = SUCCEED];
-  optional bool contain_allget = 4 [default = false]; // 表示该数据包内含算法的全部状态
-  optional ControlSet control_set = 5;
-  optional VersionGet version_get = 6;
-  optional SelectionSet selection_set = 7;
-  optional FaceTemplLibGet face_templlib_get = 8;
-  optional FaceTemplLibSet face_templlib_set = 9;
-  optional FaceTemplLibModify face_templlib_modify = 10;
-  optional SpecialShot special_shot = 11;
-  optional ZoomMode zoom_mode = 12;
-  optional GeneralPara general_para = 13;
+                   enum MsgType { // msg类型
+                                  TypeInvalid = 0;
+                                  ControlSet = 1;
+                                  VersionGet = 2;
+                                  SelectionSet = 3;
+                                  FaceTemplLibGet = 4;
+                                  FaceTemplLibSet = 5;
+                                  FaceTemplLibModify = 6;
+                                  CompositionParam = 7;
+                                  GeneralParam = 8;
+                   };
+                   // MsgUnity中可以含有多个数据包
+                   repeated MsgType type = 1;
+                   // 来自界面的消息有两种合法情况：1. 仅仅具有type的列表，但不填充seq_num；2. 同时具有type和seq_num的列表，并且两者长度一致。对于上述两种合法情况，算法会获取数据并返回（seq_num保留原样）；对于之外的非法情况（即type和seq_num的长度不一致），那么算法会将原始数据包加上错误码ERR_TYPE_SEQNUM_NOTEQUAL返回
+                   repeated uint64 seq_num = 2;
+                   // 在算法的响应包中用于指示请求数据包是否能够通过基本测试，界面收到非空非SUCCEED的数据包，就说明下发的命令有错误
+                   optional ErrorCode error_code = 3 [default = EC_SUCCEED];
+                   optional bool contain_allget = 4 [default = false]; // 表示该数据包内含算法的全部状态
+                   optional ControlSet control_set = 5;
+                   optional VersionGet version_get = 6;
+                   optional SelectionSet selection_set = 7;
+                   optional FaceTemplLibGet face_templlib_get = 8;
+                   optional FaceTemplLibSet face_templlib_set = 9;
+                   optional FaceTemplLibModify face_templlib_modify = 10;
+                   optional CompositionParam composition_param = 11;
+                   optional GeneralParam general_param = 12;
 };
 
 // 查询还是设置
 enum Command {
-  CmdGet = 0;
-  CmdSet = 1;
+    CmdGet = 0;
+    CmdSet = 1;
+    CmdGetSet = 2;
 };
 
 // 错误码
 enum ErrorCode {
-    SUCCEED = 0;
-//    ERROR   = 1;
-    ERROR_ErrorCode = 1;
-    
-	// 非应用层错误
-	ERR_TYPE_SEQNUM_NOTEQUAL = 2; // type和seq_num的长度不一致
-	
-	// 控制权
-	ERR_SET_NOT_PERMITTED = 3; // 设置无权限
-    ERR_CONTROL_ALREADY_OCCUPIED = 4; // 控制权已被占用（在另一台机器上）
-	
-	// 选人错误
-	ERR_WRONG_POINT = 5; // 错误的点
-	ERR_WRONG_BBOX  = 6; // 错误的框
-	
-	// 人脸模板库
-	ERR_FACE_NAME_INVALID = 7;   // 人名不合法
-	ERR_FACE_NAME_NON_EXIST = 8; // 该人已被删除
-    ERR_FACE_NAME_ALREADY_EXIST = 9; // 该人名已经存在
-	ERR_FACE_IMAGE_ALREADY_EXIST = 10; // 该人脸已经存在
-	ERR_FACE_WRONG_IMAGE = 11;    // 人脸不合法
+    EC_SUCCEED = 0;
+    EC_GENERAL_ERROR = 1;
+    EC_GENERAL_NOT_IMPLEMENTED = 2; // 功能尚未实现
+
+    // 底层错误
+    EC_LOWLAYER_TYPE_SEQNUM_NOTEQUAL = 10; // type和seq_num的长度不一致
+    EC_LOWLAYER_DATA_INVALID = 11; // 数据非法
+    EC_LOWLAYER_DATA_INCONSISTENT = 12; // 数据合法,但是和某些状态矛盾
+
+    // 控制权
+    EC_CONTROL_NOT_PERMITTED = 20; // 控制无权限,需要主动申请控制权
+    EC_CONTROL_ALREADY_OCCUPIED = 21; // 控制权已被占用（在另一台机器上）,不能申请控制权
+
+    // 选人错误
+    EC_SELECTION_WRONG_POINT = 30; // 错误的点
+    EC_SELECTION_WRONG_BBOX = 31; // 错误的框
+    EC_SELECTION_CANNOT_DETERMINE = 32; // 因为算法的条件不足,不能判断
+
+    // 人脸模板库
+    EC_FACE_NAME_INVALID = 40; // 人名不合法
+    EC_FACE_NAME_NON_EXIST = 41; // 该人已被删除
+    EC_FACE_NAME_ALREADY_EXIST = 42; // 该人名已经存在
+    EC_FACE_IMAGE_ALREADY_EXIST = 43; // 该人脸已经存在
+    EC_FACE_WRONG_IMAGE = 44; // 人脸不合法
 };
 
 // 控制权
 message ControlSet {
-  optional Command command = 1 [default = CmdSet];
-  optional ErrorCode error_code = 2 [default = SUCCEED];
-  
-  optional bool enabled = 3 [default = true];
+    optional Command command = 1 [default = CmdSet];
+    optional ErrorCode error_code = 2 [default = EC_SUCCEED];
+
+    optional bool enabled = 3 [default = true];
 };
 
 // 算法SDK版本信息
 message VersionGet {
-  optional Command command = 1 [default = CmdGet];
-  optional ErrorCode error_code = 2 [default = SUCCEED];
+    optional Command command = 1 [default = CmdGet];
+    optional ErrorCode error_code = 2 [default = EC_SUCCEED];
 
-  optional int32 base = 3 [default = 1];
-  optional int32 major = 4 [default = 0];
-  optional int32 minor = 5 [default = 0];
-  optional int32 revision = 6 [default = 0];
-  optional string model_version = 7 [default = "V0"];
-  optional string copy_right = 8 [default = "Obsbot Reserved."];
+    optional int32 base = 3 [default = 1];
+    optional int32 major = 4 [default = 0];
+    optional int32 minor = 5 [default = 0];
+    optional int32 revision = 6 [default = 0];
+    optional string model_version = 7 [default = "V0"];
+    optional string copy_right = 8 [default = "Obsbot Reserved."];
 };
 
 // 选人设置（读和写共用）
 message SelectionSet {
-  optional Command command = 1 [default = CmdSet];
-  optional ErrorCode error_code = 2; // 需要填充
-  
-  enum SelectMode {
-    SELECTION_USERPICK = 0; // 单人/双人，步骤复杂一点，需要选人，{Set_by_Point, Set_by_BBox}
-	SELECTION_MASTER   = 1; // 单人
-	SELECTION_AUTO     = 2; // 单人
-	SELECTION_MULTIPLE = 3; // 多人
-  };
-  optional SelectMode select_mode = 3 [default = SELECTION_AUTO];
-  repeated double userpick_point = 4; // x and y
-  repeated double userpick_bbox = 5; // x1, y1, x2, y2
-  optional double master_speed = 6;
-  optional double master_time = 7;
-  optional bool is_selecting = 8; // true -> 开始选人/正在选人， false -> 结束选人/无操作
-  repeated FaceTemplate face_templ = 9; // 读时，需要在界面上显示1个或者2个人脸：写时，界面发送给算法1张人脸
+    optional Command command = 1 [default = CmdGetSet];
+    optional ErrorCode error_code = 2; // 需要填充
+
+    enum SelectMode {
+        SELECTION_USERPICK = 0; // 单人/双人，步骤复杂一点，需要选人，{Set_by_Point, Set_by_BBox}
+        SELECTION_MASTER = 1; // 单人
+        SELECTION_AUTO = 2; // 单人
+        SELECTION_MULTIPLE = 3; // 多人
+    };
+    optional SelectMode select_mode = 3 [default = SELECTION_AUTO]; // select_mode和is_selecting必须同时存在或者同时不存在
+    repeated double userpick_point = 4; // x and y
+    repeated double userpick_bbox = 5; // x1, y1, x2, y2
+    optional double master_speed = 6;
+    optional double master_time = 7;
+    optional bool is_selecting = 8; // true -> 开始选人/正在选人， false -> 结束选人/无操作
+    repeated FaceTemplate face_templ = 9; // 读时，需要在界面上显示1个或者2个人脸：写时，界面发送给算法1张人脸
 };
 
 // 人脸模板
 message FaceTemplate {
-  optional int32 id_inlib = 1 [default = -1]; // 用户在数据库中的id，界面上需要根据该id排列
-  optional string face_name = 2; // 用户名字
-  optional bytes face_image = 3; // 用户脸部图像
-  optional bool use_cached_face_image = 4 [default = false]; // use_cached_face_image=true表示当算法消息的face_image字段不存在时，界面还是应该使用之前的人脸图像；算法在人脸图像未修改的情况下，不会填充face_image，但会设置use_cached_face_image为true
-  optional bool is_master = 5 [default = false];   // 是否主人
-  optional double effectiveness = 6 [default = 0]; // 脸部图像的有效程度
+    optional int32 id_inlib = 1 [default = -1]; // 用户在数据库中的id，界面上需要根据该id排列
+    optional string face_name = 2; // 用户名字
+    optional bytes face_image = 3; // 用户脸部图像
+    optional bool use_cached_face_image = 4 [default = false]; // use_cached_face_image=true表示当算法消息的face_image字段不存在时，界面还是应该使用之前的人脸图像；算法在人脸图像未修改的情况下，不会填充face_image，但会设置use_cached_face_image为true
+    optional bool is_master = 5 [default = false]; // 是否主人
+    optional double effectiveness = 6 [default = 0]; // 脸部图像的有效程度
 };
 
 // 人脸模板库读和写
 message FaceTemplLibGet {
-  optional Command command = 1 [default = CmdGet];
-  optional ErrorCode error_code = 2 [default = SUCCEED];
-  
-  repeated FaceTemplate face_templ_all = 3;
+    optional Command command = 1 [default = CmdGet];
+    optional ErrorCode error_code = 2 [default = EC_SUCCEED];
+
+    repeated FaceTemplate face_templ_all = 3;
 };
 
 message FaceTemplLibSet {
-  optional Command command = 1 [default = CmdSet];
-  optional ErrorCode error_code = 2; //   需要填充：成功，人物已经存在（同时返回已经存在的人名和人脸），该人物已经被删除
-  
-  enum Operation {
-    OP_CREATE = 0; // 需要同时提供face_templ中的face_name和face_image，不允许覆盖
-	OP_UPDATE = 1; // 需要同时提供face_templ中的face_name和face_image，允许覆盖
-	OP_DELETE = 2; // 需要提供face_templ中的face_name
-  };
-  optional FaceTemplate face_templ = 3;
-  optional Operation operation = 4;
+    optional Command command = 1 [default = CmdSet];
+    optional ErrorCode error_code = 2; //   需要填充：成功，人物已经存在（同时返回已经存在的人名和人脸），该人物已经被删除
+
+    enum Operation {
+        OP_CREATE = 0; // 需要同时提供face_templ中的face_name和face_image，不允许覆盖
+        OP_UPDATE = 1; // 需要同时提供face_templ中的face_name和face_image，允许覆盖
+        OP_DELETE = 2; // 需要提供face_templ中的face_name
+    };
+    optional FaceTemplate face_templ = 3;
+    optional Operation operation = 4;
 };
 
 message FaceTemplLibModify {
-  optional Command command = 1 [default = CmdSet];  
-  optional ErrorCode error_code = 2; // 成功，名字非法
-  
-  // 可选功能1：修改人名
-  repeated string change_names = 3; // 0 -> 旧名，1 -> 新名
-  // 可选功能2：设置/取消MASTER
-  optional string masterfunc_name = 4; // 对象人名
-  optional bool   masterfunc_enabled = 5; // 是否设置
-  // 可选功能3：移动该人的位置
-  optional string movefunc_name = 6; // 移动的人名
-  optional int32  movefunc_relative_pos = 7; // 移动的相对位置 +/-
+    optional Command command = 1 [default = CmdSet];
+    optional ErrorCode error_code = 2; // 成功，名字非法
+
+    // 可选功能1：修改人名
+    repeated string change_names = 3; // 0 -> 旧名，1 -> 新名
+    // 可选功能2：设置/取消MASTER
+    optional string masterfunc_name = 4; // 对象人名
+    optional bool masterfunc_enabled = 5; // 是否设置
+    // 可选功能3：移动该人的位置
+    optional string movefunc_name = 6; // 移动的人名
+    optional int32 movefunc_relative_pos = 7; // 移动的相对位置 +/-
 };
 
 // 特殊镜头设置
 message SpecialShot {
-  optional Command command = 1 [default = CmdSet]; // 可以读写
-  optional ErrorCode error_code = 2;
-  
-  enum SpecialShotType {
-    SPECIALSHOT_NONE          = 0;
-	SPECIALSHOT_SLOWZOOM      = 1;
-	SPECIALSHOT_ONCEZOOM      = 2;
-	SPECIALSHOT_SCAN          = 3;
-	SPECIALSHOT_ROLLSWING     = 4;
-	SPECIALSHOT_CYCLEZOOM     = 5;
-	SPECIALSHOT_SHOT          = 6;
-  };
-  optional SpecialShotType special_shot = 3;
-  repeated SpecialShotType special_shot_supported = 4;
-  // 以下每个参数均复用于Get/Set，单值上传和下发
-  optional double slowzoom_zmspd = 5;
-  optional double slowzoom_time = 6;
-  optional double oncezoom_scale = 7;
-  optional double oncezoom_zmspd = 8;
-  optional double scan_scale = 9;
-  optional double scan_zmspd = 10;
-  optional double scan_speed = 11;
-  optional double scan_time  = 12;
-  optional double scan_time_shot = 13;
-  repeated double rollswing_period = 14 [packed = true];
-  repeated double rollswing_speed = 15 [packed = true];
-  optional double shot_scale = 16;
-  optional double shot_zmspd = 17;
-  optional double shot_time = 18;
-  optional bool   shot_focus_upper = 19; // true表示上半身，false表示下半身
-  repeated double cyclezoom_period = 20; 
-  repeated double cyclezoom_zmspd = 21;
+    enum Type {
+        SPECIALSHOT_NONE = 0;
+        SPECIALSHOT_SLOWZOOM = 1;
+        SPECIALSHOT_ONCEZOOM = 2;
+        SPECIALSHOT_SCAN = 3;
+        SPECIALSHOT_ROLLSWING = 4;
+        SPECIALSHOT_CYCLEZOOM = 5;
+        SPECIALSHOT_SHOT = 6;
+    };
+    optional Type special_shot = 3;
+    repeated Type special_shot_supported = 4;
+    // 以下每个参数均复用于Get/Set，单值上传和下发
+    optional double slowzoom_zmspd = 5;
+    optional double slowzoom_time = 6;
+    optional double oncezoom_scale = 7;
+    optional double oncezoom_zmspd = 8;
+    optional double scan_scale = 9;
+    optional double scan_zmspd = 10;
+    optional double scan_speed = 11;
+    optional double scan_time = 12;
+    optional double scan_time_shot = 13;
+    repeated double rollswing_period = 14 [packed = true]; // period和speed个数相同
+    repeated double rollswing_speed = 15 [packed = true]; // period和speed个数相同
+    optional double shot_scale = 16;
+    optional double shot_zmspd = 17;
+    optional double shot_time = 18;
+    optional bool shot_focus_upper = 19; // true表示上半身，false表示下半身
+    repeated double cyclezoom_period = 20; // period和zmspd个数相同
+    repeated double cyclezoom_zmspd = 21; // period和zmspd个数相同
+
+    // 以下每个参数是算法允许的范围(最小值,最大值),用于Get
+    repeated double oncezoom_scale_range = 22;
+    repeated double scan_scale_range = 23;
+    repeated double shot_scale_range = 24;
 };
 
 // 变焦
 message ZoomMode {
-  optional Command command = 1 [default = CmdSet]; // 可以读写
-  optional ErrorCode error_code = 2;
+    enum Type {
+        ZOOMMODE_NONE = 0;
+        ZOOMMODE_AUTO = 1;
+        ZOOMMODE_GAP = 2;
+        ZOOMMODE_CYCLE = 3;
+    };
+    optional Type zoom_mode = 3 [default = ZOOMMODE_NONE];
+    repeated Type zoom_mode_supported = 4 [packed = true]; // 允许支持切换的变焦模式
+    // 以下每个参数均复用于Get/Set，单值上传和下发
+    optional double auto_scale = 5;
+    optional double auto_zmspd = 6;
+    optional double gap_lowerbound = 7;
+    optional double gap_upperbound = 8;
+    optional double gap_zmspd = 9;
+    optional double cycle_lowerbound = 10;
+    optional double cycle_upperbound = 11;
+    optional double cycle_zmspd = 12;
 
-  enum Type {
-    ZOOMMODE_NONE  = 0;
-	ZOOMMODE_AUTO  = 1;
-	ZOOMMODE_GAP   = 2;
-	ZOOMMODE_CYCLE = 3;
-  };
-  optional Type zoom_mode = 3 [default = ZOOMMODE_NONE];
-  repeated Type zoom_mode_supported = 4 [packed = true]; // 允许支持切换的变焦模式
-  // 以下每个参数均复用于Get/Set，单值上传和下发
-  optional double auto_scale = 5;
-  optional double auto_zmspd = 6;
-  optional double gap_lowerbound = 7;
-  optional double gap_upperbound = 8;
-  optional double gap_zmspd = 9;
-  optional double cycle_lowerbound = 10;
-  optional double cycle_upperbound = 11;
-  optional double cycle_zmspd = 12;
+    // 以下每个参数是算法允许的范围(最小值,最大值),用于Get
+    repeated double auto_scale_range = 13;
 };
 
-// 通用参数
-message GeneralPara {
-  optional Command command = 1 [default = CmdSet]; // 可以读写
-  optional ErrorCode error_code = 2;
+message CompositionParam {
+    optional Command command = 1 [default = CmdGetSet]; // 可以读写
+    optional ErrorCode error_code = 2;
+    optional SpecialShot special_shot = 3;
+    optional ZoomMode zoom_mode = 4;
+}
 
-  // 正在录像
-  optional bool is_recording = 3 [default = false];
-  
-  // 构图线偏移，状态上传三元组(GetValue, Min, Max)，控制下发单值
-  repeated double comline_offset = 4 [packed = true];
-  
-  // 跟踪速度，Get三元组，Set单值
-  repeated double track_speed = 5;
-  
-  // 云台锁定
-  optional bool gimbal_locked = 6 [default = false];
+// 通用参数
+message GeneralParam {
+    optional Command command = 1 [default = CmdGetSet]; // 可以读写
+    optional ErrorCode error_code = 2;
+
+    optional double comline_offset = 3;
+    optional double comline_offset_enable = 4;
+    optional double track_speed = 5;
+    optional double gimbal_locked = 6;
+    optional double cap_sf = 7;
+    optional double cap_sa = 8;
+    optional double cap_sl = 9;
 };

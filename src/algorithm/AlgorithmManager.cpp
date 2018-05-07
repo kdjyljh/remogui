@@ -50,7 +50,7 @@ void AlgorithmManager::receiveMsgHandler(const AlgoParamMsg &msg) {
 }
 
 void AlgorithmManager::receiveMsgDispatcher(const AlgoParamMsg &msg) {
-    if (msg.error_code() != AlgoParam::SUCCEED) {
+    if (msg.error_code() != AlgoParam::EC_SUCCEED) {
         //丢弃包
         LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher error_code:" << msg.error_code();
         return;
@@ -93,15 +93,13 @@ void AlgorithmManager::receiveMsgDispatcher(const AlgoParamMsg &msg) {
                 (*status.mutable_selection_set()) = msg.selection_set();//深拷贝
             } else if (type == AlgoParam::MsgUnity::ControlSet) {
                 (*status.mutable_control_set()) = msg.control_set();
-            } else if (type == AlgoParam::MsgUnity::ZoomMode) {
-                (*status.mutable_zoom_mode()) = msg.zoom_mode();
+            } else if (type == AlgoParam::MsgUnity::CompositionParam) {
+                (*status.mutable_composition_param()) = msg.composition_param();
             } else if (type == AlgoParam::MsgUnity::VersionGet) {
                 (*status.mutable_version_get()) = msg.version_get();
             } else if (type == AlgoParam::MsgUnity::FaceTemplLibGet) {
                 (*status.mutable_face_templlib_get()) = msg.face_templlib_get();
-            } else if (type == AlgoParam::MsgUnity::SpecialShot) {
-                (*status.mutable_special_shot()) = msg.special_shot();
-            }  else {
+            } else {
             }
 
             msgGot(type);
@@ -122,11 +120,11 @@ AlgoParamMsg AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity_MsgType typ
         msg.mutable_face_templlib_set();
     } else if (AlgoParam::MsgUnity::FaceTemplLibModify == type) {
         msg.mutable_face_templlib_modify();
-    }  else if (AlgoParam::MsgUnity::ZoomMode == type) {
-        msg.mutable_zoom_mode();
-    }  else if (AlgoParam::MsgUnity::SpecialShot == type) {
-        msg.mutable_special_shot();
-    } else {
+    }  else if (AlgoParam::MsgUnity::CompositionParam == type) {
+        msg.mutable_composition_param();
+        msg.mutable_composition_param()->mutable_special_shot();
+        msg.mutable_composition_param()->mutable_zoom_mode();
+    }  else {
         LOG(INFO) << "AlgorithmManager::generateMsgByType no such type:" << type;
     }
 

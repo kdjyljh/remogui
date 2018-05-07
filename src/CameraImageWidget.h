@@ -29,6 +29,8 @@ private slots:
 
 private:
     QImage image;
+    MediaFrame_AI_Info aiInfo;
+    bool refreshAiInfo;
     boost::shared_ptr<MediaStreamProc> decoder;
     bool focusStatus;
     QPoint recPos;

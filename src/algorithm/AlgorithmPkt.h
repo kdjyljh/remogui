@@ -47,7 +47,7 @@ public:
         HEADER_LENGTH = 4
     };
     enum {
-        MAX_PACKET_LENGTH = 40960
+        MAX_PACKET_LENGTH = AlgoParam::MSG_MAX_LENGTH
     };
     AlgorithmPkt();
     char *dataHead() { return buffHead_;}

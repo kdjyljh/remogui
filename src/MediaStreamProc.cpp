@@ -1,6 +1,8 @@
 #include "MediaStreamProc.h"
 #include <glog/logging.h>
 #include <QTimer>
+#include <boost/asio.hpp>
+#include "thirdparty/commlog.h"
 
 #ifdef linux
 static enum AVPixelFormat hw_pix_fmt;
@@ -43,6 +45,10 @@ int MediaStreamProc::decode_write_vaapi(AVCodecContext *avctx, AVPacket *packet)
         LOG(INFO) << "MediaStreamProc::decode_write send packet error";
         return ret;
     }
+
+    MediaFrame mediaFrame;
+    memset(&mediaFrame, 0, sizeof(MediaFrame_AI_Info));
+    mediaFrame.hasAiInfo = decodeAiInfoFrame(*packet, mediaFrame.ai_info);
 
     while (ret >= 0) {
         AVFrame *frame = nullptr;
@@ -117,8 +123,8 @@ int MediaStreamProc::decode_write_vaapi(AVCodecContext *avctx, AVPacket *packet)
         }
         sws_scale(img_convert_ctx, (const uint8_t * const *)tmp_frame->data, tmp_frame->linesize, 0, tmp_frame->height,
                   decoded_frame.data, decoded_frame.linesize);
-//        emit imageGot(); //FIXME block until draw image finished
-        pushFrame(decoded_frame);
+        mediaFrame.image = decoded_frame;
+        pushFrame(mediaFrame);
 //        QImage image(decoded_frame.data[0], tmp_frame->width, tmp_frame->height, QImage::Format_RGB32);
 //        QImage image(frame_width, frame_height, QImage::Format_RGB32);
 //        memcpy(image.bits(), dst_frame.data[0], frame_width * frame_height * 4); //让QImage管理自己到内存，不使用dst_frame.data[0]
@@ -276,7 +282,7 @@ MediaStreamProc::MediaStreamProc(QObject *parent) :
     LOG(INFO) << "MediaStreamProc::MediaStreamProc constructor this:" << this;
 //    av_log_set_level(AV_LOG_SKIP_REPEATED);
 //    av_init_packet(&packet);
-    curFrame.format = AV_PIX_FMT_NONE;
+    curFrame.image.format = AV_PIX_FMT_NONE;
     moveToThread(readStreamThread);
     input_format = av_find_input_format("rtsp");
     readStreamThread->start(QThread::HighestPriority);
@@ -360,6 +366,10 @@ void MediaStreamProc::readFrame()
                 break;
         }
 
+        //0x00 0x00 0x00 0x01 0x0d
+//        CHAR_BUFF_TO_LOG(std::vector<char>(packet.data, packet.data + packet.size));
+//        LOG(INFO) << "size:" << packet.size;
+
         pushPacket(packet);
     }
 }
@@ -399,7 +409,7 @@ void MediaStreamProc::_readStream()
     emit readStreamDone(i);
 }
 
-void MediaStreamProc::pushFrame(const AVFrame &frame) {
+void MediaStreamProc::pushFrame(const MediaFrame &frame) {
     boost::unique_lock<boost::mutex> lock(mtxFrameQueue);
 
     if (frameQueue.size() >= frameQueueSize) {
@@ -416,7 +426,7 @@ void MediaStreamProc::pushFrame(const AVFrame &frame) {
     }
 }
 
-void MediaStreamProc::popFrame(AVFrame &frame) {
+void MediaStreamProc::popFrame(MediaFrame &frame) {
     boost::unique_lock<boost::mutex> lock(mtxFrameQueue);
     while (frameQueue.empty()) {
         cvFrameQueue.wait(lock);
@@ -435,11 +445,11 @@ void MediaStreamProc::play() {
         // 为了避免和析构函数里面到join产生死锁，也必须马上跳出
         try {
             boost::this_thread::interruption_point();
-            if (curFrame.format != AV_PIX_FMT_NONE) {
-                av_freep(&curFrame.data[0]);
+            if (curFrame.image.format != AV_PIX_FMT_NONE) {
+                av_freep(&curFrame.image.data[0]);
             }
             popFrame(curFrame);
-            emit imageGot();
+            emit imageGot(); //直到图片显示完成后再返回
         } catch (boost::thread_interrupted &e) {
             LOG(INFO) << "MediaStreamProc::play interrupt";
             break;
@@ -447,7 +457,7 @@ void MediaStreamProc::play() {
     }
 }
 
-AVFrame *MediaStreamProc::getCurFrame() {
+MediaFrame *MediaStreamProc::getCurFrame() {
     return &curFrame;
 }
 
@@ -560,6 +570,11 @@ int MediaStreamProc::decode_write_normal(AVCodecContext *avctx, AVPacket *packet
         LOG(INFO) << "MediaStreamProc::decode_write_normal avcodec_send_packet error:" << errorStr;
         return ret;
     }
+
+    MediaFrame mediaFrame;
+    memset(&mediaFrame, 0, sizeof(MediaFrame_AI_Info));
+    mediaFrame.hasAiInfo = decodeAiInfoFrame(*packet, mediaFrame.ai_info);
+
     while (ret >= 0) {
         AVFrame *frame = av_frame_alloc();
         ret = avcodec_receive_frame(avctx, frame);
@@ -597,7 +612,8 @@ int MediaStreamProc::decode_write_normal(AVCodecContext *avctx, AVPacket *packet
             }
             sws_scale(img_convert_ctx, (const uint8_t * const *)frame->data, frame->linesize, 0, frame->height,
                       decoded_frame.data, decoded_frame.linesize);
-            pushFrame(decoded_frame);
+            mediaFrame.image = decoded_frame;
+            pushFrame(mediaFrame);
 
             av_frame_free(&frame);
             sws_freeContext(img_convert_ctx);
@@ -606,4 +622,27 @@ int MediaStreamProc::decode_write_normal(AVCodecContext *avctx, AVPacket *packet
     }
 
     return 0;
+}
+
+bool MediaStreamProc::decodeAiInfoFrame(const AVPacket &packet, MediaFrame_AI_Info &aiInfo) {
+    if (packet.stream_index != video_stream) {
+        return false;
+    }
+
+    //查找0x00 0x00 0x00 0x01 0x0d，算法的NAL头
+    //算法的NAL头是每一帧的最后一个
+    for (int i = packet.size - 5; i >= 0; --i) {
+        uint64_t nal_header = 0x0d01000000; //本地是小端，将字节反序
+        uint64_t data;
+        memset(&data, 0, 8);
+        memcpy(&data, packet.data + i, 5);
+
+        if (data == nal_header) {
+
+            memcpy(&aiInfo, packet.data + i + 5, sizeof(MediaFrame_AI_Info));
+//            LOG(INFO) << "MediaStreamProc::decodeAiInfoFrame got AI info";
+            return true;
+        }
+    }
+    return false;
 }

@@ -20,7 +20,29 @@ extern "C" {
 #include <libavutil/avassert.h>
 #include <libavutil/imgutils.h>
 #include <libswscale/swscale.h>
+#include <libavformat/avformat.h>
 }
+
+struct MediaFrame_AI_Info
+{
+    uint64_t frameID;
+    float bodyROIs[15][4];
+    int bodyNum;
+    float faceROIs[15][4];
+    int faceNum;
+    float handROIs[15][4];
+    int handNum;
+    float targetROIs[2][4];
+    int targetNum;
+    int hpResult;
+    int capResult[3];
+};
+
+struct MediaFrame {
+    MediaFrame_AI_Info ai_info;
+    AVFrame image;
+    bool hasAiInfo;
+};
 
 class MediaStreamProc : public QObject
 {
@@ -29,7 +51,7 @@ public:
     MediaStreamProc(QObject *parent = nullptr);
     ~MediaStreamProc();
 //    AVFrame *getDecodedFrame() {return &decoded_frame;}
-    AVFrame *getCurFrame();
+    MediaFrame *getCurFrame();
     bool isValid() {return streamDecoderReady && streamInputReady;}
 
 signals:
@@ -49,6 +71,7 @@ private:
     void decodeFrame();
     void play();
     int decode_write_normal(AVCodecContext *avctx, AVPacket *packet);
+    bool decodeAiInfoFrame(const AVPacket &packet, MediaFrame_AI_Info &aiInfo);
 
 #ifdef linux
     int decode_write_vaapi(AVCodecContext *avctx, AVPacket *packet);
@@ -60,8 +83,8 @@ private:
     int init(); //返回0表示成功
     int normalInit(); //返回0表示成功
     void deInit();
-    void pushFrame(const AVFrame &frame);
-    void popFrame(AVFrame &frame);
+    void pushFrame(const MediaFrame &frame);
+    void popFrame(MediaFrame &frame);
     void pushPacket(const AVPacket &packet);
     void popPacket(AVPacket &packet);
 
@@ -79,7 +102,7 @@ private:
     std::string deviceType;
     int frame_width;
     int frame_height;
-    AVFrame curFrame;
+    MediaFrame curFrame;
 
     enum DecoderType {
         DecoderType_None    = 0,
@@ -105,7 +128,7 @@ private:
     boost::mutex mtxPacketsQuue;
     boost::condition_variable cvPacketsQuue;
 
-    std::deque<AVFrame> frameQueue;
+    std::deque<MediaFrame> frameQueue;
     boost::mutex mtxFrameQueue;
     boost::condition_variable cvFrameQueue;
     boost::mutex mtxFrameQueueFull;

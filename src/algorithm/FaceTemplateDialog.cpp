@@ -169,16 +169,16 @@ void FaceTemplateDialog::syncFaceTempHandle(const AlgoParamMsg &msg) {
         }
     }
 
-    if (AlgoParam::ERR_FACE_NAME_INVALID == ec) {
+    if (AlgoParam::EC_FACE_NAME_INVALID == ec) {
         QString errorStr = QString::fromLocal8Bit("名称非法:") + faceName;
         QMessageBox::warning(nullptr, QString::fromLocal8Bit("错误"), errorStr, QMessageBox::Ok);
-    } else if (AlgoParam::ERR_FACE_NAME_ALREADY_EXIST == ec) {
+    } else if (AlgoParam::EC_FACE_NAME_ALREADY_EXIST == ec) {
         QString errorStr = QString::fromLocal8Bit("人名已存在:") + faceName;
         QMessageBox::warning(nullptr, QString::fromLocal8Bit("错误"), errorStr, QMessageBox::Ok);
-    } else if (AlgoParam::ERR_FACE_WRONG_IMAGE == ec) {
+    } else if (AlgoParam::EC_FACE_WRONG_IMAGE == ec) {
         QString errorStr = QString::fromLocal8Bit("人脸非法:") + faceName;
         QMessageBox::warning(nullptr, QString::fromLocal8Bit("错误"), errorStr, QMessageBox::Ok);
-    } else if (AlgoParam::ERR_FACE_IMAGE_ALREADY_EXIST == ec) {
+    } else if (AlgoParam::EC_FACE_IMAGE_ALREADY_EXIST == ec) {
         QString errorStr = QString::fromLocal8Bit("人脸非法:") + faceName;
         if (QMessageBox::Ok == QMessageBox::warning(nullptr, QString::fromLocal8Bit("错误"), errorStr,
                                                     QMessageBox::Ok | QMessageBox::Cancel)) {
@@ -186,7 +186,7 @@ void FaceTemplateDialog::syncFaceTempHandle(const AlgoParamMsg &msg) {
             updateMsg.mutable_face_templlib_set()->set_operation(AlgoParam::FaceTemplLibSet::OP_DELETE);
             syncFaceTempHandle(updateMsg);
         }
-    } else if (AlgoParam::SUCCEED == ec) {
+    } else if (AlgoParam::EC_SUCCEED == ec) {
         QMessageBox::warning(nullptr, "通知", "添加成功", QMessageBox::Ok);
     } else {
         QString errorStr = QString::fromLocal8Bit("未知错误:") + faceName;
@@ -195,7 +195,7 @@ void FaceTemplateDialog::syncFaceTempHandle(const AlgoParamMsg &msg) {
 }
 
 void FaceTemplateDialog::updateFaceTemplateUi(const AlgoParamMsg &msg) {
-    if (AlgoParam::SUCCEED == msg.face_templlib_get().error_code()) {
+    if (AlgoParam::EC_SUCCEED == msg.face_templlib_get().error_code()) {
         faceItemList.clear();
         for (int i = 0; i < msg.face_templlib_get().face_templ_all_size(); ++i) {
             faceItemList.push_back(msg.face_templlib_get().face_templ_all(i));

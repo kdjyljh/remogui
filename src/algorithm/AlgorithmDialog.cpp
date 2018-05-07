@@ -49,9 +49,8 @@ void AlgorithmDialog::onMsgGot(int msgType) {
         updateVersionUi();
     } else if (msgType == AlgoParam::MsgUnity::FaceTemplLibGet) {
         updateFaceTemplateUi();
-    } else if (msgType == AlgoParam::MsgUnity::ZoomMode) {
+    } else if (msgType == AlgoParam::MsgUnity::CompositionParam) {
         updateZoomModeUi();
-    }  else if (msgType == AlgoParam::MsgUnity::SpecialShot) {
         updateSpecialShotUi();
     } else {
         LOG(INFO) << "AlgorithmDialog::onMsgGot unknown msg type";
@@ -66,11 +65,13 @@ void AlgorithmDialog::updateSelectionUi() {
     //如果有错误消息，则输出到界面
     if (manager->status.mutable_selection_set()->has_error_code()) {
         QString str;
-        if (manager->status.mutable_selection_set()->error_code() == AlgoParam::ERR_WRONG_POINT) {
+        if (manager->status.mutable_selection_set()->error_code() == AlgoParam::EC_SELECTION_WRONG_POINT) {
             str = QString::fromLocal8Bit("点错误");
-        } else if (manager->status.mutable_selection_set()->error_code() == AlgoParam::ERR_WRONG_BBOX) {
+        } else if (manager->status.mutable_selection_set()->error_code() == AlgoParam::EC_SELECTION_WRONG_BBOX) {
             str = QString::fromLocal8Bit("框错误");
-        } else if (manager->status.mutable_selection_set()->error_code() == AlgoParam::SUCCEED) {
+        } else if (manager->status.mutable_selection_set()->error_code() == AlgoParam::EC_SELECTION_CANNOT_DETERMINE) {
+            str = QString::fromLocal8Bit("条件不足");
+        }  else if (manager->status.mutable_selection_set()->error_code() == AlgoParam::EC_SUCCEED) {
             str = QString::fromLocal8Bit("");
         } else {
             str = QString::fromLocal8Bit("未知错误");
@@ -277,7 +278,6 @@ bool AlgorithmDialog::init() {
     ui->lineEdit_master_time->setValidator(validator);
     ui->lineEdit_master_speed->setValidator(validator);
 
-    ui->lineEdit_auto_scale->setValidator(validator);
     ui->lineEdit_auto_zmspd->setValidator(validator);
     ui->lineEdit_gap_lowerbound->setValidator(validator);
     ui->lineEdit_gap_upperbound->setValidator(validator);
@@ -285,20 +285,31 @@ bool AlgorithmDialog::init() {
     ui->lineEdit_cycle_lowerbound->setValidator(validator);
     ui->lineEdit_cycle_upperbound->setValidator(validator);
     ui->lineEdit_cycle_zmspd->setValidator(validator);
+    ui->lineEdit_oncezoom_zmspd->setValidator(validator);
 
     ui->lineEdit_slowzoom_time->setValidator(validator);
     ui->lineEdit_slowzoom_zmspd->setValidator(validator);
-    ui->lineEdit_oncezoom_scale->setValidator(validator);
-    ui->lineEdit_oncezoom_zmspd->setValidator(validator);
-    ui->lineEdit_scan_scale->setValidator(validator);
     ui->lineEdit_scan_speed->setValidator(validator);
     ui->lineEdit_scan_time->setValidator(validator);
     ui->lineEdit_scan_time_shot->setValidator(validator);
     ui->lineEdit_scan_zmspd->setValidator(validator);
     ui->lineEdit_shot_focus_upper->setValidator(validator);
-    ui->lineEdit_shot_scale->setValidator(validator);
     ui->lineEdit_shot_time->setValidator(validator);
     ui->lineEdit_shot_zmspd->setValidator(validator);
+
+//    ui->lineEdit_auto_scale->setValidator(new QDoubleValidator(manager->status.mutable_composition_param()->mutable_zoom_mode()->auto_scale_range(0),
+//                                                               manager->status.mutable_composition_param()->mutable_zoom_mode()->auto_scale_range(1),
+//                                                               5, this));
+//    ui->lineEdit_shot_scale->setValidator(new QDoubleValidator(manager->status.mutable_composition_param()->mutable_special_shot()->shot_scale_range(0),
+//                                                               manager->status.mutable_composition_param()->mutable_special_shot()->shot_scale_range(1),
+//                                                               5, this));
+//    ui->lineEdit_oncezoom_scale->setValidator(
+//            new QDoubleValidator(manager->status.mutable_composition_param()->mutable_special_shot()->oncezoom_scale_range(0),
+//                                 manager->status.mutable_composition_param()->mutable_special_shot()->oncezoom_scale_range(1),
+//                                 5, this));
+//    ui->lineEdit_scan_scale->setValidator(new QDoubleValidator(manager->status.mutable_composition_param()->mutable_special_shot()->scan_scale_range(0),
+//                                                               manager->status.mutable_composition_param()->mutable_special_shot()->scan_scale_range(1),
+//                                                               5, this));
 
     initialized = true;
     LOG(INFO) << "AlgorithmDialog::init completed";
@@ -405,23 +416,23 @@ void AlgorithmDialog::pushButton_zoom_clicked() {
         return;
     }
 
-    AlgoParamMsg msg = AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::ZoomMode);
+    AlgoParamMsg msg = AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::CompositionParam);
     if (ptr == ui->pushButton_zoom_none) {
-        msg.mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_NONE);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_NONE);
     } else if (ptr == ui->pushButton_zoom_auto) {
-        msg.mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_AUTO);
-        msg.mutable_zoom_mode()->set_auto_zmspd(auto_zmspd);
-        msg.mutable_zoom_mode()->set_auto_scale(auto_scale);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_AUTO);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_auto_zmspd(auto_zmspd);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_auto_scale(auto_scale);
     } else if (ptr == ui->pushButton_zoom_gap) {
-        msg.mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_GAP);
-        msg.mutable_zoom_mode()->set_gap_lowerbound(gap_lowerbound);
-        msg.mutable_zoom_mode()->set_gap_upperbound(gap_upperbound);
-        msg.mutable_zoom_mode()->set_gap_zmspd(gap_zmspd);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_GAP);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_gap_lowerbound(gap_lowerbound);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_gap_upperbound(gap_upperbound);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_gap_zmspd(gap_zmspd);
     } else if (ptr == ui->pushButton_zoom_cycle) {
-        msg.mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_CYCLE);
-        msg.mutable_zoom_mode()->set_cycle_lowerbound(cycle_lowerbound);
-        msg.mutable_zoom_mode()->set_cycle_upperbound(cycle_upperbound);
-        msg.mutable_zoom_mode()->set_cycle_zmspd(cycle_zmspd);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_zoom_mode(AlgoParam::ZoomMode::ZOOMMODE_CYCLE);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_cycle_lowerbound(cycle_lowerbound);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_cycle_upperbound(cycle_upperbound);
+        msg.mutable_composition_param()->mutable_zoom_mode()->set_cycle_zmspd(cycle_zmspd);
     } else {
     }
 
@@ -429,7 +440,7 @@ void AlgorithmDialog::pushButton_zoom_clicked() {
 }
 
 void AlgorithmDialog::updateZoomModeUi() {
-    AlgoParam::ZoomMode_Type type = manager->status.mutable_zoom_mode()->zoom_mode();
+    AlgoParam::ZoomMode_Type type = manager->status.mutable_composition_param()->mutable_zoom_mode()->zoom_mode();
     ui->pushButton_zoom_none->setStyleSheet("background-color:;");
     ui->pushButton_zoom_auto->setStyleSheet("background-color:;");
     ui->pushButton_zoom_gap->setStyleSheet("background-color:;");
@@ -439,23 +450,23 @@ void AlgorithmDialog::updateZoomModeUi() {
         ui->pushButton_zoom_none->setStyleSheet("background-color:red;");
     } else if (AlgoParam::ZoomMode::ZOOMMODE_AUTO == type) {
         ui->pushButton_zoom_auto->setStyleSheet("background-color:red;");
-        double auto_scale = manager->status.mutable_zoom_mode()->auto_scale();
-        double auto_zmspd = manager->status.mutable_zoom_mode()->auto_zmspd();
+        double auto_scale = manager->status.mutable_composition_param()->mutable_zoom_mode()->auto_scale();
+        double auto_zmspd = manager->status.mutable_composition_param()->mutable_zoom_mode()->auto_zmspd();
         ui->lineEdit_auto_scale->setText(QString::number(auto_scale));
         ui->lineEdit_auto_zmspd->setText(QString::number(auto_zmspd));
     } else if (AlgoParam::ZoomMode::ZOOMMODE_GAP == type) {
         ui->pushButton_zoom_gap->setStyleSheet("background-color:red;");
-        double gap_lowerbound = manager->status.mutable_zoom_mode()->gap_lowerbound();
-        double gap_upperbound = manager->status.mutable_zoom_mode()->gap_upperbound();
-        double gap_zmspd = manager->status.mutable_zoom_mode()->gap_zmspd();
+        double gap_lowerbound = manager->status.mutable_composition_param()->mutable_zoom_mode()->gap_lowerbound();
+        double gap_upperbound = manager->status.mutable_composition_param()->mutable_zoom_mode()->gap_upperbound();
+        double gap_zmspd = manager->status.mutable_composition_param()->mutable_zoom_mode()->gap_zmspd();
         ui->lineEdit_gap_lowerbound->setText(QString::number(gap_lowerbound));
         ui->lineEdit_gap_upperbound->setText(QString::number(gap_upperbound));
         ui->lineEdit_gap_zmspd->setText(QString::number(gap_zmspd));
     } else if (AlgoParam::ZoomMode::ZOOMMODE_CYCLE == type) {
         ui->pushButton_zoom_cycle->setStyleSheet("background-color:red;");
-        double cycle_lowerbound = manager->status.mutable_zoom_mode()->cycle_lowerbound();
-        double cycle_upperbound = manager->status.mutable_zoom_mode()->cycle_upperbound();
-        double cycle_zmspd = manager->status.mutable_zoom_mode()->cycle_zmspd();
+        double cycle_lowerbound = manager->status.mutable_composition_param()->mutable_zoom_mode()->cycle_lowerbound();
+        double cycle_upperbound = manager->status.mutable_composition_param()->mutable_zoom_mode()->cycle_upperbound();
+        double cycle_zmspd = manager->status.mutable_composition_param()->mutable_zoom_mode()->cycle_zmspd();
         ui->lineEdit_cycle_lowerbound->setText(QString::number(cycle_lowerbound));
         ui->lineEdit_cycle_upperbound->setText(QString::number(cycle_upperbound));
         ui->lineEdit_cycle_zmspd->setText(QString::number(cycle_zmspd));
@@ -466,8 +477,8 @@ void AlgorithmDialog::updateZoomModeUi() {
     ui->pushButton_zoom_gap->setEnabled(false);
     ui->pushButton_zoom_auto->setEnabled(false);
     ui->pushButton_zoom_none->setEnabled(false);
-    for (int i = 0; i < manager->status.mutable_zoom_mode()->zoom_mode_supported_size(); ++i) {
-        AlgoParam::ZoomMode_Type mode = manager->status.mutable_zoom_mode()->zoom_mode_supported(i);
+    for (int i = 0; i < manager->status.mutable_composition_param()->mutable_zoom_mode()->zoom_mode_supported_size(); ++i) {
+        AlgoParam::ZoomMode_Type mode = manager->status.mutable_composition_param()->mutable_zoom_mode()->zoom_mode_supported(i);
         if (AlgoParam::ZoomMode::ZOOMMODE_NONE == mode) {
             ui->pushButton_zoom_none->setEnabled(true);
         } else if (AlgoParam::ZoomMode::ZOOMMODE_AUTO == mode) {
@@ -577,51 +588,51 @@ void AlgorithmDialog::pushButton_specialShot_clicked() {
         return;
     }
 
-    AlgoParamMsg msg = AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::SpecialShot);
+    AlgoParamMsg msg = AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity_MsgType_CompositionParam);
     if (ptr == ui->pushButton_shot) {
-        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_SHOT);
-        msg.mutable_special_shot()->set_shot_focus_upper(shot_focus_upper);
-        msg.mutable_special_shot()->set_shot_scale(shot_scale);
-        msg.mutable_special_shot()->set_shot_time(shot_time);
-        msg.mutable_special_shot()->set_shot_zmspd(shot_zmspd);
+        msg.mutable_composition_param()->mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_SHOT);
+        msg.mutable_composition_param()->mutable_special_shot()->set_shot_focus_upper(shot_focus_upper);
+        msg.mutable_composition_param()->mutable_special_shot()->set_shot_scale(shot_scale);
+        msg.mutable_composition_param()->mutable_special_shot()->set_shot_time(shot_time);
+        msg.mutable_composition_param()->mutable_special_shot()->set_shot_zmspd(shot_zmspd);
     } else if (ptr == ui->pushButton_scan) {
-        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_SCAN);
-        msg.mutable_special_shot()->set_scan_scale(scan_scale);
-        msg.mutable_special_shot()->set_scan_speed(scan_speed);
-        msg.mutable_special_shot()->set_scan_time(scan_time);
-        msg.mutable_special_shot()->set_scan_zmspd(scan_zmspd);
-        msg.mutable_special_shot()->set_scan_time_shot(scan_time_shot);
+        msg.mutable_composition_param()->mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_SCAN);
+        msg.mutable_composition_param()->mutable_special_shot()->set_scan_scale(scan_scale);
+        msg.mutable_composition_param()->mutable_special_shot()->set_scan_speed(scan_speed);
+        msg.mutable_composition_param()->mutable_special_shot()->set_scan_time(scan_time);
+        msg.mutable_composition_param()->mutable_special_shot()->set_scan_zmspd(scan_zmspd);
+        msg.mutable_composition_param()->mutable_special_shot()->set_scan_time_shot(scan_time_shot);
     } else if (ptr == ui->pushButton_roolSwing) {
-        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_ROLLSWING);
+        msg.mutable_composition_param()->mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_ROLLSWING);
         for (int i = 0; i < rollswing_period.size(); ++i) {
-            msg.mutable_special_shot()->add_rollswing_period(rollswing_period[i]);
-            msg.mutable_special_shot()->add_rollswing_period(rollswing_speed[i]);
+            msg.mutable_composition_param()->mutable_special_shot()->add_rollswing_period(rollswing_period[i]);
+            msg.mutable_composition_param()->mutable_special_shot()->add_rollswing_period(rollswing_speed[i]);
         }
     } else if (ptr == ui->pushButton_cycleZoom) {
-        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_CYCLEZOOM);
+        msg.mutable_composition_param()->mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_CYCLEZOOM);
         for (int i = 0; i < rollswing_period.size(); ++i) {
-            msg.mutable_special_shot()->add_cyclezoom_period(cyclezoom_period[i]);
-            msg.mutable_special_shot()->add_cyclezoom_zmspd(cyclezoom_zmspd[i]);
+            msg.mutable_composition_param()->mutable_special_shot()->add_cyclezoom_period(cyclezoom_period[i]);
+            msg.mutable_composition_param()->mutable_special_shot()->add_cyclezoom_zmspd(cyclezoom_zmspd[i]);
         }
     } else if (ptr == ui->pushButton_onceZoom) {
-        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_ONCEZOOM);
-        msg.mutable_special_shot()->set_oncezoom_scale(oncezoom_scale);
-        msg.mutable_special_shot()->set_oncezoom_zmspd(oncezoom_zmspd);
+        msg.mutable_composition_param()->mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_ONCEZOOM);
+        msg.mutable_composition_param()->mutable_special_shot()->set_oncezoom_scale(oncezoom_scale);
+        msg.mutable_composition_param()->mutable_special_shot()->set_oncezoom_zmspd(oncezoom_zmspd);
     } else if (ptr == ui->pushButton_slowzoom) {
-        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_SLOWZOOM);
-        msg.mutable_special_shot()->set_slowzoom_time(slowzoom_time);
-        msg.mutable_special_shot()->set_slowzoom_zmspd(slowzoom_zmspd);
+        msg.mutable_composition_param()->mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_SLOWZOOM);
+        msg.mutable_composition_param()->mutable_special_shot()->set_slowzoom_time(slowzoom_time);
+        msg.mutable_composition_param()->mutable_special_shot()->set_slowzoom_zmspd(slowzoom_zmspd);
     } else {
     }
 
     if (isSpecialShotting) {
-        msg.mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_NONE);
+        msg.mutable_composition_param()->mutable_special_shot()->set_special_shot(AlgoParam::SpecialShot::SPECIALSHOT_NONE);
     }
     asyncSendMsg(msg);
 }
 
 void AlgorithmDialog::updateSpecialShotUi() {
-    AlgoParam::SpecialShot::SpecialShotType type = manager->status.mutable_special_shot()->special_shot();
+    AlgoParam::SpecialShot_Type type = manager->status.mutable_composition_param()->mutable_special_shot()->special_shot();
 
     if (type == AlgoParam::SpecialShot::SPECIALSHOT_SLOWZOOM) {
         ui->pushButton_slowzoom->setText(QString::fromLocal8Bit("停止"));
@@ -662,9 +673,9 @@ void AlgorithmDialog::updateSpecialShotUi() {
     ui->pushButton_onceZoom->setEnabled(false);
     ui->pushButton_shot->setEnabled(false);
     ui->pushButton_scan->setEnabled(false);
-    for (int i = 0; i < manager->status.mutable_special_shot()->special_shot_supported_size(); ++i) {
-        AlgoParam::SpecialShot::SpecialShotType supportedType =
-                manager->status.mutable_special_shot()->special_shot_supported(i);
+    for (int i = 0; i < manager->status.mutable_composition_param()->mutable_special_shot()->special_shot_supported_size(); ++i) {
+        AlgoParam::SpecialShot_Type supportedType =
+                manager->status.mutable_composition_param()->mutable_special_shot()->special_shot_supported(i);
         if (supportedType == AlgoParam::SpecialShot::SPECIALSHOT_SLOWZOOM) {
             ui->pushButton_slowzoom->setEnabled(true);
         } else if (supportedType == AlgoParam::SpecialShot::SPECIALSHOT_SCAN) {

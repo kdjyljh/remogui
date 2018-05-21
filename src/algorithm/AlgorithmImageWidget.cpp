@@ -7,7 +7,7 @@
 
 AlgorithmImageWidget::AlgorithmImageWidget(QWidget *parent) :
         QWidget(parent) {
-    pix = QPixmap("/home/jianghualuo/work/data/images/cloud.jpg");
+//    pix = QPixmap("/home/jianghualuo/work/data/images/cloud.jpg");
 }
 
 AlgorithmImageWidget::~AlgorithmImageWidget() {
@@ -16,7 +16,9 @@ AlgorithmImageWidget::~AlgorithmImageWidget() {
 
 void AlgorithmImageWidget::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
-    painter.drawPixmap(rect(), pix.scaledToWidth(width()));
+    if (!pix.isNull()) {
+        painter.drawPixmap(rect(), pix.scaledToWidth(width()));
+    }
 }
 
 void AlgorithmImageWidget::setPix(QPixmap pix) {

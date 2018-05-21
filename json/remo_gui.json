@@ -4,5 +4,7 @@
   "COMM_SELF_PORT": 9999,
   "SelfCommDevice": "COMMDEVICE_PC",
   "Algorithm_IP" : "192.168.61.164",
-  "Algorithm_Port" : "24680"
+  "Algorithm_Port" : "24680",
+  "//ImageSource 表示界面视频流来源,有两个值:Camera 和 Algorithm": "",
+  "VideoSource": "Camera"
 }

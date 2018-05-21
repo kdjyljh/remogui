@@ -461,7 +461,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>350</width>
+           <width>400</width>
            <height>150</height>
           </size>
          </property>
@@ -594,7 +594,7 @@
         <widget class="QGroupBox" name="groupBox_11">
          <property name="maximumSize">
           <size>
-           <width>250</width>
+           <width>400</width>
            <height>16777215</height>
           </size>
          </property>
@@ -605,7 +605,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_20">
             <item>
-             <layout class="QFormLayout" name="formLayout_7">
+             <layout class="QGridLayout" name="gridLayout_7">
               <item row="0" column="0">
                <widget class="QLabel" name="zmspdLabel_3">
                 <property name="text">
@@ -613,17 +613,17 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="scaleLabel_6">
-                <property name="text">
-                 <string>scale</string>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="1">
                <widget class="QLineEdit" name="lineEdit_shot_zmspd">
                 <property name="text">
                  <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="scaleLabel_6">
+                <property name="text">
+                 <string>scale</string>
                 </property>
                </widget>
               </item>
@@ -637,7 +637,7 @@
              </layout>
             </item>
             <item>
-             <layout class="QFormLayout" name="formLayout_9">
+             <layout class="QGridLayout" name="gridLayout_8">
               <item row="0" column="0">
                <widget class="QLabel" name="timeLabel_6">
                 <property name="text">
@@ -645,17 +645,17 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="focus_upperLabel_2">
-                <property name="text">
-                 <string>upper</string>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="1">
                <widget class="QLineEdit" name="lineEdit_shot_time">
                 <property name="text">
                  <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="focus_upperLabel_2">
+                <property name="text">
+                 <string>upper</string>
                 </property>
                </widget>
               </item>
@@ -758,7 +758,7 @@
             <item row="0" column="1">
              <widget class="QLineEdit" name="lineEdit_auto_scale">
               <property name="text">
-               <string>0</string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -1164,18 +1164,33 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_music_play">
-               <property name="text">
-                <string>音乐</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pushButton_music_play_2">
-               <property name="text">
-                <string>横拍/竖拍切换</string>
-               </property>
-              </widget>
+              <layout class="QVBoxLayout" name="verticalLayout_6">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_10">
+                 <item>
+                  <widget class="QPushButton" name="pushButton_music_play">
+                   <property name="text">
+                    <string>音乐</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_music_play_2">
+                   <property name="text">
+                    <string>横拍/竖拍切换</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButton_control_set">
+                 <property name="text">
+                  <string>放弃控制权</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
            </widget>
@@ -1365,7 +1380,7 @@
     </widget>
    </item>
    <item>
-    <widget class="WorkSpaceWidget" name="workSpaceWidget" native="true">
+    <widget class="MainImageWidget" name="workSpaceWidget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -1378,15 +1393,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>WorkSpaceWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">src/algorithm/WorkSpaceWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>AlgorithmImageWidget</class>
    <extends>QWidget</extends>
    <header location="global">src/algorithm/AlgorithmImageWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MainImageWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">src/MainImageWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

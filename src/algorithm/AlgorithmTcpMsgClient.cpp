@@ -3,10 +3,12 @@
 //
 
 #include "AlgorithmTcpMsgClient.h"
+#include "commlog.h"
 
 #include <glog/logging.h>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/crc.hpp>
 
 AlgorithmTcpMsgClient::AlgorithmTcpMsgClient() :
         socket(ioService),
@@ -92,10 +94,15 @@ void AlgorithmTcpMsgClient::handleConnect(const boost::system::error_code &error
     }
     runThread = boost::thread(boost::bind(&boost::asio::io_service::run, &ioService));
 
+    if (receiveMsgDecodeLoopThread.joinable()) {
+        runThread.detach(); //自动释放上一个线程
+    }
+    receiveMsgDecodeLoopThread = boost::thread(&AlgorithmTcpMsgClient::receiveMsgDecodeLoop, this);
+
     //读取4个字节包头，为长度
-    boost::asio::async_read(socket, boost::asio::buffer(curPkt.dataHead(), AlgorithmPkt::HEADER_LENGTH),
-                            boost::bind(&AlgorithmTcpMsgClient::handleReceiveMsgHeader, this, _1, _2));
-//    LOG(INFO) << "AlgorithmTcpMsgClient::handleConnect end bind async_read done";
+//    boost::asio::async_read(socket, boost::asio::buffer(revMsgBuf.data + revMsgBuf.start, HEADER_LENGTH),
+//                            boost::bind(&AlgorithmTcpMsgClient::handleReceiveMsg, this, _1, _2));
+    LOG(INFO) << "AlgorithmTcpMsgClient::handleConnect end bind async_read done";
 }
 
 void AlgorithmTcpMsgClient::handleSendMsg(const boost::system::error_code &error, std::size_t bytes_transferred,
@@ -210,4 +217,162 @@ void AlgorithmTcpMsgClient::receiveMsgLoop() {
 void AlgorithmTcpMsgClient::doClose() {
     socket.close();
     ioService.stop();
+}
+
+void AlgorithmTcpMsgClient::handleReceiveMsg(const boost::system::error_code &error, std::size_t bytes_transferred) {
+    if (error) {
+        LOG(INFO) << "AlgorithmTcpMsgClient::handleReceiveMsg error:" << error.message();
+        errorOccurs = true;
+        return;
+    }
+
+//    if (bytes_transferred != HEADER_LENGTH) {
+//        LOG(INFO) << "AlgorithmTcpMsgClient::handleReceiveMsg error body length incorrect" << error.message();
+//        return;
+//    }
+    //加上读取到的长度
+    revMsgBuf.end += bytes_transferred;
+
+    int length = 0;
+    int curDataLength = 0;
+
+
+length_handle:
+    //大小端处理
+    length = revMsgBuf.data[revMsgBuf.start];
+    length = length << 8 | revMsgBuf.data[revMsgBuf.start + 1];
+    length = length << 8 | revMsgBuf.data[revMsgBuf.start + 2];
+    length = length << 8 | revMsgBuf.data[revMsgBuf.start + 3];
+
+    if (length > MAX_PACKET_LENGTH) {//length错误，读取下一个字节
+        CHAR_BUFF_TO_LOG(std::vector<char>((char*)&length, ((char*)&length) + 4));
+        LOG(INFO) << "AlgorithmPkt::decodeHeader length：" << length << " is greater than MAX_PACKET_LENGTH";
+        curDataLength = revMsgBuf.end - revMsgBuf.start;
+        if (curDataLength >= 4) {
+            ++revMsgBuf.start; //当前缓冲区还有至少一个MAX_PACKET_LENGTH长度
+            goto length_handle;
+        } else if(curDataLength > 0) { //不够一个MAX_PACKET_LENGTH长度，从网络读取相应个字节
+            ++revMsgBuf.start;
+            boost::asio::async_read(socket, boost::asio::buffer(revMsgBuf.data + revMsgBuf.start, curDataLength),
+                                    boost::bind(&AlgorithmTcpMsgClient::handleReceiveMsg, this, _1, _2));
+        } else {
+            LOG(INFO) << "AlgorithmPkt::decodeHeader index error start：" << revMsgBuf.start << " end:" << revMsgBuf.end;
+            return;
+        }
+    }
+}
+
+void AlgorithmTcpMsgClient::receiveMsgDecodeLoop() {
+    boost::system::error_code ec;
+    int bytesNeedRead = 0;
+    int length = 0;
+    int bodyLength = 0;
+    bool crcCheckRet = false;
+    AlgoParamMsg pkt;
+    std::vector<uint8_t> peekBuff;
+    boost::asio::streambuf revBuff;
+    std::istream revStream(&revBuff);
+
+//    int size1 = boost::asio::read(socket, revBuff, boost::asio::transfer_at_least(HEADER_LENGTH), ec);
+//    LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop revBuff.size:" <<  revBuff.size();
+//    int size2 = boost::asio::read(socket, revBuff, boost::asio::transfer_at_least(HEADER_LENGTH), ec);
+//    LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop revBuff.size:" <<  revBuff.size();
+//    int size3 = boost::asio::read(socket, revBuff, boost::asio::transfer_at_least(HEADER_LENGTH), ec);
+//    LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop revBuff.size:" <<  revBuff.size();
+
+    boost::asio::read(socket, revBuff, boost::asio::transfer_at_least(HEADER_LENGTH), ec);
+    if (ec) goto error;
+
+    while (true) {
+retry:
+        boost::this_thread::interruption_point();
+
+        bytesNeedRead = 4 - revBuff.size();
+        LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop revBuff.size:" <<  revBuff.size();
+        if (bytesNeedRead > 0) {
+            boost::asio::read(socket, revBuff,
+                              boost::asio::transfer_at_least(bytesNeedRead), ec); //同步读取
+            if (ec) goto error;
+        }
+        //处理length
+        peekBuff.clear(); //清除上次的buff
+        peekBuff.resize(HEADER_LENGTH);
+        boost::asio::buffer_copy(boost::asio::buffer(peekBuff), revBuff.data());
+        //大小端处理
+        length = peekBuff[0];
+        length = (length << 8) | peekBuff[1];
+        length = (length << 8) | peekBuff[2];
+        length = (length << 8) | peekBuff[3];
+        if (length > MAX_PACKET_LENGTH) { //length数据错误
+            LOG(INFO) << "AlgorithmPkt::receiveMsgDecodeLoop length：" << length << " is greater than MAX_PACKET_LENGTH, get next one byte";
+            char buf[128];
+            snprintf(buf, sizeof(buf), "%hhx %hhx %hhx %hhx", peekBuff[0], peekBuff[1], peekBuff[2], peekBuff[3]);
+            LOG(INFO) << "Details: " << buf;
+            if (peekBuff[0] == 0 && peekBuff[1] == 0) {
+                LOG(INFO) << "";
+            }
+            revStream.ignore(1); //读取下一个字节继续处理length,直到正确为止
+            goto retry;
+        }
+        if (length - HEADER_LENGTH > 4) { //body至少包含4字节类型和4字节crc校验,msg不能为空
+            bodyLength = length - HEADER_LENGTH;
+        } else {
+            LOG(INFO) << "AlgorithmPkt::receiveMsgDecodeLoop length:" << length << " is too short";
+            revStream.ignore(1); //否则读取下一个字节继续处理length,直到正确为止
+            goto retry;
+        }
+
+        LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop before crc check revBuff.size:" <<  revBuff.size();
+
+        //现在length正确
+        //处理crc校验
+        bytesNeedRead = bodyLength - revBuff.size();
+        if (bytesNeedRead > 0) {
+            boost::asio::read(socket, revBuff,
+                              boost::asio::transfer_at_least(bytesNeedRead), ec);
+            if (ec) goto error;
+        }
+
+        peekBuff.resize(length);
+        boost::asio::buffer_copy(boost::asio::buffer(peekBuff.data(), length), revBuff.data());
+
+        boost::crc_optimal<32, 0x04C11DB7, 0xFFFFFFFF, 0xFFFFFFFF, true, true> result;
+        result.process_bytes(peekBuff.data(), peekBuff.size() - 4);
+        uint32_t checkSum = result.checksum();
+        //大小端处理
+        uint8_t buffCS[4];
+        memcpy(buffCS, peekBuff.data() + peekBuff.size() - 4, 4);
+        uint32_t readCS = buffCS[0];
+        readCS = (readCS << 8) | uint32_t(buffCS[1]);
+        readCS = (readCS << 8) | uint32_t(buffCS[2]);
+        readCS = (readCS << 8) | uint32_t(buffCS[3]);
+        //校验crc值
+        crcCheckRet = checkSum == readCS;
+        if (!crcCheckRet) { //crc校验错误
+            LOG(INFO) << "AlgorithmPkt::receiveMsgDecodeLoop crc check failed";
+            revStream.ignore(1); //读取下一个字节继续处理length,直到正确为止
+            LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop after crc check revBuff.size:" <<  revBuff.size();
+            goto retry;
+        }
+
+        //现在crc校验完成,进行protobuf反序列化
+        try {
+            //除去头尾个4字节为msg内容
+            if (!pkt.ParseFromArray(peekBuff.data() + 4, peekBuff.size() - 8)) {
+                LOG(INFO) << "AlgorithmPkt::receiveMsgDecodeLoop ParseFromArray error";
+                revStream.ignore(length); //反序列化错误,丢弃包
+                goto retry;
+            }
+
+            pushReceiveMsg(pkt); //反序列化正确
+        } catch (std::exception &e) {
+            revStream.ignore(length); //反序列化错误,丢弃包
+            goto retry;
+        }
+    }
+
+error:
+    LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop error:" << ec.message();
+    errorOccurs = true;
+    return;
 }

@@ -28,12 +28,19 @@ class AlgorithmDialog : public QDialog {
 public:
     ~AlgorithmDialog();
     bool isValid() {return initialized;}
-    bool init();
+    bool init(bool showInfo = true);
     static boost::shared_ptr<AlgorithmDialog> getInstance();
     bool asyncSendMsg(const AlgoParamMsg &msg);
     bool syncSendMsg(const AlgoParamMsg &msgSend, AlgoParamMsg &msgRet, int timeOut = 5000);
     bool syncSendMsg(const AlgoParamMsg &msgSend,
                      boost::function<void (const AlgoParamMsg &msgSend, void*)> callback, int timeOut = 5000);
+    void changeWorkSpace(boost::shared_ptr<MainImageWidget> ws) {
+        if (ws) {
+            delete ui->workSpaceWidget;
+            ui->verticalLayout->addWidget(ws.get());
+        }
+    }
+
 
 protected:
     virtual void resizeEvent(QResizeEvent *event) override;
@@ -47,6 +54,7 @@ private slots:
     void on_pushButton_gimbal_clicked();
 //    void on_pushButton_zoom_clicked();
     void on_pushButton_music_play_clicked();
+    void on_pushButton_control_set_clicked();
 
 private slots:
     void onMsgGot(int msgType);

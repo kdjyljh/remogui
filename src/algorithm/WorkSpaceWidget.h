@@ -10,20 +10,21 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include "NetImage.hpp"
+#include "MainImageWidget.h"
 
-class WorkSpaceWidget : public QWidget {
+class WorkSpaceWidget : public MainImageWidget {
     Q_OBJECT
 public:
     explicit WorkSpaceWidget(QWidget *parent = nullptr);
     ~WorkSpaceWidget();
-    void setManuallyChosingPerson(bool status);
-
-signals:
-    void chosingPersonMouseReleased(double x, double y);
+//    void setManuallyChosingPerson(bool status);
+//
+//signals:
+//    void chosingPersonMouseReleased(double x, double y);
 
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
-    virtual void mouseReleaseEvent(QMouseEvent *ev) override;
+//    virtual void mouseReleaseEvent(QMouseEvent *ev) override;
 
 private slots:
     void updatePix(QPixmap pix);

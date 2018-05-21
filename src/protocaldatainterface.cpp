@@ -73,7 +73,6 @@ void ProtocolDataInterface::sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet,
               << " idValue = " << idValue << " idType = " << idType << std::endl;
     LOG(INFO) << "data is ";
     CHAR_BUFF_TO_LOG(data);
-//    CHAR_BUFF_TO_LOG_STDERROR(data);
 
     auto sender = CommProtoVariables::Get();
     auto msginfo = sender->gen_request_respond(

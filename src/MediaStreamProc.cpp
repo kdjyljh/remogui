@@ -232,8 +232,8 @@ int MediaStreamProc::vaapiInit() {
         goto error;
     }
 
-    setResult = av_opt_set(decoder_ctx->priv_data, "preset", "slow", AV_OPT_SEARCH_CHILDREN);
-    setResult = av_opt_set_int(decoder_ctx, "crf", 2, 0);
+//    setResult = av_opt_set(decoder_ctx->priv_data, "preset", "slow", AV_OPT_SEARCH_CHILDREN);
+//    setResult = av_opt_set_int(decoder_ctx, "crf", 2, 0);
 //    setResult = av_opt_set(decoder_ctx->codec, "preset", "slow", 0);
     av_strerror(setResult, errorStr, 1024);
     LOG(INFO) << "set error" << errorStr;
@@ -293,14 +293,14 @@ MediaStreamProc::~MediaStreamProc()
 {
     readStreamThread->quit();
     readStreamThread->wait();
-    //先关闭解码和取流线程，再释放资源
-    readFrameThread.interrupt();
-    readFrameThread.join();
-    playThread.interrupt();
-//    playThread.join(); //不使用jion，可能产生死锁
-    playThread.detach(); //使用detach释放线程资源
-    decodeFrameThread.interrupt();
-    decodeFrameThread.join();
+//    //先关闭解码和取流线程，再释放资源
+//    readFrameThread.interrupt();
+//    readFrameThread.join();
+//    playThread.interrupt();
+////    playThread.join(); //不使用jion，可能产生死锁
+//    playThread.detach(); //使用detach释放线程资源
+//    decodeFrameThread.interrupt();
+//    decodeFrameThread.join();
     deInit();
 }
 
@@ -330,6 +330,17 @@ int MediaStreamProc::init()
 
 void MediaStreamProc::deInit()
 {
+//    boost::unique_lock<boost::mutex> locki(mtxStreamInputReady);
+//    boost::unique_lock<boost::mutex> lockd(mtxStreamDecoderReady);
+    //先关闭解码和取流线程，再释放资源
+    readFrameThread.interrupt();
+    readFrameThread.join();
+    playThread.interrupt();
+//    playThread.join(); //不使用jion，可能产生死锁
+    playThread.detach(); //使用detach释放线程资源
+    decodeFrameThread.interrupt();
+    decodeFrameThread.join();
+
     avcodec_close(decoder_ctx);
     avcodec_free_context(&decoder_ctx);
     LOG(INFO) << "MediaStreamProc::deInit end input_ctx:" << input_ctx;
@@ -384,29 +395,48 @@ void MediaStreamProc::_readStream()
 {
     int i = 50; //如果无视频流，重复连接50次
     {
-        boost::unique_lock<boost::mutex> locki(mtxStreamInputReady);
-        boost::unique_lock<boost::mutex> lockd(mtxStreamDecoderReady);
-        while (i && init()) {
+//        boost::unique_lock<boost::mutex> locki(mtxStreamInputReady);
+//        boost::unique_lock<boost::mutex> lockd(mtxStreamDecoderReady);
+        do {
+            LOG(INFO) << "0.deInit #########################";
             deInit();
+            if (!init()) {
+                break;
+            }
             --i;
             boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
-        }
-        cvStreamInputReady.notify_one();
-        cvStreamDecoderReady.notify_one();
+        } while (i);
+
+//        deInit();
+//        while (i && init()) {
+//            LOG(INFO) << "0. deInit #########################";
+//            deInit();
+//            --i;
+//            boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
+//        }
+//        cvStreamInputReady.notify_one();
+//        cvStreamDecoderReady.notify_one();
     }
 
     //一个对象只初始化线程一次，线程资源在析构函数里释放
-    static bool firstRun = true;
-    if (i && firstRun) {
-        //初始化成功，运行线程
+//    static bool firstRun = true;
+//    if (i && firstRun) {
+//        //初始化成功，运行线程
+//        LOG(INFO) << "10.MediaStreamProc::play thread start###########################";
+//        readFrameThread = boost::thread(&MediaStreamProc::readFrame, this);
+//        decodeFrameThread = boost::thread(&MediaStreamProc::decodeFrame, this);
+//        playThread = boost::thread(&MediaStreamProc::play, this);
+//    }
+//    firstRun = false;
+
+    emit readStreamDone(i);
+
+    if (i) {
         LOG(INFO) << "10.MediaStreamProc::play thread start###########################";
         readFrameThread = boost::thread(&MediaStreamProc::readFrame, this);
         decodeFrameThread = boost::thread(&MediaStreamProc::decodeFrame, this);
         playThread = boost::thread(&MediaStreamProc::play, this);
     }
-    firstRun = false;
-
-    emit readStreamDone(i);
 }
 
 void MediaStreamProc::pushFrame(const MediaFrame &frame) {

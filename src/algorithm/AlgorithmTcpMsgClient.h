@@ -34,12 +34,14 @@ private:
                        std::size_t bytes_transferred, std::vector<uint8_t> buff);
     void handleReceiveMsgHeader(const boost::system::error_code& error, std::size_t bytes_transferred);
     void handleReceiveMsgBody(const boost::system::error_code& error, std::size_t bytes_transferred);
+    void handleReceiveMsg(const boost::system::error_code& error, std::size_t bytes_transferred);
     void checkTimer(boost::system::error_code& ec);
     void doClose();
     void pushReceiveMsg(const AlgoParamMsg &pkt);
     void popReceiveMsg(AlgoParamMsg &pkt);
     bool asyncSendMsg_(std::vector<uint8_t> buff);
     void receiveMsgLoop();
+    void receiveMsgDecodeLoop();
 
 private:
     boost::asio::io_service ioService;
@@ -56,6 +58,18 @@ private:
     ReceiveMsgHandler receiveMsgHandler;
     boost::thread receiveMsgThread;
     boost::thread runThread;
+    boost::thread receiveMsgDecodeLoopThread;
+
+    enum {
+        HEADER_LENGTH = 4,
+        MAX_PACKET_LENGTH = AlgoParam::MSG_MAX_LENGTH
+    };
+    struct ReceiveMsgBuffer {
+        char data[AlgoParam::MSG_MAX_LENGTH];
+        int start; //当前数据起始位置(包含)
+        int end; //当前数据结束位置(不含)
+    } revMsgBuf;
+//    std::vector<uint8_t> revBuf;
 };
 
 #endif //ALGORITHMCLIENTTEST_ALGORITHMTCPMSGCLIENT_H

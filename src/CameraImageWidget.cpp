@@ -10,15 +10,11 @@
 #include <glog/logging.h>
 
 CameraImageWidget::CameraImageWidget(QWidget *parent) :
-    QWidget(parent),
-    focusStatus(false),
-    valid(false),
-    recPos(-1000, -1000),
-    recSize(100, 100),
-    refreshAiInfo(false),
-    decoder(boost::shared_ptr<MediaStreamProc>(new MediaStreamProc))
-{
-    LOG(INFO) << "CameraImageWidget::CameraImageWidget constructor";
+        MainImageWidget(parent),
+        valid(false),
+        refreshAiInfo(false),
+        decoder(boost::shared_ptr<MediaStreamProc>(new MediaStreamProc)) {
+    LOG(INFO) << "CameraImageWidget::CameraImageWidget constructor this:" << this;
     connect(decoder.get(), SIGNAL(imageGot()), this, SLOT(drawImage()), Qt::BlockingQueuedConnection);
 //    connect(decoder.get(), SIGNAL(readStreamDone(bool)), this, SLOT());
 }
@@ -90,15 +86,15 @@ void CameraImageWidget::drawImage()
     }
 }
 
-void CameraImageWidget::mouseReleaseEvent(QMouseEvent *ev)
-{
-    if (!focusStatus) return;
-
-    recPos = ev->pos();
-    Remo_Camera_PosPoint_s pointNormal{static_cast<float>(recPos.x()) / size().width(), static_cast<float>(recPos.y()) / size().height()};
-    ProtocolDataInterfaceImpl::sendCmdCamera(Remo_CmdId_Camera_Set_PosArea,
-                                             std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&pointNormal), reinterpret_cast<uint8_t*>(&pointNormal) + sizeof(pointNormal)));
-}
+//void CameraImageWidget::mouseReleaseEvent(QMouseEvent *ev)
+//{
+//    if (!focusStatus) return;
+//
+//    recPos = ev->pos();
+//    Remo_Camera_PosPoint_s pointNormal{static_cast<float>(recPos.x()) / size().width(), static_cast<float>(recPos.y()) / size().height()};
+//    ProtocolDataInterfaceImpl::sendCmdCamera(Remo_CmdId_Camera_Set_PosArea,
+//                                             std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&pointNormal), reinterpret_cast<uint8_t*>(&pointNormal) + sizeof(pointNormal)));
+//}
 
 CameraImageWidget::~CameraImageWidget() {
 }

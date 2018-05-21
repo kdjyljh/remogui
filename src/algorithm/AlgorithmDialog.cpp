@@ -13,6 +13,39 @@
 #include <QTabBar>
 #include <boost/lexical_cast.hpp>
 
+class MyDoubleValidator : public QDoubleValidator {
+public:
+    MyDoubleValidator(double bottom, double top, int decimals, QObject * parent) :
+            QDoubleValidator(bottom, top, decimals, parent) {
+        setNotation(QDoubleValidator::StandardNotation);
+    }
+
+    QValidator::State validate(QString &input, int &pos) const override {
+        const char *str = input.toStdString().c_str();
+        double b = bottom();
+        double t = top();
+
+        QDoubleValidator::State state = QDoubleValidator::validate(input, pos);
+        if (state == QValidator::Intermediate) { //当输入有可能是double类型时
+            if (input.isEmpty()
+                || input == "-" || input == "-0" || input == "-0."
+                || input == "0"  || input == "0.") {
+                return QValidator::Acceptable; //以0和-开头的数字使用locale().toDouble结果是0，要特殊处理
+            }
+
+            bool ok;
+            double d = locale().toDouble(input, &ok);
+            if (ok && d >= bottom() && d <= top()) {
+                return QValidator::Acceptable; //数字在range范围以内
+            } else {
+                return QValidator::Invalid;
+            }
+        } else {
+            return state;
+        }
+    }
+};
+
 AlgorithmDialog::AlgorithmDialog(QWidget *parent) :
         QDialog(parent),
         initialized(false),
@@ -23,6 +56,9 @@ AlgorithmDialog::AlgorithmDialog(QWidget *parent) :
         zoomSlider(boost::make_shared<AlgorithmZoomSlider>()),
         player(boost::make_shared<QMediaPlayer>()),
         ui(new Ui::Algorithm) {
+    ui->setupUi(this);
+    resize(1300, 900);
+    ui->tabWidget->tabBar()->setMinimumWidth(800);
 }
 
 AlgorithmDialog::~AlgorithmDialog() {
@@ -219,9 +255,17 @@ void AlgorithmDialog::radioButton_person_chose_clicked(bool checked) {
 }
 
 void AlgorithmDialog::updateControl() {
+    LOG(INFO) << "AlgorithmDialog::updateControl error:" << manager->status.mutable_control_set()->error_code()
+              << " enable:" << manager->status.mutable_control_set()->enabled();
+    QString showStr = QString::fromLocal8Bit("放弃控制权");
+    if (!manager->status.mutable_control_set()->enabled()) {
+        showStr = QString::fromLocal8Bit("获取控制权");
+    }
+
+    ui->pushButton_control_set->setText(showStr);
 }
 
-bool AlgorithmDialog::init() {
+bool AlgorithmDialog::init(bool showInfo) {
     if (initialized) {
         LOG(INFO) << "AlgorithmDialog::init has initialized";
         return initialized;
@@ -229,7 +273,10 @@ bool AlgorithmDialog::init() {
 
     //检查网络是否通畅
     if (!manager->tcpClientConnect()) {
-        QMessageBox::warning(nullptr, "警告", "网络错误", QMessageBox::Ok);
+        if (showInfo) {
+            QMessageBox::warning(nullptr, "警告", "算法网络错误", QMessageBox::Ok);
+        }
+        ui->tabWidget->setEnabled(false);
         return false;
     }
 
@@ -241,17 +288,16 @@ bool AlgorithmDialog::init() {
         boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
     }
     if (!algorithmInitialized) {
-        QMessageBox::warning(nullptr, "警告", "算法未初始化", QMessageBox::Ok);
+        if (showInfo) {
+            QMessageBox::warning(nullptr, "警告", "算法未初始化", QMessageBox::Ok);
+        }
+        ui->tabWidget->setEnabled(false);
         return false;
     }
 
-    ui->setupUi(this);
-    resize(1300, 900);
-    ui->tabWidget->tabBar()->setMinimumWidth(800);
-
     connect(manager.get(), SIGNAL(msgGot(int)), this, SLOT(onMsgGot(int)));
 
-    connect(ui->workSpaceWidget, SIGNAL(chosingPersonMouseReleased(double, double)), this, SLOT(sendManuallyChosing(double, double)));
+//    connect(ui->workSpaceWidget, SIGNAL(chosingPersonMouseReleased(double, double)), this, SLOT(sendManuallyChosing(double, double)));
 
     connect(ui->radioButton_person_chose_auto, SIGNAL(clicked(bool)), this, SLOT(radioButton_person_chose_clicked(bool)));
     connect(ui->radioButton_person_chose_master, SIGNAL(clicked(bool)), this, SLOT(radioButton_person_chose_clicked(bool)));
@@ -273,7 +319,7 @@ bool AlgorithmDialog::init() {
     connect(ui->pushButton_scan, SIGNAL(clicked()), this, SLOT(pushButton_specialShot_clicked()));
     connect(ui->pushButton_shot, SIGNAL(clicked()), this, SLOT(pushButton_specialShot_clicked()));
 
-    QDoubleValidator *validator = new QDoubleValidator(0, 100000, 5, this);
+    MyDoubleValidator *validator = new MyDoubleValidator(0, 1000, 5, this);
 
     ui->lineEdit_master_time->setValidator(validator);
     ui->lineEdit_master_speed->setValidator(validator);
@@ -297,19 +343,34 @@ bool AlgorithmDialog::init() {
     ui->lineEdit_shot_time->setValidator(validator);
     ui->lineEdit_shot_zmspd->setValidator(validator);
 
-//    ui->lineEdit_auto_scale->setValidator(new QDoubleValidator(manager->status.mutable_composition_param()->mutable_zoom_mode()->auto_scale_range(0),
-//                                                               manager->status.mutable_composition_param()->mutable_zoom_mode()->auto_scale_range(1),
-//                                                               5, this));
-//    ui->lineEdit_shot_scale->setValidator(new QDoubleValidator(manager->status.mutable_composition_param()->mutable_special_shot()->shot_scale_range(0),
-//                                                               manager->status.mutable_composition_param()->mutable_special_shot()->shot_scale_range(1),
-//                                                               5, this));
-//    ui->lineEdit_oncezoom_scale->setValidator(
-//            new QDoubleValidator(manager->status.mutable_composition_param()->mutable_special_shot()->oncezoom_scale_range(0),
-//                                 manager->status.mutable_composition_param()->mutable_special_shot()->oncezoom_scale_range(1),
-//                                 5, this));
-//    ui->lineEdit_scan_scale->setValidator(new QDoubleValidator(manager->status.mutable_composition_param()->mutable_special_shot()->scan_scale_range(0),
-//                                                               manager->status.mutable_composition_param()->mutable_special_shot()->scan_scale_range(1),
-//                                                               5, this));
+
+    ui->lineEdit_auto_scale->setValidator(new MyDoubleValidator(manager->status.mutable_composition_param()->mutable_special_shot()->shot_scale_range(0),
+                                                             manager->status.mutable_composition_param()->mutable_special_shot()->shot_scale_range(1),
+                                                             5, this));
+    ui->lineEdit_shot_scale->setValidator(new MyDoubleValidator(manager->status.mutable_composition_param()->mutable_special_shot()->shot_scale_range(0),
+                                                               manager->status.mutable_composition_param()->mutable_special_shot()->shot_scale_range(1),
+                                                               5, this));
+    ui->lineEdit_oncezoom_scale->setValidator(
+            new MyDoubleValidator(manager->status.mutable_composition_param()->mutable_special_shot()->oncezoom_scale_range(0),
+                                 manager->status.mutable_composition_param()->mutable_special_shot()->oncezoom_scale_range(1),
+                                 5, this));
+
+    ui->lineEdit_scan_scale->setValidator(new MyDoubleValidator(manager->status.mutable_composition_param()->mutable_special_shot()->scan_scale_range(0),
+                                                               manager->status.mutable_composition_param()->mutable_special_shot()->scan_scale_range(1),
+                                                               5, this));
+
+    ui->lineEdit_shot_scale->setPlaceholderText("(" + QString::number(dynamic_cast<const MyDoubleValidator*>(ui->lineEdit_shot_scale->validator())->bottom())
+                                                +  ", " + QString::number(dynamic_cast<const MyDoubleValidator*>(ui->lineEdit_shot_scale->validator())->top())
+                                                + ")");
+    ui->lineEdit_oncezoom_scale->setPlaceholderText("(" + QString::number(dynamic_cast<const MyDoubleValidator*>(ui->lineEdit_oncezoom_scale->validator())->bottom())
+                                                +  ", " + QString::number(dynamic_cast<const MyDoubleValidator*>(ui->lineEdit_oncezoom_scale->validator())->top())
+                                                + ")");
+    ui->lineEdit_scan_scale->setPlaceholderText("(" + QString::number(dynamic_cast<const MyDoubleValidator*>(ui->lineEdit_scan_scale->validator())->bottom())
+                                                +  ", " + QString::number(dynamic_cast<const MyDoubleValidator*>(ui->lineEdit_scan_scale->validator())->top())
+                                                + ")");
+    ui->lineEdit_auto_scale->setPlaceholderText("(" + QString::number(dynamic_cast<const MyDoubleValidator*>(ui->lineEdit_auto_scale->validator())->bottom())
+                                                +  ", " + QString::number(dynamic_cast<const MyDoubleValidator*>(ui->lineEdit_auto_scale->validator())->top())
+                                                + ")");
 
     initialized = true;
     LOG(INFO) << "AlgorithmDialog::init completed";
@@ -440,6 +501,8 @@ void AlgorithmDialog::pushButton_zoom_clicked() {
 }
 
 void AlgorithmDialog::updateZoomModeUi() {
+    LOG(INFO) << "AlgorithmDialog::updateZoomModeUi error:" << manager->status.mutable_composition_param()->error_code()
+        << " type:" << manager->status.mutable_composition_param()->mutable_zoom_mode()->zoom_mode();
     AlgoParam::ZoomMode_Type type = manager->status.mutable_composition_param()->mutable_zoom_mode()->zoom_mode();
     ui->pushButton_zoom_none->setStyleSheet("background-color:;");
     ui->pushButton_zoom_auto->setStyleSheet("background-color:;");
@@ -633,6 +696,8 @@ void AlgorithmDialog::pushButton_specialShot_clicked() {
 
 void AlgorithmDialog::updateSpecialShotUi() {
     AlgoParam::SpecialShot_Type type = manager->status.mutable_composition_param()->mutable_special_shot()->special_shot();
+    LOG(INFO) << "AlgorithmDialog::updateSpecialShotUi error:" << manager->status.mutable_composition_param()->error_code()
+                                                               << " type:" << type;
 
     if (type == AlgoParam::SpecialShot::SPECIALSHOT_SLOWZOOM) {
         ui->pushButton_slowzoom->setText(QString::fromLocal8Bit("停止"));
@@ -690,4 +755,10 @@ void AlgorithmDialog::updateSpecialShotUi() {
             ui->pushButton_cycleZoom->setEnabled(true);
         }
     }
+}
+
+void AlgorithmDialog::on_pushButton_control_set_clicked() {
+    AlgoParam::MsgUnity msg = AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity_MsgType_ControlSet);
+    msg.mutable_control_set()->set_enabled(!manager->status.mutable_control_set()->enabled());
+    asyncSendMsg(msg);
 }

@@ -94,7 +94,8 @@ set(SOURCE_FILES
         src/algorithm/FaceTemplateItem.cpp
         src/algorithm/AlgorithmGimbalDialog.cpp
         src/algorithm/AlgorithmZoomSlider.cpp
-        src/MainWorkSpaceWidget.cpp)
+        src/MainWorkSpaceWidget.cpp
+        src/MainImageWidget.cpp)
 
 #set(HEADERS_FILES
 #        src/photoandvideodialog.h
@@ -160,6 +161,12 @@ include_directories(/home/demo/remogui/usr/include
         ${remoguiroot}/usr/ffmpeg/include
         ${include_directories})
 endif()
+include_directories(
+		src
+		src/algorithm
+		src/mediaview
+		thirdparty
+		${include_directories})
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
@@ -167,4 +174,4 @@ add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES} ${RESOURCES_FILES} ${PROTO_
 
 target_link_libraries(${CMAKE_PROJECT_NAME} ${CUSTOM_LIBS})
 
-file(COPY remo_gui.json DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY json/remo_gui.json DESTINATION ${CMAKE_BINARY_DIR})

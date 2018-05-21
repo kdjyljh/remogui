@@ -292,8 +292,9 @@ bool MainWindow::initNetwork(bool showInfo) {
         }
     }
 
-    cameraImageWidget = boost::shared_ptr<CameraImageWidget>(new CameraImageWidget);
-//    mainWorkSpace = boost::make_shared<MainWorkSpaceWidget>();
+//    cameraImageWidget = boost::shared_ptr<CameraImageWidget>(new CameraImageWidget);
+    mainWorkSpace = boost::make_shared<MainWorkSpaceWidget>();
+    mainWorkSpace->init();
 
     //    imagProc(new ImageStreamProc),
     receiveDataProc = ReceiveDataProc::getInstance();
@@ -306,8 +307,8 @@ bool MainWindow::initNetwork(bool showInfo) {
     mediaViewWidget = boost::shared_ptr<WaterFallScrollArea>(new WaterFallScrollArea);
     algorithmDialog = AlgorithmDialog::getInstance();
 
-//    setCentralWidget(mainWorkSpace.get());
-    setCentralWidget(cameraImageWidget.get());
+    setCentralWidget(mainWorkSpace.get());
+//    setCentralWidget(cameraImageWidget.get());
     customWBWidget->setGeometry(QRect(centerPoint, QSize(400, 50)));
     customWBSlider->setGeometry(QRect(0, 25, 400, 10));
     customWBSlider->setOrientation(Qt::Horizontal);
@@ -328,18 +329,20 @@ bool MainWindow::initNetwork(bool showInfo) {
 
 //    imgStreamProcThread = boost::thread(&ImageStreamProc::play, imagProc);
 
-    connect(photoAndVideoDialog.get(), SIGNAL(getVideoStreamAgain()), cameraImageWidget->getDecoder().get(),
-            SLOT(readStream()));
-    connect(cameraImageWidget->getDecoder().get(), SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(),
-            SLOT(readVideoStreamDoneSlot(bool)));
-    connect(cameraImageWidget->getDecoder().get(), SIGNAL(readStreamDone(bool)), this,
-            SLOT(showVideoStreamResult(bool)));
+    boost::shared_ptr<CameraImageWidget> imageWidget = boost::dynamic_pointer_cast<CameraImageWidget>(mainWorkSpace->getImageWidget());
+    if (imageWidget) {
+        connect(photoAndVideoDialog.get(), SIGNAL(getVideoStreamAgain()), imageWidget->getDecoder().get(),
+                SLOT(readStream()));
+        connect(imageWidget->getDecoder().get(), SIGNAL(readStreamDone(bool)), photoAndVideoDialog.get(),
+                SLOT(readVideoStreamDoneSlot(bool)));
+        connect(imageWidget->getDecoder().get(), SIGNAL(readStreamDone(bool)), this,
+                SLOT(showVideoStreamResult(bool)));
+        connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), imageWidget.get(), SLOT(setFocusStatus(bool)));
+    }
 
     receiveDataProc->start();
     ReceiveDataDispatcher::getInstance()->start();
 
-//    connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), viewLable, SLOT(setFocusStatus(bool)));
-    connect(focusDialog.get(), SIGNAL(focusStatusChange(bool)), cameraImageWidget.get(), SLOT(setFocusStatus(bool)));
     connect(customWBSlider, SIGNAL(sliderReleased()), this, SLOT(customWBSlider_sliderReleased()));
 
     //    QActionGroup * whiteBalanceGroup = new QActionGroup(this);
@@ -372,12 +375,12 @@ bool MainWindow::initNetwork(bool showInfo) {
     sendCmdCamera(Remo_CmdId_Camera_Get_AELockStatus);
     sendCmdCamera(Remo_CmdId_Camera_Get_CustomWB_ColorTemp);
 
-    Remo_Camera_ZoomControlParam_s data ;
-    data.ZoomControlType = 0;
-    data.Speed = SpeedLevelNum_Lowest;
-    data.TargetPosNo = 0;
-    sendCmdCamera(Remo_CmdId_Camera_Set_ZoomControlParam,
-                  std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 5));
+//    Remo_Camera_ZoomControlParam_s data ;
+//    data.ZoomControlType = 0;
+//    data.Speed = SpeedLevelNum_Lowest;
+//    data.TargetPosNo = 0;
+//    sendCmdCamera(Remo_CmdId_Camera_Set_ZoomControlParam,
+//                  std::vector<uint8_t>(reinterpret_cast<uint8_t*>(&data), reinterpret_cast<uint8_t*>(&data) + 5));
     return true;
 }
 

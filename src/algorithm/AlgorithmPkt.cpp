@@ -3,6 +3,7 @@
 //
 
 #include "AlgorithmPkt.h"
+#include "commlog.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/crc.hpp>
@@ -21,8 +22,11 @@ bool AlgorithmPkt::decodeHeader() {
     length = length << 8 | buffHead_[2];
     length = length << 8 | buffHead_[3];
 
+
+
     if (length > MAX_PACKET_LENGTH) {
-        LOG(INFO) << "AlgorithmPkt::decodeHeader length is greater than MAX_PACKET_LENGTH";
+        CHAR_BUFF_TO_LOG(std::vector<char>((char*)&length, ((char*)&length) + 4))
+        LOG(INFO) << "AlgorithmPkt::decodeHeader length：" << length << " is greater than MAX_PACKET_LENGTH";
         return false;
     }
 
@@ -78,7 +82,6 @@ bool AlgorithmPkt::decodeBody(AlgoParamMsg &pkt) {
 bool AlgorithmPkt::encode(std::vector<uint8_t> &sendData, const AlgoParamMsg &msg) {
     int objSize = msg.ByteSize();
     std::vector<uint8_t> msgBuff(objSize);
-    bool ret = false;
     try {
         if (!msg.SerializeToArray(msgBuff.data(), objSize)) {
             LOG(INFO) << "AlgorithmPkt::encode SerializeToArray error";

@@ -4,8 +4,9 @@
 #include <QWidget>
 #include <QImage>
 #include "MediaStreamProc.h"
+#include "MainImageWidget.h"
 
-class CameraImageWidget : public QWidget
+class CameraImageWidget : public MainImageWidget
 {
     Q_OBJECT
 public:
@@ -17,12 +18,12 @@ public:
 
 signals:
 
-public slots:
-    void setFocusStatus(bool focus) {focusStatus = focus;}
+//public slots:
+//    void setFocusStatus(bool focus) {focusStatus = focus;}
 
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
-    virtual void mouseReleaseEvent(QMouseEvent *ev) override;
+//    virtual void mouseReleaseEvent(QMouseEvent *ev) override;
 
 private slots:
     void drawImage();
@@ -32,9 +33,6 @@ private:
     MediaFrame_AI_Info aiInfo;
     bool refreshAiInfo;
     boost::shared_ptr<MediaStreamProc> decoder;
-    bool focusStatus;
-    QPoint recPos;
-    const QSize recSize;
     bool valid;
 };
 

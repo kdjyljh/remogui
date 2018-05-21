@@ -2,11 +2,13 @@
 #include "cmddef.h"
 #include "protocoldataInterfaceimpl.h"
 #include "camerafielddef.h"
+#include "mainwindow.h"
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QDebug>
 #include <QMouseEvent>
+#include <QDesktopWidget>
 #include <glog/logging.h>
 
 CameraImageWidget::CameraImageWidget(QWidget *parent) :
@@ -24,7 +26,12 @@ void CameraImageWidget::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     if (!image.isNull()) {
         image = image.scaledToWidth(width());
-        painter.drawImage(rect(), image);
+//        resize(image.size());
+//        setFixedSize(image.size());
+//        setFixedHeight(image.height());
+//        image = image.scaled(size(), Qt::KeepAspectRatio);
+        MainWindow::getWindInstace()->setFixedHeight(MainWindow::getWindInstace()->height() - height() + image.height());
+        painter.drawImage(image.rect(), image);
     }
 
     QPen pen(Qt::red, Qt::SolidLine);
@@ -40,35 +47,39 @@ void CameraImageWidget::paintEvent(QPaintEvent *event)
         pen.setColor(Qt::red); //body使用红色
         pen.setWidth(5);
         painter.setPen(pen);
-        for (int i = 0; i < aiInfo.bodyNum; ++i) {
-            ret = QRect(QPoint(width() * aiInfo.bodyROIs[i][0], height() * aiInfo.bodyROIs[i][1]),
-                        QPoint(width() * aiInfo.bodyROIs[i][2], height() * aiInfo.bodyROIs[i][3]));
+        for (int i = 0; i < aiInfo.u8NumFace; ++i) {
+            ret = QRect(QPoint(width() * (*((float*) aiInfo.u8FaceRois + i * 16)), height() * (*((float*) aiInfo.u8FaceRois + i * 16 + 4))),
+                        QPoint(width() * (*((float*) aiInfo.u8FaceRois + i * 16 + 8)), height() * (*((float*) aiInfo.u8FaceRois + i * 16 + 12))));
             painter.drawRect(ret);
         }
 
-        pen.setColor(Qt::blue); //face使用蓝色
-        painter.setPen(pen);
-        for (int i = 0; i < aiInfo.faceNum; ++i) {
-            ret = QRect(QPoint(width() * aiInfo.faceROIs[i][0], height() * aiInfo.faceROIs[i][1]),
-                        QPoint(width() * aiInfo.faceROIs[i][2], height() * aiInfo.faceROIs[i][3]));
-            painter.drawRect(ret);
-        }
+        painter.setPen(QColor(0, 160, 230, 100)); //当前手势使用透明蓝色
+        QFont font; font.setPointSize(16); painter.setFont(font);
+        painter.drawText(50, 50, QString("当前手势: (type:%1,count:%2)").arg(aiInfo.u8HpType).arg(aiInfo.u8HpCount));
 
-        pen.setColor(Qt::green); //hand使用绿色
-        painter.setPen(pen);
-        for (int i = 0; i < aiInfo.handNum; ++i) {
-            ret = QRect(QPoint(width() * aiInfo.handROIs[i][0], height() * aiInfo.handROIs[i][1]),
-                        QPoint(width() * aiInfo.handROIs[i][2], height() * aiInfo.handROIs[i][3]));
-            painter.drawRect(ret);
-        }
-
-        pen.setColor(Qt::white); //target使用绿色
-        painter.setPen(pen);
-        for (int i = 0; i < aiInfo.targetNum; ++i) {
-            ret = QRect(QPoint(width() * aiInfo.targetROIs[i][0], height() * aiInfo.targetROIs[i][1]),
-                        QPoint(width() * aiInfo.targetROIs[i][2], height() * aiInfo.targetROIs[i][3]));
-            painter.drawRect(ret);
-        }
+//        pen.setColor(Qt::blue); //face使用蓝色
+//        painter.setPen(pen);
+//        for (int i = 0; i < aiInfo.faceNum; ++i) {
+//            ret = QRect(QPoint(width() * aiInfo.faceROIs[i][0], height() * aiInfo.faceROIs[i][1]),
+//                        QPoint(width() * aiInfo.faceROIs[i][2], height() * aiInfo.faceROIs[i][3]));
+//            painter.drawRect(ret);
+//        }
+//
+//        pen.setColor(Qt::green); //hand使用绿色
+//        painter.setPen(pen);
+//        for (int i = 0; i < aiInfo.handNum; ++i) {
+//            ret = QRect(QPoint(width() * aiInfo.handROIs[i][0], height() * aiInfo.handROIs[i][1]),
+//                        QPoint(width() * aiInfo.handROIs[i][2], height() * aiInfo.handROIs[i][3]));
+//            painter.drawRect(ret);
+//        }
+//
+//        pen.setColor(Qt::white); //target使用白色
+//        painter.setPen(pen);
+//        for (int i = 0; i < aiInfo.targetNum; ++i) {
+//            ret = QRect(QPoint(width() * aiInfo.targetROIs[i][0], height() * aiInfo.targetROIs[i][1]),
+//                        QPoint(width() * aiInfo.targetROIs[i][2], height() * aiInfo.targetROIs[i][3]));
+//            painter.drawRect(ret);
+//        }
     }
 }
 
@@ -77,7 +88,7 @@ void CameraImageWidget::drawImage()
     AVFrame *frame = &decoder->getCurFrame()->image;
 
     if (nullptr != frame) {
-        if (refreshAiInfo = decoder->getCurFrame()->hasAiInfo) {
+        if ((refreshAiInfo = decoder->getCurFrame()->hasAiInfo)) {
             aiInfo = decoder->getCurFrame()->ai_info;
         }
         this->image =

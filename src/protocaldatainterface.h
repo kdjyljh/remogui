@@ -2,7 +2,7 @@
 #define PROTOCALDATAINTERFACE_H
 
 #include "cmddef.h"
-#include "../thirdparty/Protocol.hpp"
+#include "Protocol.hpp"
 #include "itemdatadef.h"
 
 #include <boost/bind.hpp>

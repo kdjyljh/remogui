@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "../thirdparty/Protocol.hpp"
+#include "Protocol.hpp"
 #include "receivedatadispatcher.h"
 
 #include <QPixmap>
@@ -51,6 +51,9 @@ MainWindow::MainWindow(QWidget *parent) :
     centerPoint.setX(screenRect.width() / 2 - width() / 2);
     centerPoint.setY(screenRect.height() / 2 - height() / 2);
     move(centerPoint);
+
+//    setFixedSize(1300, 1000);
+//    setFixedHeight(DEFAULT_WINDOW_HEIGHT);
 }
 
 MainWindow::~MainWindow() {
@@ -267,7 +270,7 @@ void MainWindow::on_action_algorithm_triggered() {
 
 bool MainWindow::init(bool showInfo, bool initNet) {
     if (initialized) {
-        LOG(INFO) << "MainWindow::init has initialized";
+//        LOG(INFO) << "MainWindow::init has initialized";
         return true;
     }
 

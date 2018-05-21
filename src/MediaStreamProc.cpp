@@ -2,7 +2,9 @@
 #include <glog/logging.h>
 #include <QTimer>
 #include <boost/asio.hpp>
-#include "thirdparty/commlog.h"
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include "commlog.h"
 
 #ifdef linux
 static enum AVPixelFormat hw_pix_fmt;
@@ -274,14 +276,21 @@ MediaStreamProc::MediaStreamProc(QObject *parent) :
         frame_width(-1),
         frame_height(-1),
         frameQueueSize(30),
-        url("rtsp://192.168.0.1/livestream/12"),
         deviceType("vaapi"),
         decoderType(DecoderType_None),
         readStreamThread(new QThread(this))
 {
     LOG(INFO) << "MediaStreamProc::MediaStreamProc constructor this:" << this;
 //    av_log_set_level(AV_LOG_SKIP_REPEATED);
-//    av_init_packet(&packet);
+    try {
+        boost::property_tree::ptree root;
+        boost::property_tree::read_json("remo_gui.json", root);
+        url = root.get<std::string>("VideoStreamUrl");
+        decoderCfg = root.get<std::string>("VideoStreamDecoder");
+    } catch (boost::property_tree::ptree_error &e) {
+        LOG(INFO) << "MediaStreamProc::MediaStreamProc json parse error:" << e.what();
+    }
+
     curFrame.image.format = AV_PIX_FMT_NONE;
     moveToThread(readStreamThread);
     input_format = av_find_input_format("rtsp");
@@ -309,15 +318,23 @@ int MediaStreamProc::init()
 {
     int ret = -1;
 #ifdef linux
-    if (ret = vaapiInit()) {
-        LOG(INFO) << "MediaStreamProc::init vaapiInit failed try normal!!!!!!!!!!!!!";
-        deInit();
-        if (ret = normalInit()) {
-            LOG(INFO) << "MediaStreamProc::init normalInit failed!!!!!!!!!!!!!";
+    if (decoderCfg.empty() || decoderCfg == "Auto") {
+        if ((ret = vaapiInit())) {
+            LOG(INFO) << "MediaStreamProc::init vaapiInit failed try normal!!!!!!!!!!!!!";
+            deInit();
+            if (ret = normalInit()) {
+                LOG(INFO) << "MediaStreamProc::init normalInit failed!!!!!!!!!!!!!";
+            } else {
+                decoderType = DecoderType_Normal;
+            }
         } else {
-            decoderType = DecoderType_Normal;
+            decoderType = DecoderType_Vaapi;
         }
-    } else {
+    } else if ("Normal" == decoderCfg) {
+        ret = normalInit();
+        decoderType = DecoderType_Normal;
+    } else if ("Vaapi" == decoderCfg) {
+        ret = vaapiInit();
         decoderType = DecoderType_Vaapi;
     }
 #else
@@ -668,7 +685,6 @@ bool MediaStreamProc::decodeAiInfoFrame(const AVPacket &packet, MediaFrame_AI_In
         memcpy(&data, packet.data + i, 5);
 
         if (data == nal_header) {
-
             memcpy(&aiInfo, packet.data + i + 5, sizeof(MediaFrame_AI_Info));
 //            LOG(INFO) << "MediaStreamProc::decodeAiInfoFrame got AI info";
             return true;

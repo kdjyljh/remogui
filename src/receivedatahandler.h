@@ -1,6 +1,6 @@
 #ifndef RECEIVEDATAHANDLER_H
 #define RECEIVEDATAHANDLER_H
-#include "../thirdparty/Protocol.hpp"
+#include "Protocol.hpp"
 #include "cmddef.h"
 #include "itemdatadef.h"
 #include <boost/shared_ptr.hpp>

@@ -38,6 +38,7 @@ public:
         if (ws) {
             delete ui->workSpaceWidget;
             ui->verticalLayout->addWidget(ws.get());
+            workSpaceWidget = ws;
         }
     }
 
@@ -83,6 +84,7 @@ private:
     boost::shared_ptr<AlgorithmGimbalDialog> gimbalDialog;
     boost::shared_ptr<AlgorithmZoomSlider> zoomSlider;
     boost::shared_ptr<QMediaPlayer> player;
+    boost::shared_ptr<MainImageWidget> workSpaceWidget;
 };
 
 

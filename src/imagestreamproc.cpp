@@ -1,6 +1,6 @@
 #include "imagestreamproc.h"
 #include "mainwindow.h"
-#include "../thirdparty/commlog.h"
+#include "commlog.h"
 #include <chrono>
 #include <thread>
 #include <boost/thread/mutex.hpp>

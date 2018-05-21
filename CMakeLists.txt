@@ -45,18 +45,18 @@ set(SOURCE_FILES
         src/imagestreamproc.cpp
         src/main.cpp
         src/mainwindow.cpp
-        thirdparty/CommAsyncUDP.cpp
-        thirdparty/CommGlobal.cpp
-        thirdparty/Protocol.cpp
-        thirdparty/TimedTask.cpp
-        thirdparty/EndpointEnum.cpp
-        thirdparty/Mix.cpp
-        thirdparty/MutexWrap.cpp
-        thirdparty/CommDeviceEnum.cpp
-        thirdparty/CfgVar.cpp
-        thirdparty/CommCmdSetEnum.cpp
-        thirdparty/CommCmdIDEnum.cpp
-        thirdparty/shareddata.cpp
+		remoprotocol/CommAsyncUDP.cpp
+		remoprotocol/CommGlobal.cpp
+		remoprotocol/Protocol.cpp
+		remoprotocol/TimedTask.cpp
+		remoprotocol/EndpointEnum.cpp
+		remoprotocol/Mix.cpp
+		remoprotocol/MutexWrap.cpp
+		remoprotocol/CommDeviceEnum.cpp
+		remoprotocol/CfgVar.cpp
+		remoprotocol/CommCmdSetEnum.cpp
+		remoprotocol/CommCmdIDEnum.cpp
+		remoprotocol/shareddata.cpp
         src/receivedataproc.cpp
         src/receivedatahandler.cpp
         src/protocaldatainterface.cpp
@@ -71,7 +71,7 @@ set(SOURCE_FILES
         src/batteryinfo.cpp
         src/deviceinfo.cpp
         src/receivedatadispatcher.cpp
-        thirdparty/commlog.cpp
+		remoprotocol/commlog.cpp
         src/playbackdialog.cpp
         src/mediaview/waterfallscrollarea.cpp
         src/mediaview/waterfallwidget.cpp
@@ -101,7 +101,7 @@ set(SOURCE_FILES
 #        src/photoandvideodialog.h
 #        src/imagestreamproc.h
 #        src/mainwindow.h
-#        thirdparty/shareddata.h
+#        remoprotocol/shareddata.h
 #        src/receivedataproc.h
 #        src/camerafielddef.h
 #        src/receivedatahandler.h
@@ -112,7 +112,7 @@ set(SOURCE_FILES
 #        src/aemodedialog.h
 #        src/protocoldataInterfaceimpl.h
 #        src/focusdialog.h
-#        thirdparty/commlog.h
+#        remoprotocol/commlog.h
 #        src/viewlable.h
 #        src/gimbaldialog.h
 #        src/deviceinfodialog.h
@@ -150,22 +150,22 @@ set(PROTO_FILES
         proto/test.proto
         proto/AlgoParam.proto)
 
-if(UNIX)
-#demo演示笔记本需要
-link_directories(/home/demo/remogui/usr/lib
-        /home/usrlocal/lib
-        ${remoguiroot}/usr/ffmpeg/lib/
-        ${link_directionies})
-include_directories(/home/demo/remogui/usr/include
-        /home/usrlocal/include
-        ${remoguiroot}/usr/ffmpeg/include
-        ${include_directories})
-endif()
+#if(UNIX)
+##demo演示笔记本需要
+#link_directories(/home/demo/remogui/usr/lib
+#        /home/usrlocal/lib
+#        ${remoguiroot}/usr/ffmpeg/lib/
+#        ${link_directionies})
+#include_directories(/home/demo/remogui/usr/include
+#        /home/usrlocal/include
+#        ${remoguiroot}/usr/ffmpeg/include
+#        ${include_directories})
+#endif()
 include_directories(
 		src
 		src/algorithm
 		src/mediaview
-		thirdparty
+		remoprotocol
 		${include_directories})
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})

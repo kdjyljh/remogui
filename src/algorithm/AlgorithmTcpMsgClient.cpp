@@ -262,6 +262,48 @@ length_handle:
     }
 }
 
+//void process_mem_usage(double& vm_usage, double& resident_set)
+//{
+//    using std::ios_base;
+//    using std::ifstream;
+//    using std::string;
+//
+//    vm_usage     = 0.0;
+//    resident_set = 0.0;
+//
+//    // 'file' stat seems to give the most reliable results
+//    //
+//    ifstream stat_stream("/proc/self/stat",ios_base::in);
+//
+//    // dummy vars for leading entries in stat that we don't care about
+//    //
+//    string pid, comm, state, ppid, pgrp, session, tty_nr;
+//    string tpgid, flags, minflt, cminflt, majflt, cmajflt;
+//    string utime, stime, cutime, cstime, priority, nice;
+//    string O, itrealvalue, starttime;
+//
+//    // the two fields we want
+//    //
+//    unsigned long vsize;
+//    long rss;
+//
+//    stat_stream >> pid >> comm >> state >> ppid >> pgrp >> session >> tty_nr
+//                >> tpgid >> flags >> minflt >> cminflt >> majflt >> cmajflt
+//                >> utime >> stime >> cutime >> cstime >> priority >> nice
+//                >> O >> itrealvalue >> starttime >> vsize >> rss; // don't care about the rest
+//
+//    stat_stream.close();
+//
+//    long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
+//    vm_usage     = vsize / 1024.0;
+//    resident_set = rss * page_size_kb;
+//}
+
+//double vm, rss;
+//process_mem_usage(vm, rss);
+//LOG(INFO) << "VM: " << vm << "; RSS: " << rss << endl;
+
+
 void AlgorithmTcpMsgClient::receiveMsgDecodeLoop() {
     boost::system::error_code ec;
     int bytesNeedRead = 0;
@@ -273,13 +315,6 @@ void AlgorithmTcpMsgClient::receiveMsgDecodeLoop() {
     boost::asio::streambuf revBuff;
     std::istream revStream(&revBuff);
 
-//    int size1 = boost::asio::read(socket, revBuff, boost::asio::transfer_at_least(HEADER_LENGTH), ec);
-//    LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop revBuff.size:" <<  revBuff.size();
-//    int size2 = boost::asio::read(socket, revBuff, boost::asio::transfer_at_least(HEADER_LENGTH), ec);
-//    LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop revBuff.size:" <<  revBuff.size();
-//    int size3 = boost::asio::read(socket, revBuff, boost::asio::transfer_at_least(HEADER_LENGTH), ec);
-//    LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop revBuff.size:" <<  revBuff.size();
-
     boost::asio::read(socket, revBuff, boost::asio::transfer_at_least(HEADER_LENGTH), ec);
     if (ec) goto error;
 
@@ -288,7 +323,6 @@ retry:
         boost::this_thread::interruption_point();
 
         bytesNeedRead = 4 - revBuff.size();
-        LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop revBuff.size:" <<  revBuff.size();
         if (bytesNeedRead > 0) {
             boost::asio::read(socket, revBuff,
                               boost::asio::transfer_at_least(bytesNeedRead), ec); //同步读取
@@ -304,25 +338,16 @@ retry:
         length = (length << 8) | peekBuff[2];
         length = (length << 8) | peekBuff[3];
         if (length > MAX_PACKET_LENGTH) { //length数据错误
-            LOG(INFO) << "AlgorithmPkt::receiveMsgDecodeLoop length：" << length << " is greater than MAX_PACKET_LENGTH, get next one byte";
-            char buf[128];
-            snprintf(buf, sizeof(buf), "%hhx %hhx %hhx %hhx", peekBuff[0], peekBuff[1], peekBuff[2], peekBuff[3]);
-            LOG(INFO) << "Details: " << buf;
-            if (peekBuff[0] == 0 && peekBuff[1] == 0) {
-                LOG(INFO) << "";
-            }
-            revStream.ignore(1); //读取下一个字节继续处理length,直到正确为止
+            revBuff.consume(1); //读取下一个字节继续处理length,直到正确为止
             goto retry;
         }
         if (length - HEADER_LENGTH > 4) { //body至少包含4字节类型和4字节crc校验,msg不能为空
             bodyLength = length - HEADER_LENGTH;
         } else {
             LOG(INFO) << "AlgorithmPkt::receiveMsgDecodeLoop length:" << length << " is too short";
-            revStream.ignore(1); //否则读取下一个字节继续处理length,直到正确为止
+            revBuff.consume(1); //否则读取下一个字节继续处理length,直到正确为止
             goto retry;
         }
-
-        LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop before crc check revBuff.size:" <<  revBuff.size();
 
         //现在length正确
         //处理crc校验
@@ -350,25 +375,26 @@ retry:
         crcCheckRet = checkSum == readCS;
         if (!crcCheckRet) { //crc校验错误
             LOG(INFO) << "AlgorithmPkt::receiveMsgDecodeLoop crc check failed";
-            revStream.ignore(1); //读取下一个字节继续处理length,直到正确为止
-            LOG(INFO) << "AlgorithmTcpMsgClient::receiveMsgDecodeLoop after crc check revBuff.size:" <<  revBuff.size();
+            revBuff.consume(1); //读取下一个字节继续处理length,直到正确为止
             goto retry;
         }
 
-        //现在crc校验完成,进行protobuf反序列化
+        //现在crc校验完成,数据正确,进行protobuf反序列化
+        //不论反序列化正确与否,都应该将当前的msg从sreambuf中拿掉
         try {
             //除去头尾个4字节为msg内容
             if (!pkt.ParseFromArray(peekBuff.data() + 4, peekBuff.size() - 8)) {
                 LOG(INFO) << "AlgorithmPkt::receiveMsgDecodeLoop ParseFromArray error";
-                revStream.ignore(length); //反序列化错误,丢弃包
-                goto retry;
+                goto consume_msg;
             }
 
             pushReceiveMsg(pkt); //反序列化正确
         } catch (std::exception &e) {
-            revStream.ignore(length); //反序列化错误,丢弃包
-            goto retry;
+            LOG(INFO) << "AlgorithmPkt::receiveMsgDecodeLoop ParseFromArray error:" << e.what();
+            goto consume_msg;
         }
+consume_msg:
+        revBuff.consume(length);
     }
 
 error:

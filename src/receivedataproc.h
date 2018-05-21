@@ -3,7 +3,7 @@
 
 #include "mainwindow.h"
 #include "receivedatahandler.h"
-#include "../thirdparty/Protocol.hpp"
+#include "Protocol.hpp"
 #include <vector>
 #include <boost/thread.hpp>
 #include <boost/noncopyable.hpp>

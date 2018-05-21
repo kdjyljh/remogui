@@ -206,8 +206,8 @@ void AlgorithmDialog::updateCaptureUi() {
 }
 
 void AlgorithmDialog::on_groupBox_person_chose_clicked(bool checked) {
-    ui->workSpaceWidget->setManuallyChosingPerson(checked);
-
+    LOG(INFO) << "AlgorithmDialog::on_groupBox_person_chose_clicked ui->workSpaceWidget:" << ui->workSpaceWidget;
+    workSpaceWidget->setManuallyChosingPerson(checked);
 
     //当处于正在选人状态时才需要结束选人
     if (!checked && manager->status.selection_set().is_selecting()) {
@@ -295,7 +295,7 @@ bool AlgorithmDialog::init(bool showInfo) {
         return false;
     }
 
-    connect(manager.get(), SIGNAL(msgGot(int)), this, SLOT(onMsgGot(int)));
+    connect(manager.get(), SIGNAL(msgGot(int)), this, SLOT(onMsgGot(int)), Qt::BlockingQueuedConnection);
 
 //    connect(ui->workSpaceWidget, SIGNAL(chosingPersonMouseReleased(double, double)), this, SLOT(sendManuallyChosing(double, double)));
 

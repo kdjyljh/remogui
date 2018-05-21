@@ -1,6 +1,6 @@
 #include "receivedataproc.h"
-#include "../thirdparty/shareddata.h"
-#include "../thirdparty/commlog.h"
+#include "shareddata.h"
+#include "commlog.h"
 #include "camerafielddef.h"
 #include "cmddef.h"
 

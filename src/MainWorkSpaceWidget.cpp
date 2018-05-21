@@ -41,6 +41,8 @@ bool MainWorkSpaceWidget::init() {
     }
 
     algorithmWidget->changeWorkSpace(imageWidget);
+//    imageWidget->setCursor(Qt::CrossCursor);
+    LOG(INFO) << "MainWorkSpaceWidget::init end imageWidget:" << imageWidget;
 
     return true;
 }

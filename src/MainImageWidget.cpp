@@ -49,6 +49,7 @@ void MainImageWidget::mouseReleaseEvent(QMouseEvent *ev) {
 }
 
 void MainImageWidget::setManuallyChosingPerson(bool status) {
+    LOG(INFO) << "MainImageWidget::setManuallyChosingPerson";
     isManuallyChosingPerson = status;
     if (isManuallyChosingPerson) {
         setCursor(Qt::CrossCursor);

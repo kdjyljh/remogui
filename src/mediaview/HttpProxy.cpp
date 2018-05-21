@@ -55,7 +55,7 @@ bool HttpProxy::getRequest(std::string url, std::vector<uint8_t> &buff,
             respStream >> protoVersion >> statusCode;
             std::getline(respStream, statusMsg);
             if (protoVersion.substr(0, 5) != "HTTP/") {
-                errorMsg = "HttpProxy::getRequest response protocol error";
+                errorMsg = "HttpProxy::getRequest response remoprotocol error";
                 goto error;
             }
             if (statusCode != 200) {

@@ -1,5 +1,5 @@
 #include "protocoldataInterfaceimpl.h"
-#include "../thirdparty/commlog.h"
+#include "commlog.h"
 
 ProtocolDataInterfaceImpl::ProtocolDataInterfaceImpl(DispatcheType type) :
     ProtocolDataInterface(type)

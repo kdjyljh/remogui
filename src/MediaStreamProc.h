@@ -23,19 +23,43 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
-struct MediaFrame_AI_Info
+//struct MediaFrame_AI_Info
+//{
+//    uint64_t frameID;
+//    float bodyROIs[15][4];
+//    int bodyNum;
+//    float faceROIs[15][4];
+//    int faceNum;
+//    float handROIs[15][4];
+//    int handNum;
+//    float targetROIs[2][4];
+//    int targetNum;
+//    int hpResult;
+//    int capResult[3];
+//};
+
+typedef struct MediaFrame_AI_Info
 {
-    uint64_t frameID;
-    float bodyROIs[15][4];
-    int bodyNum;
-    float faceROIs[15][4];
-    int faceNum;
-    float handROIs[15][4];
-    int handNum;
-    float targetROIs[2][4];
-    int targetNum;
-    int hpResult;
-    int capResult[3];
+    uint8_t u8SDKStatus;
+    uint64_t u64TimeStamp;
+    uint8_t u8HpType;
+    uint8_t u8HpCount;
+    uint8_t u8CapSF;
+    uint8_t u8CapSA;
+    uint8_t u8CapSL;
+    uint8_t u8CtrlType;
+    float fCtrlDx;
+    float fCtrlDy;
+    float fCtrlScale;
+    float fCtrlGap;
+    uint8_t u8NumTarget;
+    uint8_t u8NumPerson;
+    uint8_t u8NumFace;
+    uint8_t u8NumHand;
+    uint8_t u8TargetRois[2][18];
+    uint8_t u8PersonRois[15][16];
+    uint8_t u8FaceRois[15][16];
+    uint8_t u8Hand[15][16];
 };
 
 struct MediaFrame {
@@ -103,6 +127,7 @@ private:
     int frame_width;
     int frame_height;
     MediaFrame curFrame;
+    std::string decoderCfg;
 
     enum DecoderType {
         DecoderType_None    = 0,

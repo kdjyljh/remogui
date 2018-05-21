@@ -102,7 +102,7 @@ void AlgorithmManager::receiveMsgDispatcher(const AlgoParamMsg &msg) {
             } else {
             }
 
-            msgGot(type);
+            msgGot(type); //必须等待槽函数调用完成后返回,使用BlockingQueuedConnection,需要注意死锁！！！！
             LOG(INFO) << "AlgorithmManager::receiveMsgDispatcher use async type:" << type;
         }
     }

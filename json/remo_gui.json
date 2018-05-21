@@ -6,5 +6,9 @@
   "Algorithm_IP" : "192.168.61.164",
   "Algorithm_Port" : "24680",
   "//ImageSource 表示界面视频流来源,有两个值:Camera 和 Algorithm": "",
-  "VideoSource": "Camera"
+  "VideoSource": "Camera",
+  "VideoStreamUrl": "rtsp://192.168.0.1/livestream/12",
+  "//VideoStreamUrl": "rtsp://192.168.61.215/chn1",
+  "//VideoStreamDecoder 表示界面视频流解码器,目前有两个值:Normal和Vaapi和Auto, Normal表示使用软解": "",
+  "VideoStreamDecoder": "Normal"
 }

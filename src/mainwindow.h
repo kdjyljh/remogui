@@ -12,9 +12,9 @@
 #include "viewlable.h"
 #include "playbackdialog.h"
 #include "mediaview/waterfallscrollarea.h"
-#include "algorithm/AlgorithmDialog.h"
 #include "CameraImageWidget.h"
 #include "MainWorkSpaceWidget.h"
+#include "AlgorithmProtoTest.h"
 
 #include <QMainWindow>
 #include <QImage>
@@ -64,9 +64,9 @@ private:
     boost::shared_ptr<DeviceInfoDialog> deviceInfoDialog;
     boost::shared_ptr<PlayBackDialog> playBackDialog;
     boost::shared_ptr<WaterFallScrollArea> mediaViewWidget;
-    boost::shared_ptr<AlgorithmDialog> algorithmDialog;
     boost::shared_ptr<CameraImageWidget> cameraImageWidget;
     boost::shared_ptr<MainWorkSpaceWidget> mainWorkSpace;
+    boost::shared_ptr<AlgorithmProtoTest> algorithmProtoTestDialog;
     QWidget *customWBWidget;
     QSlider *customWBSlider;
     static bool initialized;
@@ -96,6 +96,7 @@ private slots:
     void on_action_playBack_triggered();
     void on_action_mediaView_triggered();
     void on_action_algorithm_triggered();
+    void on_action_AlgorithmProtoTest_triggered();
     void menu_action_triggered(QAction *action);
     void customWBSlider_sliderReleased();
 };

@@ -280,7 +280,8 @@ REQUESTRESPOND_SOMETHING(version, 50, 50000) // 50ms
 
 void CommProtoVariables::check_recved(ProtocolStruct &proto) {
     if (proto.recver != IPPortCfg::Get()->SelfCommDevice()) {
-        LOG(INFO) << "ERROR: algorithm will not recv msg for " << static_cast<CommDeviceEnum>(proto.recver);
+        LOG(INFO) << "ERROR: algorithm will not recv msg for " << static_cast<CommDeviceEnum>(proto.recver)
+                  << " sender:" << IPPortCfg::Get()->SelfCommDevice();
         return;
     }
 
@@ -288,35 +289,37 @@ void CommProtoVariables::check_recved(ProtocolStruct &proto) {
 
     TimedTask::Get()->cancel_work(proto.idBackward()); // 取消可能的重发任务
 
-    bool needAckApp = proto.packFlags.bits.AppAckType, needAckProto = proto.packFlags.bits.ProtoAckType;
-    RequestRespond reqres = static_cast<RequestRespond>(proto.packFlags.bits.ReqResp);
-    if ((needAckApp || needAckProto) && reqres == REQUEST) { // 需要回应
-        if (needAckProto) { // 协议层echo,无数据原样送回
-            auto msginfo = gen_request_respond(static_cast<CommDeviceEnum>(proto.sender),
-                                               static_cast<CommCmdSetEnum>(proto.cmdSet),
-                                               static_cast<CommCmdIDEnum> (proto.cmdID),
-                                               false, true, proto.packSeq, RESPOND);
-            do_respond(msginfo);
-//      LOG(INFO) << "needAckProto msg: " << proto.print();
-        }
-        if (needAckApp) { // 采集数据并返回
-            UniqueRespondID uniqueRespID = uniquerespid(static_cast<CommDeviceEnum>(proto.sender),
-                                                        static_cast<CommCmdSetEnum>(proto.cmdSet),
-                                                        static_cast<CommCmdIDEnum>(proto.cmdID));
-            auto it = mapRespondAction2func_.find(uniqueRespID);
-            if (it != mapRespondAction2func_.end()) {
-                it->second(proto.packSeq);
-//        LOG(INFO) << "needAckApp msg: " << proto.print();
-            } else {
-                LOG(INFO) << "ERROR: algorithm can not deal with msg: \n" << proto.print();
-            }
-        }
-    } else { // 不需要回应,则说明是对方的回复信息
-//    LOG(INFO) << proto.print();
+//    bool needAckApp = proto.packFlags.bits.AppAckType, needAckProto = proto.packFlags.bits.ProtoAckType;
+//    RequestRespond reqres = static_cast<RequestRespond>(proto.packFlags.bits.ReqResp);
+//    if ((needAckApp || needAckProto) && reqres == REQUEST) { // 需要回应
+//        if (needAckProto) { // 协议层echo,无数据原样送回
+//            auto msginfo = gen_request_respond(static_cast<CommDeviceEnum>(proto.sender),
+//                                               static_cast<CommCmdSetEnum>(proto.cmdSet),
+//                                               static_cast<CommCmdIDEnum> (proto.cmdID),
+//                                               false, true, proto.packSeq, RESPOND);
+//            do_respond(msginfo);
+////      LOG(INFO) << "needAckProto msg: " << proto.print();
+//        }
+//        if (needAckApp) { // 采集数据并返回
+//            UniqueRespondID uniqueRespID = uniquerespid(static_cast<CommDeviceEnum>(proto.sender),
+//                                                        static_cast<CommCmdSetEnum>(proto.cmdSet),
+//                                                        static_cast<CommCmdIDEnum>(proto.cmdID));
+//            auto it = mapRespondAction2func_.find(uniqueRespID);
+//            if (it != mapRespondAction2func_.end()) {
+//                it->second(proto.packSeq);
+////        LOG(INFO) << "needAckApp msg: " << proto.print();
+//            } else {
+//                LOG(INFO) << "ERROR: algorithm can not deal with msg: \n" << proto.print();
+//            }
+//        }
+//    } else { // 不需要回应,则说明是对方的回复信息
+////    LOG(INFO) << proto.print();
+//
+//        //add by ljh
+//        SharedData::Get()->pushReceiveData(proto);
+//    }
 
-        //add by ljh
-        SharedData::Get()->pushReceiveData(proto);
-    }
+    SharedData::Get()->pushReceiveData(proto);
 }
 
 CommProtoVariables::MSGinfo CommProtoVariables::gen_request_respond(

@@ -3,8 +3,8 @@
 //
 
 #include "MainImageWidget.h"
-#include "AlgorithmDialog.h"
 #include "protocoldataInterfaceimpl.h"
+#include "algorithmprotodef.h"
 #include <glog/logging.h>
 #include <QMouseEvent>
 #include <QPainter>
@@ -24,18 +24,15 @@ MainImageWidget::~MainImageWidget() {
 
 void MainImageWidget::mouseReleaseEvent(QMouseEvent *ev) {
     if (isManuallyChosingPerson) {
-        qDebug() << ev->pos();
-        qDebug() << size();
+//        qDebug() << ev->pos();
+//        qDebug() << size();
         QPoint recPos = ev->pos();
         double posX = static_cast<double>(recPos.x()) / size().width();
         double posY = static_cast<double>(recPos.y()) / size().height();
-
-        AlgoParamMsg msg = AlgorithmManager::generateMsgByType(AlgoParam::MsgUnity::SelectionSet);
-        msg.mutable_selection_set()->set_select_mode(AlgoParam::SelectionSet::SELECTION_USERPICK);
-        msg.mutable_selection_set()->add_userpick_point(posX);
-        msg.mutable_selection_set()->add_userpick_point(posY);
-        msg.mutable_selection_set()->set_is_selecting(true);
-        AlgorithmDialog::getInstance()->asyncSendMsg(msg);
+        std::vector<uint8_t> data(8);
+        memcpy(data.data(), &posX, 4);
+        memcpy(data.data() + 4, &posY, 4);
+        ProtocolDataInterface::sendCmdAlgorithm(APP_SELTARGET_SETBY_POINT, data);
     }
 
     if (focusStatus) {

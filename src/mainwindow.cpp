@@ -259,10 +259,10 @@ void MainWindow::showVideoStreamResult(bool result) {
 }
 
 void MainWindow::on_action_algorithm_triggered() {
-    auto dialog = AlgorithmDialog::getInstance();
-    if (dialog->init()) {
-        dialog->show();
-    }
+//    auto dialog = AlgorithmDialog::getInstance();
+//    if (dialog->init()) {
+//        dialog->show();
+//    }
 //    if (algorithmDialog && algorithmDialog->init()) {
 //        algorithmDialog->show();
 //    }
@@ -308,7 +308,7 @@ bool MainWindow::initNetwork(bool showInfo) {
     deviceInfoDialog = DeviceInfoDialog::createInstance(this);
     playBackDialog = boost::shared_ptr<PlayBackDialog>(new PlayBackDialog);
     mediaViewWidget = boost::shared_ptr<WaterFallScrollArea>(new WaterFallScrollArea);
-    algorithmDialog = AlgorithmDialog::getInstance();
+    algorithmProtoTestDialog = boost::shared_ptr<AlgorithmProtoTest>(new AlgorithmProtoTest);
 
     setCentralWidget(mainWorkSpace.get());
 //    setCentralWidget(cameraImageWidget.get());
@@ -322,6 +322,8 @@ bool MainWindow::initNetwork(bool showInfo) {
     focusDialog->registerSelf2Handler();
     gimbalDialog->registerSelf2Handler();
     aeModeDialog->registerSelf2Handler();
+    mainWorkSpace->registerSelf2Handler();
+    algorithmProtoTestDialog->registerSelf2Handler();
 //    deviceInfoDialog->registerSelf2Handler();
 //    workModeDialog->registerSelf2Handler();
 
@@ -396,7 +398,12 @@ void MainWindow::deInit() {
     gimbalDialog = nullptr;
     playBackDialog = nullptr;
     mediaViewWidget = nullptr;
-    algorithmDialog = nullptr;
+}
+
+void MainWindow::on_action_AlgorithmProtoTest_triggered() {
+    if (algorithmProtoTestDialog) {
+        algorithmProtoTestDialog->show();
+    }
 }
 
 

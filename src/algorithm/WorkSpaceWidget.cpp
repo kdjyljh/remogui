@@ -5,8 +5,6 @@
 #include "WorkSpaceWidget.h"
 #include <QPainter>
 #include <QMouseEvent>
-#include "AlgorithmManager.h"
-#include "AlgorithmDialog.h"
 
 WorkSpaceWidget::~WorkSpaceWidget() {
 

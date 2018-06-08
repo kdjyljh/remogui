@@ -1,4 +1,5 @@
 #include "shareddata.h"
+#include "Protocol.hpp"
 
 //boost::mutex SharedData::mtx = boost::mutex();
 //boost::unique_lock<boost::mutex> SharedData::lk = boost::unique_lock<boost::mutex>(SharedData::mtx);
@@ -37,7 +38,7 @@ bool SharedData::popReceiveData(ProtocolStruct &data)
     {
         boost::unique_lock<boost::mutex> lock(mtxReceive);
         while (receiveQueue.empty()) {
-            LOG(INFO) << "SharedData::popReceiveData wait";
+//            LOG(INFO) << "SharedData::popReceiveData wait";
             cvReceive.wait(lock);
         }
         data = receiveQueue.front();
@@ -45,16 +46,24 @@ bool SharedData::popReceiveData(ProtocolStruct &data)
     }
 
     //如果是回应包，根据包序号找到对应的请求包，并添加请求包数据字段到响应包
-    if (data.packFlags.bits.ReqResp = CommProtoVariables::RESPOND) {
+    if (data.packFlags.bits.ReqResp == CommProtoVariables::RESPOND) {
+        LOG(INFO) << "SharedData::popReceiveData RESPOND";
         ProtocolStruct sendData;
         if (popSendDataBySeqId(sendData, data.packSeq) /*&& !sendData.data.empty()*/) {
             data.data.insert(data.data.end(), sendData.data.begin(), sendData.data.end());
         }
         else {
-            LOG(INFO) << "Can not find resqest packeg for response seqId = " << std::hex << data.packSeq << " cmdId = " << data.cmdID << " cmdSet = " << data.cmdSet;
+            LOG(INFO) << "SharedData::popReceiveData Can not find resqest packeg for response seqId = " << std::hex << data.packSeq << " cmdId = " << data.cmdID << " cmdSet = " << data.cmdSet;
             return false; //没有找到对应的请求包，返回false，提示应该将包丢弃
         }
+    } else if (data.packFlags.bits.ReqResp == CommProtoVariables::REQUEST && !data.packFlags.bits.AppAckType) {
+        //是主动发出的同步包，将相机状态同步到界面
+        LOG(INFO) << "SharedData::popReceiveData sync package receive";
+        return true;
+    } else {
+
     }
+
     return true;
 }
 

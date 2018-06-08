@@ -55,6 +55,7 @@ struct CmdContent
     int cmdId;
     int ret;
     bool isRestore;
+    bool isSync;
 };
 Q_DECLARE_METATYPE(CmdContent);
 

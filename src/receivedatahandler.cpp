@@ -1,8 +1,10 @@
 #include "receivedatahandler.h"
 #include "receivedataproc.h"
+#include "algorithmprotodef.h"
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <cstring>
+#include <remoprotocol/Protocol.hpp>
 
 boost::mutex mtx_parsedDataQueue;
 boost::condition_variable cv_parsedDataQueue;
@@ -258,20 +260,44 @@ void ReceiveDataHandler::handle()
 {
     if (data.data.size() < 1) return;
 
+    CmdContent cc;
+    int ret = 0;
+    cc.isSync = false;
+
+    if (data.cmdSet == Remo_CmdSet_Algorithm) {
+        if (data.packFlags.bits.ReqResp == CommProtoVariables::RESPOND) {
+            //RESPOND数据里面第一个字节是错误代码
+            ret = data.data[0];
+            data.data.assign(data.data.begin() + 1, data.data.end());
+        } else if (data.packFlags.bits.ReqResp == CommProtoVariables::REQUEST && !data.packFlags.bits.AppAckType) {
+            cc.custom = data.data;
+            cc.isSync = true;
+        }
+
+        cc.custom = data.data;
+        cc.cmdSet = Remo_CmdSet_Algorithm;
+        cc.cmdId = data.cmdID;
+        cc.isRestore = false;
+        cc.ret = ret;
+        pushData(cc);
+
+        return;
+    }
+
     Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(data.cmdID >> 9);
     uint16_t idValue = data.cmdID & 0x1ff;
 
     //解析第一个字节:返回值
-    Remo_CmdId_SetCmd_ReturnValue_e ret = static_cast<Remo_CmdId_SetCmd_ReturnValue_e>(data.data.at(0));
+    ret = data.data.at(0);
     if (CmdId_Type_Get == idType || (CmdId_Type_Set == idType && ret == Return_OK)) {
         uint32_t key = data.cmdSet;
         key = key << 24 | idValue;
         deviceStatus[key] = data.data;
     }
 
-    CmdContent cc;
     cc.ret = ret;
     cc.isRestore = false;
+
     if (ret != Return_OK) {
         if (CmdId_Type_Set == idType) {
             LOG(INFO) << "set device failed, restore device status!!!!!!!!!!!!!!!!!!!!";

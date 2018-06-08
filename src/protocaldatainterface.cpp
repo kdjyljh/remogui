@@ -65,7 +65,7 @@ void ProtocolDataInterface::sendCmd(CommDeviceEnum device, Remo_CmdSet_e cmdSet,
 
 //    if (cmdId != 0x20) return;
 
-    return;
+//    return;
 
     Remo_CmdId_Camera_e idValue = static_cast<Remo_CmdId_Camera_e>(cmdId & 0x1ff);
     Remo_CmdId_Type_e idType = static_cast<Remo_CmdId_Type_e>(cmdId >> 9);
@@ -204,5 +204,10 @@ bool ProtocolDataInterface::syncSendCamera(Remo_CmdId_Camera_e cmdId, vector<uin
 bool ProtocolDataInterface::syncSendUniversal(Remo_CmdId_Camera_e cmdId, vector<uint8_t> data, int timeout,
                                               CommProtoVariables::RequestRespond reqres) {
     return ProtocolDataInterface::syncSendCmd(COMMDEVICE_CAMERA, Remo_CmdSet_Universal, cmdId, true, false, reqres, data, timeout);
+}
+
+void
+ProtocolDataInterface::sendCmdAlgorithm(int cmdId, vector<uint8_t> data, CommProtoVariables::RequestRespond reqres) {
+    ProtocolDataInterface::sendCmd(COMMDEVICE_ALGORITHM, Remo_CmdSet_Algorithm, cmdId, true, false, reqres, data);
 }
 

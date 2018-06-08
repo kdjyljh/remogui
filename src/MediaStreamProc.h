@@ -38,7 +38,7 @@ extern "C" {
 //    int capResult[3];
 //};
 
-typedef struct MediaFrame_AI_Info
+struct MediaFrame_AI_Info
 {
     uint8_t u8SDKStatus;
     uint64_t u64TimeStamp;

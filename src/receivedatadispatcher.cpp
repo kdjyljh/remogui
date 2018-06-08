@@ -21,12 +21,14 @@ DispatcheType ReceiveDataDispatcher::mapToDispatcher(Remo_CmdSet_e cmdSet, int c
         else {
             return DispatcheType_CameraDefault;
         }
-    }
-    else if (Remo_CmdSet_Gimbal == cmdSet) {
+    } else if (Remo_CmdSet_Gimbal == cmdSet) {
         return DispatcheType_Gimbal;
-    }
-    else if (Remo_CmdSet_Battery) {
+    } else if (Remo_CmdSet_Battery == cmdSet) {
         return DispatcheType_DeviceInfo;
+    } else if (Remo_CmdSet_Algorithm == cmdSet) {
+        return DispatcheType_Algorithm;
+    } else {
+        return DispatcheType_WorkMode;
     }
 }
 

@@ -4,6 +4,7 @@
 #include "cmddef.h"
 #include "Protocol.hpp"
 #include "itemdatadef.h"
+#include "algorithmprotodef.h"
 
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -45,6 +46,10 @@ public:
                                CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
 
     static void sendCmdUniversal(int cmdId,
+                                 std::vector<uint8_t> data = std::vector<uint8_t>(),
+                                 CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
+
+    static void sendCmdAlgorithm(int cmdId,
                                  std::vector<uint8_t> data = std::vector<uint8_t>(),
                                  CommProtoVariables::RequestRespond reqres = CommProtoVariables::REQUEST);
 

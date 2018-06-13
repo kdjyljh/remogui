@@ -22,7 +22,7 @@ protected:
     virtual void workModeGot(const Remo_Camera_WorkMode_s & workmode) override;
     virtual void settingGot(const std::vector<uint8_t> & data, Remo_CmdId_Camera_e cmdId) override;
     virtual void surportRangeGot(std::set<SubItemData> rangeSet, Remo_CmdId_Camera_e cmdId) override;
-    virtual void retProcess(CmdContent cc);
+    virtual void retProcess(CmdContent cc) override ;
 
 signals:
     void getVideoStreamAgain();

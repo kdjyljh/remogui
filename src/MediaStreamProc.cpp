@@ -322,7 +322,7 @@ int MediaStreamProc::init()
         if ((ret = vaapiInit())) {
             LOG(INFO) << "MediaStreamProc::init vaapiInit failed try normal!!!!!!!!!!!!!";
             deInit();
-            if (ret = normalInit()) {
+            if ((ret = normalInit())) {
                 LOG(INFO) << "MediaStreamProc::init normalInit failed!!!!!!!!!!!!!";
             } else {
                 decoderType = DecoderType_Normal;
@@ -676,6 +676,9 @@ bool MediaStreamProc::decodeAiInfoFrame(const AVPacket &packet, MediaFrame_AI_In
         return false;
     }
 
+//    LOG(INFO) << "MediaStreamProc::decodeAiInfoFrame packet data:";
+//    CHAR_BUFF_TO_LOG(std::vector<char>(packet.data, packet.data + packet.size));
+
     //查找0x00 0x00 0x00 0x01 0x0d，算法的NAL头
     //算法的NAL头是每一帧的最后一个
     for (int i = packet.size - 5; i >= 0; --i) {
@@ -685,6 +688,7 @@ bool MediaStreamProc::decodeAiInfoFrame(const AVPacket &packet, MediaFrame_AI_In
         memcpy(&data, packet.data + i, 5);
 
         if (data == nal_header) {
+            int size = sizeof(MediaFrame_AI_Info);
             memcpy(&aiInfo, packet.data + i + 5, sizeof(MediaFrame_AI_Info));
 //            LOG(INFO) << "MediaStreamProc::decodeAiInfoFrame got AI info";
             return true;

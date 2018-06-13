@@ -198,14 +198,61 @@ bool ReceiveDataHandler::mergeRange(Range_Data *srcRange, int srcLength, std::se
 
 bool ReceiveDataHandler::getSurportRange(std::set<SubItemData> & range)
 {
-    Range_Data *srcRange;
-    int length;
-    if (rangePayloadParer(data.data.data(), data.data.size(), &srcRange, &length)) {
-        if (mergeRange(srcRange, length, range)) {
-            return true;
-        }
+//    Range_Data *srcRange;
+//    int length;
+//    if (rangePayloadParer(data.data.data(), data.data.size(), &srcRange, &length)) {
+//        if (mergeRange(srcRange, length, range)) {
+//            return true;
+//        }
+//    }
+//    return false;
+
+//    range的结构为:
+//    struct {
+//        UINT8 type;    //类型 (离散或连续两种)
+//        UINT8 Num;               //元组个数
+//        BUF[可变长];              //需要解析的n个范围元组
+//    }
+    if (data.data.size() <= 2) { //必须要有两个以上的值
+        return false;
     }
-    return false;
+
+    int num = data.data[1];
+    switch (data.data[0]) {
+        case 0: //单个离散的值
+        {
+            for (int i = 0; i < num/* && i < data.data.size()*/; ++i) {
+                int index = data.data[2 + i];
+                for (auto it : itemData) {
+                    if (it.CmdSet == data.cmdSet && it.CmdId_GetRange == data.cmdID) {
+                        for (auto subIt : it.subItemData) {
+                            if (subIt.Index == index) {
+                                range.insert(subIt);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+            break;
+        case 1: //连续值
+        {
+            for (int i = 0; i < num/* && i < data.data.size()*/; i += 3) {
+                int max = data.data[2 + i + 0];
+                int step = data.data[2 + i + 1];
+                int min = data.data[2 + i + 2];
+                for (int index = min; index <= max; index += step) {
+                    range.insert(SubItemData{index, std::to_string(index)});
+                }
+            }
+        }
+            break;
+        default:
+            break;
+    }
+
+    return true;
 }
 
 bool ReceiveDataHandler::dataParser(CmdContent &parsedData)

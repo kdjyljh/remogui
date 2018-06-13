@@ -322,7 +322,6 @@ bool MainWindow::initNetwork(bool showInfo) {
     focusDialog->registerSelf2Handler();
     gimbalDialog->registerSelf2Handler();
     aeModeDialog->registerSelf2Handler();
-    mainWorkSpace->registerSelf2Handler();
     algorithmProtoTestDialog->registerSelf2Handler();
 //    deviceInfoDialog->registerSelf2Handler();
 //    workModeDialog->registerSelf2Handler();

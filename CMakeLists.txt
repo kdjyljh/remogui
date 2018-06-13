@@ -80,20 +80,20 @@ set(SOURCE_FILES
         src/mediaview/WaterFallImageItem.cpp
         src/mediaview/WaterFallVideoItem.cpp
         src/mediaview/VideoStreamControl.cpp
-#        src/algorithm/AlgorithmDialog.cpp
+        src/algorithm/AlgorithmDialog.cpp
         src/algorithm/WorkSpaceWidget.cpp
         src/algorithm/NetImage.cpp
         src/mediaview/ProgressBarSlider.cpp
         src/CameraImageWidget.cpp
         src/MediaStreamProc.cpp
-#        src/algorithm/AlgorithmPkt.cpp
-#        src/algorithm/AlgorithmTcpMsgClient.cpp
-#        src/algorithm/AlgorithmManager.cpp
+        src/algorithm/AlgorithmPkt.cpp
+        src/algorithm/AlgorithmTcpMsgClient.cpp
+        src/algorithm/AlgorithmManager.cpp
         src/algorithm/AlgorithmImageWidget.cpp
-#        src/algorithm/FaceTemplateDialog.cpp
-#        src/algorithm/FaceTemplateItem.cpp
-#        src/algorithm/AlgorithmGimbalDialog.cpp
-#        src/algorithm/AlgorithmZoomSlider.cpp
+        src/algorithm/FaceTemplateDialog.cpp
+        src/algorithm/FaceTemplateItem.cpp
+        src/algorithm/AlgorithmGimbalDialog.cpp
+        src/algorithm/AlgorithmZoomSlider.cpp
         src/MainWorkSpaceWidget.cpp
         src/MainImageWidget.cpp
 		src/AlgorithmProtoTest.cpp)

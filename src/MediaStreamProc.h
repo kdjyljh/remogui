@@ -37,7 +37,7 @@ extern "C" {
 //    int hpResult;
 //    int capResult[3];
 //};
-
+#pragma pack(1)
 struct MediaFrame_AI_Info
 {
     uint8_t u8SDKStatus;
@@ -61,6 +61,7 @@ struct MediaFrame_AI_Info
     uint8_t u8FaceRois[15][16];
     uint8_t u8Hand[15][16];
 };
+#pragma pack()
 
 struct MediaFrame {
     MediaFrame_AI_Info ai_info;

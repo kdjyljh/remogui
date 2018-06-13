@@ -47,7 +47,6 @@ bool SharedData::popReceiveData(ProtocolStruct &data)
 
     //如果是回应包，根据包序号找到对应的请求包，并添加请求包数据字段到响应包
     if (data.packFlags.bits.ReqResp == CommProtoVariables::RESPOND) {
-        LOG(INFO) << "SharedData::popReceiveData RESPOND";
         ProtocolStruct sendData;
         if (popSendDataBySeqId(sendData, data.packSeq) /*&& !sendData.data.empty()*/) {
             data.data.insert(data.data.end(), sendData.data.begin(), sendData.data.end());

@@ -47,13 +47,45 @@ void CameraImageWidget::paintEvent(QPaintEvent *event)
         pen.setColor(Qt::red); //body使用红色
         pen.setWidth(5);
         painter.setPen(pen);
+        for (int i = 0; i < aiInfo.u8NumPerson; ++i) {
+            float x1 = (*((float*) ((char *)aiInfo.u8PersonRois + i * 16)));
+            float y1 = (*((float*) ((char *)aiInfo.u8PersonRois + i * 16 + 4)));
+            float x2 = (*((float*) ((char *)aiInfo.u8PersonRois + i * 16 + 8)));
+            float y2 = (*((float*) ((char *)aiInfo.u8PersonRois + i * 16 + 12)));
+//            LOG(INFO) << x1 << ", " << y1 << ", "<< x2 << ", " << y2;
+            ret = QRect(QPoint(width() * x1, height() * y1),
+                        QPoint(width() * x2, height() * y2));
+            painter.drawRect(ret);
+        }
+        pen.setColor(Qt::green); //face使用绿色
+        painter.setPen(pen);
         for (int i = 0; i < aiInfo.u8NumFace; ++i) {
-            ret = QRect(QPoint(width() * (*((float*) aiInfo.u8FaceRois + i * 16)), height() * (*((float*) aiInfo.u8FaceRois + i * 16 + 4))),
-                        QPoint(width() * (*((float*) aiInfo.u8FaceRois + i * 16 + 8)), height() * (*((float*) aiInfo.u8FaceRois + i * 16 + 12))));
+            ret = QRect(QPoint(width() * (*((float*) ((char *)aiInfo.u8FaceRois + i * 16))), height() * (*((float*) ((char *)aiInfo.u8FaceRois + i * 16 + 4)))),
+                        QPoint(width() * (*((float*) ((char *)aiInfo.u8FaceRois + i * 16 + 8))), height() * (*((float*) ((char *)aiInfo.u8FaceRois + i * 16 + 12)))));
+            painter.drawRect(ret);
+        }
+        pen.setColor(Qt::white); //target使用白色
+        painter.setPen(pen);
+        for (int i = 0; i < aiInfo.u8NumTarget; ++i) {
+            float x1 = (*((float*) ((char *)aiInfo.u8TargetRois + 2 + i * 18)));
+            float y1 = (*((float*) ((char *)aiInfo.u8TargetRois + 2 + i * 18 + 4)));
+            float x2 = (*((float*) ((char *)aiInfo.u8TargetRois + 2 + i * 18 + 8)));
+            float y2 = (*((float*) ((char *)aiInfo.u8TargetRois + 2 + i * 18 + 12)));
+            LOG(INFO) << x1 << ", " << y1 << ", "<< x2 << ", " << y2;
+            ret = QRect(QPoint(width() * x1, height() * y1),
+                        QPoint(width() * x2, height() * y2));
+            painter.drawRect(ret);
+        }
+        pen.setColor(Qt::blue); //hand使用蓝色
+        painter.setPen(pen);
+        for (int i = 0; i < aiInfo.u8NumHand; ++i) {
+            ret = QRect(QPoint(width() * (*((float*) ((char *)aiInfo.u8Hand + i * 16))), height() * (*((float*) ((char *)aiInfo.u8Hand + i * 16 + 4)))),
+                        QPoint(width() * (*((float*) ((char *)aiInfo.u8Hand + i * 16 + 8))), height() * (*((float*) ((char *)aiInfo.u8Hand + i * 16 + 12)))));
             painter.drawRect(ret);
         }
 
-        painter.setPen(QColor(0, 160, 230, 100)); //当前手势使用透明蓝色
+        painter.setPen(QColor(0, 160, 230, 150)); //当前手势使用透明蓝色
+        painter.setPen(pen);
         QFont font; font.setPointSize(16); painter.setFont(font);
         painter.drawText(50, 50, QString("当前手势: (type:%1,count:%2)").arg(aiInfo.u8HpType).arg(aiInfo.u8HpCount));
 

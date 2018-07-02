@@ -198,6 +198,7 @@ bool ReceiveDataHandler::mergeRange(Range_Data *srcRange, int srcLength, std::se
 
 bool ReceiveDataHandler::getSurportRange(std::set<SubItemData> & range)
 {
+
 //    Range_Data *srcRange;
 //    int length;
 //    if (rangePayloadParer(data.data.data(), data.data.size(), &srcRange, &length)) {
@@ -209,20 +210,37 @@ bool ReceiveDataHandler::getSurportRange(std::set<SubItemData> & range)
 
 //    range的结构为:
 //    struct {
-//        UINT8 type;    //类型 (离散或连续两种)
+//        UINT8 type;              //类型 (离散或连续两种)
 //        UINT8 Num;               //元组个数
+//        UINT8 size               //每个元组长度
 //        BUF[可变长];              //需要解析的n个范围元组
 //    }
-    if (data.data.size() <= 2) { //必须要有两个以上的值
+    if (data.data.size() <= 3) { //必须要有3个以上的值
+        LOG(INFO) << "ReceiveDataHandler::getSurportRange error data size too short";
         return false;
     }
 
+    range.clear();
+
     int num = data.data[1];
+    int payloadSize = data.data[2];
+
+    if (num <= 0 || payloadSize <= 0) {
+        LOG(INFO) << "ReceiveDataHandler::getSurportRange error: num and payloadSize not correct";
+    }
+
     switch (data.data[0]) {
         case 0: //单个离散的值
         {
-            for (int i = 0; i < num/* && i < data.data.size()*/; ++i) {
-                int index = data.data[2 + i];
+            // [type + num + payloadSize + num * payloadSize]
+            if (data.data.size() < num * payloadSize + 3) {
+                LOG(INFO) << "ReceiveDataHandler::getSurportRange error data size too short type:single";
+                return false;
+            }
+
+            for (int i = 0; i < num/* && i < data.data.size()*/; i += payloadSize) {
+                int index = 0;
+                memcpy(&index, data.data.data() + 3 + i, payloadSize);
                 for (auto it : itemData) {
                     if (it.CmdSet == data.cmdSet && it.CmdId_GetRange == data.cmdID) {
                         for (auto subIt : it.subItemData) {
@@ -238,10 +256,21 @@ bool ReceiveDataHandler::getSurportRange(std::set<SubItemData> & range)
             break;
         case 1: //连续值
         {
-            for (int i = 0; i < num/* && i < data.data.size()*/; i += 3) {
-                int max = data.data[2 + i + 0];
-                int step = data.data[2 + i + 1];
-                int min = data.data[2 + i + 2];
+            // [type + num + payloadSize + num * payloadSize * (max, step, min)]
+            if (data.data.size() < num * payloadSize * 3 + 3) {
+                LOG(INFO) << "ReceiveDataHandler::getSurportRange error data size too short type:continuous";
+                return false;
+            }
+
+            for (int i = 3; i < num/* && i < data.data.size()*/; i += (3 * payloadSize)) {
+                int max = 0, step = 0, min = 0;
+                memcpy(&max, data.data.data() + 3 + i + 1 * payloadSize, payloadSize);
+                memcpy(&step, data.data.data() + 3 + i + 2 * payloadSize, payloadSize);
+                memcpy(&min, data.data.data() + 3 + i + 3 * payloadSize, payloadSize);
+                if (!(min <= max && max <= min + step)) {
+                    LOG(INFO) << "ReceiveDataHandler::getSurportRange error max step min size not correct";
+                    continue;
+                }
                 for (int index = min; index <= max; index += step) {
                     range.insert(SubItemData{index, std::to_string(index)});
                 }

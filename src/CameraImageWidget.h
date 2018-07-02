@@ -6,7 +6,7 @@
 #include "MediaStreamProc.h"
 #include "MainImageWidget.h"
 
-class CameraImageWidget : public MainImageWidget
+class CameraImageWidget : public MainImageWidget // 没有线程
 {
     Q_OBJECT
 public:

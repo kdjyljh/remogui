@@ -54,7 +54,7 @@ AlgorithmDialog::AlgorithmDialog(QWidget *parent) :
         faceTemplateDialog(boost::make_shared<FaceTemplateDialog>()),
         gimbalDialog(boost::make_shared<AlgorithmGimbalDialog>()),
         zoomSlider(boost::make_shared<AlgorithmZoomSlider>()),
-        player(boost::make_shared<QMediaPlayer>()),
+//        player(boost::make_shared<QMediaPlayer>()),
         ui(new Ui::Algorithm) {
     ui->setupUi(this);
     resize(1300, 900);
@@ -443,10 +443,10 @@ void AlgorithmDialog::on_pushButton_gimbal_clicked() {
 //}
 
 void AlgorithmDialog::on_pushButton_music_play_clicked() {
-    player->setMedia(QUrl::fromLocalFile("/home/jianghualuo/work/data/audio/mariah_carey-my_all.flac"));
-    player->setVolume(50);
-    player->play();
-    player->position();
+//    player->setMedia(QUrl::fromLocalFile("/home/jianghualuo/work/data/audio/mariah_carey-my_all.flac"));
+//    player->setVolume(50);
+//    player->play();
+//    player->position();
 }
 
 void AlgorithmDialog::pushButton_zoom_clicked() {

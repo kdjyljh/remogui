@@ -85,7 +85,7 @@ signals:
     bool readStreamDone(bool gotStream);
 
 public slots:
-    bool readStream();
+    bool readStream(); // 重新获取流
     bool syncReadStream();
 
 private slots:
@@ -145,8 +145,8 @@ private:
     boost::condition_variable cvStreamDecoderReady;
     bool streamDecoderReady; //多线程共享变量，需要加锁
 
-    QThread *readStreamThread;
-    boost::thread readFrameThread;
+    QThread *readStreamThread; //连接流线程
+    boost::thread readFrameThread; // 读取数据包线程
     boost::thread playThread;
     boost::thread decodeFrameThread;
 

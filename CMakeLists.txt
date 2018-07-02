@@ -35,7 +35,8 @@ if(WIN32)
 			C:/remogui/usr/ffmpeg/include
 			${include_directories})
 elseif(UNIX)
-	find_package(Qt5 COMPONENTS Core Gui Concurrent Widgets Network Multimedia REQUIRED)
+	find_package(Qt5 COMPONENTS Core Gui Concurrent Widgets Network REQUIRED)
+	find_package(Qt5 COMPONENTS Multimedia) # Multimedia not REQUIRED
 	find_package(Protobuf REQUIRED)
 	find_package(Boost REQUIRED)
 endif()
@@ -145,6 +146,10 @@ elseif(UNIX)
 			glog
 			protobuf
 			Qt5::Gui Qt5::Concurrent Qt5::Core Qt5::Widgets Qt5::Network Qt5::Multimedia)
+
+        if(${Qt5Multimedia_FOUND})
+            set(CUSTOM_LIBS ${CUSTOM_LIBS} Qt5::Multimedia)
+        endif()
 endif()
 
 set(PROTO_FILES

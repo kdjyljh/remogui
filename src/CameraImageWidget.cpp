@@ -71,7 +71,7 @@ void CameraImageWidget::paintEvent(QPaintEvent *event)
             float y1 = (*((float*) ((char *)aiInfo.u8TargetRois + 2 + i * 18 + 4)));
             float x2 = (*((float*) ((char *)aiInfo.u8TargetRois + 2 + i * 18 + 8)));
             float y2 = (*((float*) ((char *)aiInfo.u8TargetRois + 2 + i * 18 + 12)));
-            LOG(INFO) << x1 << ", " << y1 << ", "<< x2 << ", " << y2;
+//            LOG(INFO) << x1 << ", " << y1 << ", "<< x2 << ", " << y2;
             ret = QRect(QPoint(width() * x1, height() * y1),
                         QPoint(width() * x2, height() * y2));
             painter.drawRect(ret);
@@ -123,8 +123,9 @@ void CameraImageWidget::drawImage()
         if ((refreshAiInfo = decoder->getCurFrame()->hasAiInfo)) {
             aiInfo = decoder->getCurFrame()->ai_info;
         }
-        this->image =
-                QImage(frame->data[0], frame->width, frame->height, QImage::Format_RGB32);//和解码线程共享frame数据，数据由解码线程管理
+//        this->image =
+//                QImage(frame->data[0], frame->width, frame->height, QImage::Format_RGB32);//和解码线程共享frame数据，数据由解码线程管理
+        image = QImage(frame->data[0], frame->width, frame->height, QImage::Format_RGB32).copy();
         repaint();
     }
 }

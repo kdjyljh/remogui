@@ -19,7 +19,7 @@
 #include "AlgorithmGimbalDialog.h"
 #include "AlgorithmZoomSlider.h"
 #include "ui_algorithm.h"
-#include <QMediaPlayer>
+//#include <QMediaPlayer>
 
 class FaceTemplateDialog;
 
@@ -83,7 +83,7 @@ private:
     boost::shared_ptr<FaceTemplateDialog> faceTemplateDialog;
     boost::shared_ptr<AlgorithmGimbalDialog> gimbalDialog;
     boost::shared_ptr<AlgorithmZoomSlider> zoomSlider;
-    boost::shared_ptr<QMediaPlayer> player;
+//    boost::shared_ptr<QMediaPlayer> player;
     boost::shared_ptr<MainImageWidget> workSpaceWidget;
 };
 

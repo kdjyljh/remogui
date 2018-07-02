@@ -394,10 +394,6 @@ void MediaStreamProc::readFrame()
                 break;
         }
 
-        //0x00 0x00 0x00 0x01 0x0d
-//        CHAR_BUFF_TO_LOG(std::vector<char>(packet.data, packet.data + packet.size));
-//        LOG(INFO) << "size:" << packet.size;
-
         pushPacket(packet);
     }
 }
@@ -644,8 +640,8 @@ int MediaStreamProc::decode_write_normal(AVCodecContext *avctx, AVPacket *packet
             struct SwsContext *img_convert_ctx =
                     sws_getContext(frame->width, frame->height, format,
                                    frame->width, frame->height, AV_PIX_FMT_RGB32, SWS_BICUBIC, nullptr, nullptr, nullptr);
-            AVFrame decoded_frame;
-            frame_width = decoder_ctx->width;
+            AVFrame decoded_frame; // scaled_frame
+            frame_width = decoder_ctx->width; // H264, maybe frame->width is better
             frame_height = decoder_ctx->height;
             decoded_frame.format = AV_PIX_FMT_RGB32;
             decoded_frame.width = frame_width;
@@ -678,6 +674,17 @@ bool MediaStreamProc::decodeAiInfoFrame(const AVPacket &packet, MediaFrame_AI_In
 
 //    LOG(INFO) << "MediaStreamProc::decodeAiInfoFrame packet data:";
 //    CHAR_BUFF_TO_LOG(std::vector<char>(packet.data, packet.data + packet.size));
+//    for (int i = 0; i < packet.size - 4; ++i) {
+//        uint64_t nal_header = 0x01000000; //本地是小端，将字节反序
+//        uint64_t data;
+//        memset(&data, 0, 8);
+//        memcpy(&data, packet.data + i, 4);
+//        if (data == nal_header) {
+//            LOG(INFO) << "nal type:" << ((packet.data[i + 4]) & 0x1f);
+//        }
+//    }
+
+//    LOG(INFO) << "package: done##################";
 
     //查找0x00 0x00 0x00 0x01 0x0d，算法的NAL头
     //算法的NAL头是每一帧的最后一个

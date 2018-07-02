@@ -7,13 +7,15 @@
 
 #include <stdio.h>
 #include <deque>
+#include <map>
+#include <utility>
 #include <boost/thread.hpp>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/pixdesc.h>
-#ifdef linux
+#ifdef VAAPI_ENABLE
 #include <libavutil/hwcontext.h>
 #endif
 #include <libavutil/opt.h>
@@ -23,20 +25,6 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
-//struct MediaFrame_AI_Info
-//{
-//    uint64_t frameID;
-//    float bodyROIs[15][4];
-//    int bodyNum;
-//    float faceROIs[15][4];
-//    int faceNum;
-//    float handROIs[15][4];
-//    int handNum;
-//    float targetROIs[2][4];
-//    int targetNum;
-//    int hpResult;
-//    int capResult[3];
-//};
 #pragma pack(1)
 struct MediaFrame_AI_Info
 {
@@ -71,13 +59,18 @@ struct MediaFrame {
 
 class MediaStreamProc : public QObject
 {
-    Q_OBJECT
+Q_OBJECT
 public:
     MediaStreamProc(QObject *parent = nullptr);
     ~MediaStreamProc();
 //    AVFrame *getDecodedFrame() {return &decoded_frame;}
     MediaFrame *getCurFrame();
     bool isValid() {return streamDecoderReady && streamInputReady;}
+    void setUrl(std::string newUrl) {
+        if (!newUrl.empty()) {
+            url = newUrl;
+        }
+    }
 
 signals:
     void imageGot(const QImage &image);
@@ -96,9 +89,10 @@ private:
     void decodeFrame();
     void play();
     int decode_write_normal(AVCodecContext *avctx, AVPacket *packet);
-    bool decodeAiInfoFrame(const AVPacket &packet, MediaFrame_AI_Info &aiInfo);
+    //一个packet里面可能以有多个算法nal,全部找出来放到aiRoisMap中
+    void putAiInfo2MapFromFrame(const AVPacket &packet);
 
-#ifdef linux
+#ifdef VAAPI_ENABLE
     int decode_write_vaapi(AVCodecContext *avctx, AVPacket *packet);
     static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
                                      const enum AVPixelFormat *pix_fmts);
@@ -112,6 +106,8 @@ private:
     void popFrame(MediaFrame &frame);
     void pushPacket(const AVPacket &packet);
     void popPacket(AVPacket &packet);
+
+    std::map<uint64_t, MediaFrame_AI_Info>::iterator findRoisMapIt(int64_t pts);
 
 private:
     AVFormatContext *input_ctx;
@@ -159,7 +155,19 @@ private:
     boost::condition_variable cvFrameQueue;
     boost::mutex mtxFrameQueueFull;
     boost::condition_variable cvFrameQueueFull;
-    const int frameQueueSize;
+    const unsigned int frameQueueSize;
+
+    std::deque<AVFrame> pendingAiRoiFrameQue;
+    std::map<uint64_t, MediaFrame_AI_Info> aiRoisMap;
+    unsigned int pendingFrameCounter; //寻找包数目计数器
+    const unsigned int pendingFrameSize; //当在中未找到roi时,继续寻找的包数目
+    //当pendingAiRoiFrameQue大小超过这个值时
+    //会将pendingAiRoiFrameQue里面的frame直接显示(不匹配框),取出的frame个数为drainPendingAiRoiFrameSize
+    const unsigned int drainPendingAiRoiFrameMax;
+    const unsigned int drainPendingAiRoiFrameSize;
+    const unsigned int aiRoisMapMaxSize;
+    const unsigned int syncRoiDiffMax; //寻找框时框pts和frame的pts之间差值的最大值
+    AVFrame curSyncRoiFrame; //当前正在同步框的frame
 };
 
 #endif // MediaStreamProc_H

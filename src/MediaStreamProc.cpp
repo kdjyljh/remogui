@@ -1,12 +1,13 @@
 #include "MediaStreamProc.h"
+//#include "ffmpeg-custom.h"
 #include <glog/logging.h>
 #include <QTimer>
 #include <boost/asio.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include "commlog.h"
+//#include "commlog.h"
 
-#ifdef linux
+#ifdef VAAPI_ENABLE
 static enum AVPixelFormat hw_pix_fmt;
 enum AVHWDeviceType type;
 int MediaStreamProc::hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
@@ -259,6 +260,13 @@ int MediaStreamProc::vaapiInit() {
 }
 #endif
 
+#ifdef CUSTOM_FFMPEG
+extern "C" {
+#include "libavformat/rtpdec.h"
+#include "libavformat/rtsp.h"
+}
+#endif
+
 //rtsp://192.168.0.1/livestream/12
 //rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov
 ///home/jianghualuo/work/data/videos/bandicam.avi
@@ -275,13 +283,19 @@ MediaStreamProc::MediaStreamProc(QObject *parent) :
         streamDecoderReady(false),
         frame_width(-1),
         frame_height(-1),
-        frameQueueSize(30),
+        frameQueueSize(3),
+        pendingFrameSize(10),
+        pendingFrameCounter(0),
         deviceType("vaapi"),
+        drainPendingAiRoiFrameMax(15),
+        drainPendingAiRoiFrameSize(1),
+        aiRoisMapMaxSize(50),
+        syncRoiDiffMax(150),
         decoderType(DecoderType_None),
-        readStreamThread(new QThread(this))
-{
+        readStreamThread(new QThread(this)) {
     LOG(INFO) << "MediaStreamProc::MediaStreamProc constructor this:" << this;
-//    av_log_set_level(AV_LOG_SKIP_REPEATED);
+//    av_log_set_level(AV_LOG_SKIP_REPEATED); //关闭ffmpeg显示的log
+#ifdef VAAPI_ENABLE
     try {
         boost::property_tree::ptree root;
         boost::property_tree::read_json("remo_gui.json", root);
@@ -290,34 +304,26 @@ MediaStreamProc::MediaStreamProc(QObject *parent) :
     } catch (boost::property_tree::ptree_error &e) {
         LOG(INFO) << "MediaStreamProc::MediaStreamProc json parse error:" << e.what();
     }
+#endif
 
     curFrame.image.format = AV_PIX_FMT_NONE;
     moveToThread(readStreamThread);
     input_format = av_find_input_format("rtsp");
     readStreamThread->start(QThread::HighestPriority);
-    readStream(); //异步读取视频流
+//    readStream(); //异步读取视频流
 }
 
-MediaStreamProc::~MediaStreamProc()
-{
+MediaStreamProc::~MediaStreamProc() {
     readStreamThread->quit();
     readStreamThread->wait();
-//    //先关闭解码和取流线程，再释放资源
-//    readFrameThread.interrupt();
-//    readFrameThread.join();
-//    playThread.interrupt();
-////    playThread.join(); //不使用jion，可能产生死锁
-//    playThread.detach(); //使用detach释放线程资源
-//    decodeFrameThread.interrupt();
-//    decodeFrameThread.join();
+
     deInit();
 }
 
 //返回0成功，其他值失败
-int MediaStreamProc::init()
-{
+int MediaStreamProc::init() {
     int ret = -1;
-#ifdef linux
+#ifdef VAAPI_ENABLE
     if (decoderCfg.empty() || decoderCfg == "Auto") {
         if ((ret = vaapiInit())) {
             LOG(INFO) << "MediaStreamProc::init vaapiInit failed try normal!!!!!!!!!!!!!";
@@ -345,10 +351,7 @@ int MediaStreamProc::init()
     return ret;
 }
 
-void MediaStreamProc::deInit()
-{
-//    boost::unique_lock<boost::mutex> locki(mtxStreamInputReady);
-//    boost::unique_lock<boost::mutex> lockd(mtxStreamDecoderReady);
+void MediaStreamProc::deInit() {
     //先关闭解码和取流线程，再释放资源
     readFrameThread.interrupt();
     readFrameThread.join();
@@ -370,15 +373,16 @@ void MediaStreamProc::deInit()
     decoder = nullptr;
     hw_device_ctx = nullptr;
     video_stream = -1;
-#ifdef linux
+#ifdef VAAPI_ENABLE
     type = AV_HWDEVICE_TYPE_NONE;
 #endif
     streamInputReady = false;
     streamDecoderReady = false;
+
+    pendingFrameCounter = 0;
 }
 
-void MediaStreamProc::readFrame()
-{
+void MediaStreamProc::readFrame() {
     int ret = 0;
     while (ret >= 0) {
         boost::this_thread::interruption_point();
@@ -398,18 +402,14 @@ void MediaStreamProc::readFrame()
     }
 }
 
-bool MediaStreamProc::readStream()
-{
+bool MediaStreamProc::readStream() {
     QTimer::singleShot(0, this, SLOT(_readStream()));
     return true;
 }
 
-void MediaStreamProc::_readStream()
-{
+void MediaStreamProc::_readStream() {
     int i = 50; //如果无视频流，重复连接50次
     {
-//        boost::unique_lock<boost::mutex> locki(mtxStreamInputReady);
-//        boost::unique_lock<boost::mutex> lockd(mtxStreamDecoderReady);
         do {
             LOG(INFO) << "0.deInit #########################";
             deInit();
@@ -419,42 +419,22 @@ void MediaStreamProc::_readStream()
             --i;
             boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
         } while (i);
-
-//        deInit();
-//        while (i && init()) {
-//            LOG(INFO) << "0. deInit #########################";
-//            deInit();
-//            --i;
-//            boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
-//        }
-//        cvStreamInputReady.notify_one();
-//        cvStreamDecoderReady.notify_one();
     }
-
-    //一个对象只初始化线程一次，线程资源在析构函数里释放
-//    static bool firstRun = true;
-//    if (i && firstRun) {
-//        //初始化成功，运行线程
-//        LOG(INFO) << "10.MediaStreamProc::play thread start###########################";
-//        readFrameThread = boost::thread(&MediaStreamProc::readFrame, this);
-//        decodeFrameThread = boost::thread(&MediaStreamProc::decodeFrame, this);
-//        playThread = boost::thread(&MediaStreamProc::play, this);
-//    }
-//    firstRun = false;
 
     emit readStreamDone(i);
 
     if (i) {
-        LOG(INFO) << "10.MediaStreamProc::play thread start###########################";
         readFrameThread = boost::thread(&MediaStreamProc::readFrame, this);
         decodeFrameThread = boost::thread(&MediaStreamProc::decodeFrame, this);
         playThread = boost::thread(&MediaStreamProc::play, this);
+        LOG(INFO) << "5.MediaStreamProc::play thread started###########################";
     }
 }
 
 void MediaStreamProc::pushFrame(const MediaFrame &frame) {
     boost::unique_lock<boost::mutex> lock(mtxFrameQueue);
 
+    //frameQueueSize控制缓存匹配好框的帧的长度,越大延迟越严重
     if (frameQueue.size() >= frameQueueSize) {
         boost::unique_lock<boost::mutex> lockFull(mtxFrameQueueFull);
         while (frameQueue.size() >= frameQueueSize) {
@@ -482,17 +462,31 @@ void MediaStreamProc::popFrame(MediaFrame &frame) {
 }
 
 void MediaStreamProc::play() {
+    //为了使播放速度尽量平稳,会按fps进行播放,当两帧之间的时间不够时会使用sleep补足
+    //fps太小会造成延迟越来越大
+    int fps = 40;
+    boost::posix_time::time_duration frameTime(boost::posix_time::microsec(1000000 / fps));
+    boost::posix_time::ptime lastShown = boost::posix_time::microsec_clock::universal_time() + frameTime;
     while (true) {
         //使用异常捕获interruption_point，立即停止播放线程，并释放资源
         //因为emit imageGot();使用BlockingQueuedConnection，
         // 为了避免和析构函数里面到join产生死锁，也必须马上跳出
         try {
             boost::this_thread::interruption_point();
+
             if (curFrame.image.format != AV_PIX_FMT_NONE) {
                 av_freep(&curFrame.image.data[0]);
             }
             popFrame(curFrame);
+
+            boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - lastShown;
+            boost::this_thread::sleep(frameTime - diff);
+
             emit imageGot(); //直到图片显示完成后再返回
+//            LOG(INFO) << "MediaStreamProc::play display frame done pts:" << curFrame.image.pts
+//                      << " diff:" << (boost::posix_time::microsec_clock::universal_time() - lastShown).total_milliseconds()
+//                      << " frameQueue:" << frameQueue.size();
+            lastShown = boost::posix_time::microsec_clock::universal_time();
         } catch (boost::thread_interrupted &e) {
             LOG(INFO) << "MediaStreamProc::play interrupt";
             break;
@@ -518,7 +512,7 @@ void MediaStreamProc::decodeFrame() {
                 cvStreamDecoderReady.wait(lock);
             }
             if (video_stream == packet.stream_index) {
-#ifdef linux
+#ifdef VAAPI_ENABLE
                 if (decoderType == DecoderType_Normal) {
                     decode_write_normal(decoder_ctx, &packet);
                 } else if (decoderType == DecoderType_Vaapi) {
@@ -530,11 +524,6 @@ void MediaStreamProc::decodeFrame() {
             }
         }
         av_packet_unref(&packet);
-
-        //休眠让其他线程能拿到cpu时间片
-//        lock.unlock();
-//        boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-//        lock.lock();
     }
 }
 
@@ -562,13 +551,16 @@ int MediaStreamProc::normalInit() {
     int ret;
     char errorStr[1024] = {0};
 
+    LOG(INFO) << "1.###################MediaStreamProc::normalInit avformat_open_input";
     if ((ret = avformat_open_input(&input_ctx, url.c_str(), nullptr, nullptr)) < 0) {
         goto error;
     }
+    LOG(INFO) << "2.###################MediaStreamProc::normalInit avformat_find_stream_info";
     if ((ret = avformat_find_stream_info(input_ctx, nullptr)) < 0) {
         goto error;
     }
     /* select the video stream */
+    LOG(INFO) << "3.###################MediaStreamProc::normalInit av_find_best_stream";
     ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
     if (ret < 0) {
         goto error;
@@ -585,6 +577,7 @@ int MediaStreamProc::normalInit() {
     avcodec_parameters_to_context(decoder_ctx, input_ctx->streams[video_stream]->codecpar);
     av_opt_set_int(decoder_ctx, "refcounted_frames", 1, 0);
     /* init the video decoder */
+    LOG(INFO) << "4.###################MediaStreamProc::normalInit avcodec_open2";
     if ((ret = avcodec_open2(decoder_ctx, decoder, nullptr)) < 0) {
         goto error;
     }
@@ -595,17 +588,20 @@ int MediaStreamProc::normalInit() {
     LOG(INFO) << "MediaStreamProc::normalInit decoder name:" << decoder_ctx->codec->name;
     return 0;
 
-error:
+    error:
     streamInputReady = false;
     streamDecoderReady = false;
     av_strerror(ret, errorStr, 1024);
-    LOG(INFO) << "MediaStreamProc::normalInit got an error:" << ret << " :" << errorStr;
+    LOG(INFO) << "MediaStreamProc::normalInit url:" << url << " got an error:" << ret << " :" << errorStr;
     return ret;
 }
 
 int MediaStreamProc::decode_write_normal(AVCodecContext *avctx, AVPacket *packet) {
     int ret = 0;
     char errorStr[1024] = {0};
+    AVFrame decoded_frame; // scaled_frame
+    MediaFrame mediaFrame;
+    static bool pushDecodedFrame = false;
 
     ret = avcodec_send_packet(avctx, packet);
     if (ret < 0) {
@@ -614,9 +610,13 @@ int MediaStreamProc::decode_write_normal(AVCodecContext *avctx, AVPacket *packet
         return ret;
     }
 
-    MediaFrame mediaFrame;
-    memset(&mediaFrame, 0, sizeof(MediaFrame_AI_Info));
-    mediaFrame.hasAiInfo = decodeAiInfoFrame(*packet, mediaFrame.ai_info);
+    putAiInfo2MapFromFrame(*packet); //先将packet里面的所有框信息放入aiRoisMap中
+
+    //删掉一些框数据,避免内存一直增长
+    if (aiRoisMap.size() > aiRoisMapMaxSize) {
+        int counter = 10;
+        while (counter--) aiRoisMap.erase(aiRoisMap.begin());
+    }
 
     while (ret >= 0) {
         AVFrame *frame = av_frame_alloc();
@@ -640,7 +640,6 @@ int MediaStreamProc::decode_write_normal(AVCodecContext *avctx, AVPacket *packet
             struct SwsContext *img_convert_ctx =
                     sws_getContext(frame->width, frame->height, format,
                                    frame->width, frame->height, AV_PIX_FMT_RGB32, SWS_BICUBIC, nullptr, nullptr, nullptr);
-            AVFrame decoded_frame; // scaled_frame
             frame_width = decoder_ctx->width; // H264, maybe frame->width is better
             frame_height = decoder_ctx->height;
             decoded_frame.format = AV_PIX_FMT_RGB32;
@@ -650,41 +649,157 @@ int MediaStreamProc::decode_write_normal(AVCodecContext *avctx, AVPacket *packet
                                       frame_width, frame_height, AV_PIX_FMT_RGB32, 32)) < 0) {
                 LOG(INFO) << "MediaStreamProc::decode_write_normal alloc decoded frame failed";
                 ret = AVERROR(ENOMEM);
+                sws_freeContext(img_convert_ctx);
                 av_frame_free(&frame);
                 return ret;
             }
             sws_scale(img_convert_ctx, (const uint8_t * const *)frame->data, frame->linesize, 0, frame->height,
                       decoded_frame.data, decoded_frame.linesize);
-            mediaFrame.image = decoded_frame;
-            pushFrame(mediaFrame);
 
-            av_frame_free(&frame);
+            decoded_frame.pts = frame->pts;
+
             sws_freeContext(img_convert_ctx);
         }
         av_frame_free(&frame);
+
+//        av_freep(&decoded_frame.data[0]);
+//        uint32_t rtpPts = static_cast<RTPDemuxContext*>(
+//                static_cast<RTSPState*>(input_ctx->priv_data)->rtsp_streams[0]->transport_priv)->timestamp;
+//        LOG(INFO) << "MediaStreamProc::decode_write_normal frame-pts:" << decoded_frame.pts
+//                  << " queueSize:" << pendingAiRoiFrameQue.size() << " mapSize:" << aiRoisMap.size()
+//                  << " pendingFrameCounter:" << pendingFrameCounter << " frameQueue:" << frameQueue.size();
+
+        if (aiRoisMap.empty()) { //当前无框数据,不需要进行同步
+            //当没有框数据时,为了避免累计太多frame,不进行匹配框的步骤
+            mediaFrame.image = decoded_frame;
+            mediaFrame.hasAiInfo = false;
+            pushFrame(mediaFrame); //直接显示
+            continue; //继续解码,不进行匹配框
+        }
+
+        pushDecodedFrame = true;
+
+        //特殊处理
+        //当有新的一帧解码图像时,并且pendingFrameCounter为0,同时pendingAiRoiFrameQue为空,直接push到pendingAiRoiFrameQue里面
+        //否则到next_sync_roi时会直接跳转到: pendingAiRoiFrameQue中无数据,解码下一帧数据 的那个分支
+        //永远无法进入正常的匹配框的过程
+        if (0 == pendingFrameCounter && pendingAiRoiFrameQue.empty()) {
+            pendingAiRoiFrameQue.push_back(decoded_frame);
+            pushDecodedFrame = false;
+        }
+
+        std::map<uint64_t, MediaFrame_AI_Info>::iterator roisMapIt;
+        next_sync_roi:
+        if (0 == pendingFrameCounter) {
+            //pendingFrameCounter为0表示重新开始了一次新的找框循环
+            //否则表明是为curSyncRoiFrame寻找框数据而读的AVPacket,所以curSyncRoiFrame保持不变
+            if (!pendingAiRoiFrameQue.empty()) { //如果还有未同步的解码帧
+                //如果不做限制,累积的frame会越来越多
+                //为了避免内存被耗尽,当frame size到达drainPendingAiRoiFrameMax时
+                //会直接显示drainPendingAiRoiFrameSize个无框的frame
+                //必须在curSyncRoiFrame处理完成后再进行drain,否则会造成帧乱序,画面闪烁
+                if (pendingAiRoiFrameQue.size() >= drainPendingAiRoiFrameMax) {
+                    int counter = drainPendingAiRoiFrameSize;
+                    while (!pendingAiRoiFrameQue.empty() && counter--) {
+                        mediaFrame.image = pendingAiRoiFrameQue.front();
+                        mediaFrame.hasAiInfo = false;
+                        pendingAiRoiFrameQue.pop_front();
+
+                        //尝试寻找ROI
+                        roisMapIt = findRoisMapIt(mediaFrame.image.pts);
+                        if ((roisMapIt != aiRoisMap.end())) {
+                            mediaFrame.hasAiInfo = true;
+                            mediaFrame.ai_info = roisMapIt->second;
+//                            LOG(INFO) << "MediaStreamProc::decode_write_normal find roi while draining frame-pts:" << mediaFrame.image.pts;
+                            aiRoisMap.erase(roisMapIt++); //将同步后的框删掉
+                        }
+                        pushFrame(mediaFrame);
+//                        LOG(INFO) << "MediaStreamProc::decode_write_normal push find once roi frame draining........";
+                    }
+                }
+
+                if (pendingAiRoiFrameQue.empty()) continue;
+
+                //再每次从队列pendingAiRoiFrameQue前取出
+                curSyncRoiFrame = pendingAiRoiFrameQue.front();
+                pendingAiRoiFrameQue.pop_front();
+//                LOG(INFO) << "MediaStreamProc::decode_write_normal pop pendingAiRoiFrameQue for frame pts:" << curSyncRoiFrame.pts
+//                          << " queueSize:" << pendingAiRoiFrameQue.size() << " pendingFrameCounter:" << pendingFrameCounter;
+            } else {
+                continue; //pendingAiRoiFrameQue中无数据,解码下一帧数据
+            }
+        }
+
+        memset(&mediaFrame, 0, sizeof(MediaFrame));
+        roisMapIt = findRoisMapIt(curSyncRoiFrame.pts);
+
+        if (roisMapIt != aiRoisMap.end()) { //已经找到当前frame的框数据
+            mediaFrame.image = curSyncRoiFrame;
+            mediaFrame.hasAiInfo = true;
+            mediaFrame.ai_info = roisMapIt->second;
+//            LOG(INFO) << "MediaStreamProc::decode_write_normal find rois for frame pts:"
+//                      << curSyncRoiFrame.pts << " ai-pts:" << roisMapIt->second.u64TimeStamp
+//                      << " queueSize:" << pendingAiRoiFrameQue.size() << " pendingFrameCounter:" << pendingFrameCounter;
+            aiRoisMap.erase(roisMapIt); //将同步后的框删掉
+            goto display_frame;
+        } else { //未找到frame对应的框数据
+            if (pendingAiRoiFrameQue.size() >= drainPendingAiRoiFrameMax) { //如果已经达到drainPendingAiRoiFrameMax
+                //寻找当前帧的框,进行匹配
+                mediaFrame.image = curSyncRoiFrame;
+                mediaFrame.hasAiInfo = false;
+                roisMapIt = findRoisMapIt(curSyncRoiFrame.pts); //尝试寻找ROI
+                if ((roisMapIt != aiRoisMap.end())) {
+                    mediaFrame.hasAiInfo = true;
+                    mediaFrame.ai_info = roisMapIt->second;
+                    LOG(INFO) << "MediaStreamProc::decode_write_normal find roi while draining frame-pts:" << curSyncRoiFrame.pts;
+                    aiRoisMap.erase(roisMapIt++); //将同步后的框删掉
+                }
+
+                goto display_frame;
+            }
+
+            if (pendingFrameCounter < pendingFrameSize) { //未达到最大寻找包数目
+                if (pushDecodedFrame) { //有新的解码帧才push
+                    pendingAiRoiFrameQue.push_back(decoded_frame); //将解码帧放入等待同步帧队列
+                    pushDecodedFrame = false;
+                }
+                ++pendingFrameCounter;
+//                LOG(INFO) << "MediaStreamProc::decode_write_normal get another frame pts:"
+//                          << decoded_frame.pts << " queueSize:" << pendingAiRoiFrameQue.size() << " pendingFrameCounter" << pendingFrameCounter;
+                continue; //继续读取下一个AVPacket的roi数据或者解码下一个frame
+            } else { //已经达到最大寻找包数目,还是没找到同步的框数据
+                mediaFrame.hasAiInfo = false;
+                mediaFrame.image = curSyncRoiFrame;
+                LOG(INFO) << "MediaStreamProc::decode_write_normal can't find rois for frame pts:" << curSyncRoiFrame.pts
+                          << " pendingAiRoiFrameQue:" << pendingAiRoiFrameQue.size() << " mapSize:" << aiRoisMap.size()
+                          << " pendingFrameCounter:" << pendingFrameCounter;
+                goto display_frame; //直接显示无框的frame
+            }
+        }
+
+        display_frame:
+        pushFrame(mediaFrame); //将同步后的frame和框一起送到显示队列
+        pendingFrameCounter = 0; //寻找包数目计数器置0
+
+        //push本该放入的帧
+        if (pushDecodedFrame) { //有新的解码帧才push
+            pendingAiRoiFrameQue.push_back(decoded_frame); //将解码帧放入等待同步帧队列
+            pushDecodedFrame = false;
+        }
+//        LOG(INFO) << "MediaStreamProc::decode_write_normal display_frame done pts:" << curSyncRoiFrame.pts
+//                  << " pendingAiRoiFrameQue:" << pendingAiRoiFrameQue.size() << " mapSize:" << aiRoisMap.size()
+//                  << " pendingFrameCounter:" << pendingFrameCounter;
+        goto next_sync_roi; //继续找该解码帧的框数据
+
     }
 
     return 0;
 }
 
-bool MediaStreamProc::decodeAiInfoFrame(const AVPacket &packet, MediaFrame_AI_Info &aiInfo) {
+void MediaStreamProc::putAiInfo2MapFromFrame(const AVPacket &packet) {
     if (packet.stream_index != video_stream) {
-        return false;
+        return;
     }
-
-//    LOG(INFO) << "MediaStreamProc::decodeAiInfoFrame packet data:";
-//    CHAR_BUFF_TO_LOG(std::vector<char>(packet.data, packet.data + packet.size));
-//    for (int i = 0; i < packet.size - 4; ++i) {
-//        uint64_t nal_header = 0x01000000; //本地是小端，将字节反序
-//        uint64_t data;
-//        memset(&data, 0, 8);
-//        memcpy(&data, packet.data + i, 4);
-//        if (data == nal_header) {
-//            LOG(INFO) << "nal type:" << ((packet.data[i + 4]) & 0x1f);
-//        }
-//    }
-
-//    LOG(INFO) << "package: done##################";
 
     //查找0x00 0x00 0x00 0x01 0x0d，算法的NAL头
     //算法的NAL头是每一帧的最后一个
@@ -695,11 +810,50 @@ bool MediaStreamProc::decodeAiInfoFrame(const AVPacket &packet, MediaFrame_AI_In
         memcpy(&data, packet.data + i, 5);
 
         if (data == nal_header) {
-            int size = sizeof(MediaFrame_AI_Info);
+            MediaFrame_AI_Info aiInfo;
             memcpy(&aiInfo, packet.data + i + 5, sizeof(MediaFrame_AI_Info));
-//            LOG(INFO) << "MediaStreamProc::decodeAiInfoFrame got AI info";
-            return true;
+            //由于FFmpeg的RTP时间戳转到AVPacket时间戳精度损失,最后2位数未使用
+            if (!aiRoisMap.insert({aiInfo.u64TimeStamp, aiInfo}).second) {
+                LOG(INFO) << "MediaStreamProc::putAiInfo2MapFromFrame insert failed key:" << aiInfo.u64TimeStamp << " exited";
+            }
+//            uint32_t rtpPts = static_cast<RTPDemuxContext *>(
+//                    static_cast<RTSPState *>(input_ctx->priv_data)->rtsp_streams[0]->transport_priv)->timestamp;
+//            LOG(INFO) << "MediaStreamProc::putAiInfo2MapFromFrame get ai-roi ai-pts:" << aiInfo.u64TimeStamp << " rtp-pts:" << rtpPts;
+//            LOG(INFO) << "MediaStreamProc::putAiInfo2MapFromFrame get ai-roi ai-pts:" << aiInfo.u64TimeStamp
+//                      << " ai-pts/100:" << aiInfo.u64TimeStamp / 100 << " pkt-pts:" << packet.pts  << " pkt-pts/100:" << packet.pts / 100;
         }
     }
-    return false;
+
+    //    LOG(INFO) << "MediaStreamProc::decodeAiInfoFrame packet data:";
+//    CHAR_BUFF_TO_LOG(std::vector<char>(packet.data, packet.data + packet.size));
+
+    //0x00 0x00 0x00 0x01 0x0d
+//        CHAR_BUFF_TO_LOG(std::vector<char>(packet.data, packet.data + packet.size));
+//        LOG(INFO) << "size:" << packet.size;
+//    for (int i = 0; i < packet.size - 4; ++i) {
+//        uint64_t nal_header = 0x01000000; //本地是小端，将字节反序
+//        uint64_t data;
+//        memset(&data, 0, 8);
+//        memcpy(&data, packet.data + i, 4);
+//        if (data == nal_header) {
+//            LOG(INFO) << "nal type:" << ((packet.data[i + 4]) & 0x1f);
+//        }
+//    }
+//    LOG(INFO) << "package:" << "done##################";
+}
+
+std::map<uint64_t, MediaFrame_AI_Info>::iterator MediaStreamProc::findRoisMapIt(int64_t pts) {
+    auto roisMapIt = aiRoisMap.lower_bound(pts);
+    if (roisMapIt != aiRoisMap.begin() && roisMapIt != aiRoisMap.end()) {
+        auto before = std::prev(roisMapIt);
+        if ((roisMapIt->first - pts) > (pts - before->first)) {
+            roisMapIt = before;
+        }
+
+        if (syncRoiDiffMax < std::abs(static_cast<int64_t>(roisMapIt->first - pts))) {
+            roisMapIt = aiRoisMap.end(); //相差太大,赋值aiRoisMap.end()表示未找到
+        }
+    }
+
+    return roisMapIt;
 }

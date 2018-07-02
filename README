@@ -30,8 +30,9 @@ cd ..
 
 2.编译remogui
 sudo apt-get install libvdpau-dev libva-dev libx11-dev libboost-all-dev libgoogle-glog-dev --install-recommends
-sudo apt-get install libprotobuf-dev protobuf-compiler
+sudo apt-get install libprotobuf-dev protobuf-compiler qt5-default
 
+如果需要使用Qt5::Multimedia,可以使用下面的方法安装qt,否则直接使用qt5-default也可以
 安装qt，为了能让cmake找到qt，需要安装较新版本到qt，本次安装Qt5.10.0，安装目录为$ENV{HOME}/Qt5.10.0(即默认的qt安装目录)
 如果修改了目录，需要修改CMakeLists.txt里面的CMAKE_PREFIX_PATH，指向安装目录下的Qt5.10.0/5.10.0/gcc_64
 wget http://download.qt.io/archive/qt/5.10/5.10.0/qt-opensource-linux-x64-5.10.0.run

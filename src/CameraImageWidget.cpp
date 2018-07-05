@@ -18,7 +18,6 @@ CameraImageWidget::CameraImageWidget(QWidget *parent) :
         decoder(boost::shared_ptr<MediaStreamProc>(new MediaStreamProc)) {
     LOG(INFO) << "CameraImageWidget::CameraImageWidget constructor this:" << this;
     connect(decoder.get(), SIGNAL(imageGot()), this, SLOT(drawImage()), Qt::BlockingQueuedConnection);
-    decoder->setUrl("rtsp://192.168.0.1/chn1");
     decoder->readStream();
 //    connect(decoder.get(), SIGNAL(readStreamDone(bool)), this, SLOT());
 }

@@ -306,6 +306,17 @@ MediaStreamProc::MediaStreamProc(QObject *parent) :
     }
 #endif
 
+    try {
+        boost::property_tree::ptree root;
+        boost::property_tree::read_json("remo_gui.json", root);
+        url = root.get<std::string>("VideoStreamUrl");
+        decoderCfg = root.get<std::string>("VideoStreamDecoder");
+    } catch (boost::property_tree::ptree_error &e) {
+        LOG(INFO) << "MediaStreamProc::MediaStreamProc json parse error:" << e.what();
+        url = "rtsp://192.168.0.1/chn1";
+        decoderCfg = "Normal";
+    }
+
     curFrame.image.format = AV_PIX_FMT_NONE;
     moveToThread(readStreamThread);
     input_format = av_find_input_format("rtsp");
